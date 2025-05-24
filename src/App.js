@@ -1,8 +1,17 @@
 import React from 'react';
-import CategoryAdmin from './screens/CategoryAdmin.js'; // nhớ thêm .js nếu bạn vẫn còn "type": "module"
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import CategoryAdmin from './screens/CategoryAdmin.js';
+import CategoryDetailScreen from './screens/CategoryDetailScreen.js';
 
 function App() {
-  return <CategoryAdmin />;
+  return (
+    <Router>
+      <Routes>
+        <Route path="/" element={<CategoryAdmin />} />
+        <Route path="/category/:categorySlug" element={<CategoryDetailScreen />} />
+      </Routes>
+    </Router>
+  );
 }
 
 export default App;
