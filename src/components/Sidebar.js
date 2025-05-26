@@ -1,15 +1,16 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const Sidebar = () => (
   <div className="w-1/5 h-screen border-r p-6">
     <h2 className="font-bold text-xl mb-10">S7M STORE</h2>
     <nav className="flex flex-col gap-6">
-      <a href="#" className="flex items-center gap-2">Người dùng</a>
-      <a href="#" className="flex items-center gap-2">Danh mục</a>
-      <a href="#" className="flex items-center gap-2">Sản phẩm</a>
-      <a href="#" className="flex items-center gap-2">Đơn hàng</a>
-      <a href="#" className="flex items-center gap-2">Thống kê</a>
-      <a href="#" className="flex items-center gap-2">Chat</a>
+      <Link to="/users" className="flex items-center gap-2">Người dùng</Link>
+      <Link to="/categories" className="flex items-center gap-2">Danh mục</Link>
+      <Link to="/products" className="flex items-center gap-2">Sản phẩm</Link>
+      <Link to="/orders" className="flex items-center gap-2">Đơn hàng</Link>
+      <Link to="/statistics" className="flex items-center gap-2">Thống kê</Link>
+      <Link to="/chat" className="flex items-center gap-2">Chat</Link>
     </nav>
   </div>
 );
