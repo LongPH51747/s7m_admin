@@ -1,0 +1,34 @@
+.tabdraw {
+    width: 200px;
+    background-color: #f7f7f7;
+    height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  
+  .tabdraw ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .tabdraw li {
+    margin: 20px 0;
+    cursor: pointer;
+  }
+  
+  /* Style cho Link */
+  .tabdraw li a {
+    text-decoration: none;         /* Bỏ gạch chân */
+    color: #222;                   /* Màu chữ mặc định */
+    display: block;                /* Để hover cả dòng */
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+  }
+  
+  /* Hover: nền xanh lá mờ ảo */
+  .tabdraw li a:hover {
+    background: rgba(0, 200, 83, 0.12); /* Xanh lá mờ ảo */
+    color: #00994d;                     /* Chữ xanh lá đậm hơn */
+  }
+  

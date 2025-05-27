@@ -1,0 +1,118 @@
+.top-bar {
+    width: 100%;
+    height: 80px;
+    background: #F4EFEF;
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+}
+
+.login-container {
+    display: flex;
+    height: 80vh;
+    background-color: white;
+    padding: 40px 0 0 0;
+    box-sizing: border-box;
+    justify-content: center;
+    align-items: center;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.header {
+    background-color: #F4EFEF;
+    height: 120px;
+    width: 100%;
+}
+
+.login-left {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.logo-image {
+    max-width: 350px;
+    width: auto;
+    height: auto;
+    border-radius: 100%;
+    object-fit: contain;
+    background: white;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+}
+
+.login-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 0 40px;
+    min-width: 350px;
+    max-width: 400px;
+    margin-left: 20px;
+    margin-right: 100px;
+}
+
+.login-right h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #111;
+}
+
+.login-desc {
+    color: #222;
+    font-size: 15px;
+    margin-bottom: 28px;
+}
+
+.login-input {
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    border-radius: 0;
+    font-size: 15px;
+    width: 100%;
+    background: transparent;
+    outline: none;
+    transition: border 0.2s;
+}
+.login-input:focus {
+    border-bottom: 1.5px solid #db4444;
+}
+
+.login-actions {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 32px;
+    margin-top: 10px;
+}
+
+.login-button {
+    background-color: #db4444;
+    color: #fff;
+    padding: 10px 38px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 15px;
+    transition: background 0.2s;
+}
+.login-button:hover {
+    background: #b83232;
+}
+
+.forgot-link {
+    color: #db4444;
+    text-decoration: none;
+    font-size: 13px;
+    margin-left: 10px;
+    transition: text-decoration 0.2s;
+}
+.forgot-link:hover {
+    text-decoration: underline;
+}

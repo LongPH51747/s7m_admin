@@ -1,0 +1,96 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 16px 0;
+  background-color: #fff;
+  font-family: 'Inter', sans-serif;
+  gap: 0;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 800;
+  color: black;
+  margin-left: 60px;
+  margin-right: 80px;
+  letter-spacing: 0.5px;
+}
+
+.logo .bold {
+  font-weight: 800;
+}
+
+.nav {
+  display: flex;
+  gap: 40px;
+  font-size: 16px;
+  font-weight: 600;
+  flex: 1;
+  justify-content: flex-start;
+}
+
+.nav a {
+  text-decoration: none;
+  color: black;
+  padding-bottom: 2px;
+  transition: none;
+}
+
+.nav a.active {
+  border-bottom: 2px solid black;
+  font-weight: 700;
+}
+
+.right-section {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-right: 60px;
+}
+
+.search-container {
+  position: relative;
+  margin-right: 12px;
+}
+
+.search-input {
+  padding: 10px 36px 10px 16px;
+  width: 250px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  background-color: #f6f6f6;
+  color: #333;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+}
+
+.search-input::placeholder {
+  color: #999;
+  font-size: 13px;
+}
+
+.search-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #222;
+  font-size: 18px;
+}
+
+.icon-btn {
+  font-size: 24px;
+  color: #111;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.icon-btn:hover {
+  color: #00994d;
+}
