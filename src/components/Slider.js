@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 
 const Slider = () => {
-  const banners = [
+  const [banners, setBanners] = useState([
     { id: 1, image: `${process.env.PUBLIC_URL}/images/banner1.jpg` },
     { id: 2, image: `${process.env.PUBLIC_URL}/images/banner3.jpg` },
-  ];
+  ]);
 
   const [currentSlide, setCurrentSlide] = useState(0);
+  const fileInputRef = useRef(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -16,6 +17,26 @@ const Slider = () => {
 
     return () => clearInterval(interval);
   }, [banners.length]);
+
+  const handleAddBanner = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setBanners((prevBanners) => [
+          ...prevBanners,
+          { id: Date.now(), image: e.target.result },
+        ]);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveBanner = (id) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa banner này không?")) {
+      setBanners((prevBanners) => prevBanners.filter((banner) => banner.id !== id));
+    }
+  };
 
   return (
     <div className="mt-4">
@@ -34,6 +55,7 @@ const Slider = () => {
               className="object-cover w-full h-full"
             />
             <button
+              onClick={() => handleRemoveBanner(banner.id)}
               className="absolute top-2 right-2 bg-white bg-opacity-70 rounded-full p-1"
               aria-label="Remove banner"
             >
@@ -41,10 +63,21 @@ const Slider = () => {
             </button>
           </div>
         ))}
-        {/* Ô thêm mới sản phẩm với nút cộng lớn và đẹp hơn */}
-        <div className="flex justify-center items-center border-2 border-dashed border-gray-400 rounded-lg text-gray-400 cursor-pointer hover:text-gray-600 hover:border-gray-600 transition w-72 h-44">
+
+        <div
+          className="flex justify-center items-center border-2 border-dashed border-gray-400 rounded-lg text-gray-400 cursor-pointer hover:text-gray-600 hover:border-gray-600 transition w-72 h-44"
+          onClick={() => fileInputRef.current.click()}
+        >
           <span className="text-6xl font-light">+</span>
         </div>
+
+        <input
+          type="file"
+          accept="image/*"
+          ref={fileInputRef}
+          className="hidden"
+          onChange={handleAddBanner}
+        />
       </div>
     </div>
   );
