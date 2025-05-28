@@ -1,40 +1,43 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import axios from 'axios';
 
 const Slider = () => {
-  const [banners, setBanners] = useState([
-    { id: 1, image: `${process.env.PUBLIC_URL}/images/banner1.jpg` },
-    { id: 2, image: `${process.env.PUBLIC_URL}/images/banner3.jpg` },
-  ]);
-
+  const [banners, setBanners] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prevSlide) => (prevSlide + 1) % banners.length);
-    }, 3000);
+    axios.get('http://localhost:5000/banners')
+      .then(res => setBanners(res.data))
+      .catch(err => console.error(err));
+  }, []);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide(prevSlide => (prevSlide + 1) % banners.length);
+    }, 3000);
     return () => clearInterval(interval);
-  }, [banners.length]);
+  }, [banners]);
 
   const handleAddBanner = (event) => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
-        setBanners((prevBanners) => [
-          ...prevBanners,
-          { id: Date.now(), image: e.target.result },
-        ]);
+      reader.onload = async (e) => {
+        const newBanner = { image: e.target.result };
+
+        const response = await axios.post('http://localhost:5000/banners', newBanner);
+        setBanners([...banners, response.data]);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleRemoveBanner = (id) => {
+  const handleRemoveBanner = async (id) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa banner này không?")) {
-      setBanners((prevBanners) => prevBanners.filter((banner) => banner.id !== id));
+      await axios.delete(`http://localhost:5000/banners/${id}`);
+      setBanners(banners.filter(banner => banner.id !== id));
     }
   };
 
@@ -50,7 +53,7 @@ const Slider = () => {
             }`}
           >
             <img
-              src={banner.image}
+              src={banner.image.startsWith('data:image') ? banner.image : `${process.env.PUBLIC_URL}${banner.image}`}
               alt={`banner-${banner.id}`}
               className="object-cover w-full h-full"
             />
