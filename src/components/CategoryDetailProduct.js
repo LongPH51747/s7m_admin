@@ -18,10 +18,10 @@ const statusColors = {
 
 const CategoryDetailProduct = () => {
   const [search, setSearch] = useState('');
-  const [sortAsc, setSortAsc] = useState(true);
+  const [sortAsc, setSortAsc] = useState(false);
 
   const filteredOrders = orders
-    .filter((order) => order.customer.toLowerCase().includes(search.toLowerCase()))
+    .filter((order) => order.code.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
       return sortAsc
         ? new Date(a.date) - new Date(b.date)
@@ -43,12 +43,7 @@ const CategoryDetailProduct = () => {
           />
           <span className="absolute right-3 top-2.5">🔍</span>
         </div>
-        <button
-          onClick={() => setSortAsc(!sortAsc)}
-          className="border rounded px-4 py-2"
-        >
-          Sắp xếp ⬍
-        </button>
+    
       </div>
 
       <div className="border rounded-lg overflow-hidden">

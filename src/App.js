@@ -9,7 +9,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<CategoryAdmin />} />
+        <Route path="/categories" element={<CategoryAdmin />} />
         <Route path="/users" element={<Users />} />
         <Route path="/orders" element={<Orders />} />
         <Route path="/category/:categorySlug" element={<CategoryDetailScreen />} />

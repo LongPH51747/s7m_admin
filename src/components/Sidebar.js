@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 
 const Sidebar = () => (
   <div className="w-1/5 h-screen border-r p-6">
-    <h2 className="font-bold text-xl mb-10">S7M STORE</h2>
     <nav className="flex flex-col gap-6">
       <Link to="/users" className="flex items-center gap-2">Người dùng</Link>
       <Link to="/categories" className="flex items-center gap-2">Danh mục</Link>
