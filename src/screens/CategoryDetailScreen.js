@@ -8,13 +8,18 @@ const CategoryDetailScreen = () => {
   const { categorySlug } = useParams();
 
   return (
-    <div className="flex">
-      <Sidebar />
-      <main className="flex-1 p-6 bg-gray-50 min-h-screen">
-        <Header />
+    <div className="min-h-screen flex flex-col bg-gray-50">
+    <Header />
+  
+    <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+      
+      <main className="flex-1 p-6 overflow-auto">
         <CategoryDetailPage categorySlug={categorySlug} />
       </main>
     </div>
+  </div>
+  
   );
 };
 

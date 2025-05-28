@@ -7,7 +7,7 @@ const productData = {
             id: 1,
             name: 'Claudette corset shirt dress in white',
             price: 79.95,
-            img: '/images/product1.jpg',
+            img: `${process.env.PUBLIC_URL}/images/dresses.jpg`,
           },
           {
             id: 2,
@@ -113,8 +113,8 @@ const CategoryDetailPage = ({ categorySlug }) => {
   const products = productData[categorySlug] || [];
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6">Các sản phẩm của danh mục {categorySlug}</h2>
+    <div>
+      <h2 className="text-2xl font-bold mb-6">Các sản phẩm của danh mục: {categorySlug}</h2>
       <div className="grid grid-cols-5 gap-6">
         {products.map((p) => (
           <div
@@ -149,5 +149,6 @@ const CategoryDetailPage = ({ categorySlug }) => {
     </div>
   );
 };
+
 
 export default CategoryDetailPage;

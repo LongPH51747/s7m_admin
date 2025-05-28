@@ -43,6 +43,34 @@ const sampleUsers = [
     phone: '0987654321',
     address: 'Tiên Nội Duy Tiên Hà Nam',
   },
+  {
+    id: 7,
+    name: 'Đinh Gia Bảo',
+    email: 'bao123@gmail.com',
+    phone: '0987654321',
+    address: 'Tiên Nội Duy Tiên Hà Nam',
+  },
+  {
+    id: 8,
+    name: 'Đinh Gia Bảo',
+    email: 'bao123@gmail.com',
+    phone: '0987654321',
+    address: 'Tiên Nội Duy Tiên Hà Nam',
+  },
+  {
+    id: 9,
+    name: 'Đinh Gia Bảo',
+    email: 'bao123@gmail.com',
+    phone: '0987654321',
+    address: 'Tiên Nội Duy Tiên Hà Nam',
+  },
+  {
+    id: 10,
+    name: 'Đinh Gia Bảo',
+    email: 'bao123@gmail.com',
+    phone: '0987654321',
+    address: 'Tiên Nội Duy Tiên Hà Nam',
+  },
 ];
 
 const CategoryListUser = () => {

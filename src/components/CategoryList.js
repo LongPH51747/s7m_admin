@@ -34,6 +34,10 @@ const CategoryList = () => {
             <p className="mt-2 text-center">{cat.name}</p>
           </div>
         ))}
+        {/* Ô thêm mới sản phẩm */}
+        <div className="flex justify-center items-center border-2 border-dashed border-gray-400 rounded-lg text-5xl text-gray-400 cursor-pointer hover:text-gray-600 hover:border-gray-600 transition">
+          +
+        </div>
       </div>
       <button className="border rounded p-2 mt-6">Xem thêm</button>
     </div>
