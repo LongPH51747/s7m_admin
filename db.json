@@ -34,5 +34,22 @@
       "id": "2",
       "image": "/images/banner3.jpg"
     }
-  ]
+  ],
+  "dresses": [
+    {
+      "id": "cd9f",
+      "name": "váy",
+      "price": 2343,
+      "img": "/images/dresses.jpg"
+    },
+    {
+      "id": "a99f",
+      "name": "cuong",
+      "price": 124142,
+      "img": "blob:http://localhost:3000/4ca33efa-34f1-4440-b81e-ed3f378ae1bb"
+    }
+  ],
+  "tshirt": [],
+  "coats": [],
+  "pajamas": []
 }
