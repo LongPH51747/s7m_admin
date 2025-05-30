@@ -48,7 +48,7 @@
       "id": "1748616916826",
       "name": "ta cuong",
       "price": 12222,
-      "img": "blob:http://localhost:3000/a341d8c1-b28a-4f24-a475-dd50e1c735a7"
+     "img": "/images/tshirt.jpg"
     }
   ],
   "coats": [],

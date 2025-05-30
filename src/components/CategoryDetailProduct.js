@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const orders = [
   { code: 'MDI9303', customer: 'Nguyễn Văn A', date: '2025-05-02', status: 'Thành công' },
@@ -19,6 +20,7 @@ const statusColors = {
 const CategoryDetailProduct = () => {
   const [search, setSearch] = useState('');
   const [sortAsc, setSortAsc] = useState(false);
+  const navigate = useNavigate();
 
   const filteredOrders = orders
     .filter((order) => order.code.toLowerCase().includes(search.toLowerCase()))
@@ -43,7 +45,6 @@ const CategoryDetailProduct = () => {
           />
           <span className="absolute right-3 top-2.5">🔍</span>
         </div>
-    
       </div>
 
       <div className="border rounded-lg overflow-hidden">
@@ -58,7 +59,11 @@ const CategoryDetailProduct = () => {
           </thead>
           <tbody>
             {filteredOrders.map((order, index) => (
-              <tr key={index} className="bg-gray-50 border-b">
+              <tr
+                key={index}
+                className="bg-gray-50 border-b cursor-pointer hover:bg-gray-100"
+                onClick={() => navigate(`/orders/${order.code}`)}
+              >
                 <td className="p-3 font-medium">{order.code}</td>
                 <td className="p-3">{order.customer}</td>
                 <td className="p-3">{order.date}</td>
