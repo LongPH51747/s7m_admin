@@ -16,19 +16,17 @@
     cursor: pointer;
   }
   
-  /* Style cho Link */
   .tabdraw li a {
-    text-decoration: none;         /* Bỏ gạch chân */
-    color: #222;                   /* Màu chữ mặc định */
-    display: block;                /* Để hover cả dòng */
+    text-decoration: none;
+    color: #222;
+    display: block;
     padding: 8px 12px;
     border-radius: 6px;
     transition: background 0.2s, color 0.2s;
   }
   
-  /* Hover: nền xanh lá mờ ảo */
   .tabdraw li a:hover {
-    background: rgba(0, 200, 83, 0.12); /* Xanh lá mờ ảo */
-    color: #00994d;                     /* Chữ xanh lá đậm hơn */
+    background: rgba(0, 200, 83, 0.12);
+    color: #00994d;
   }
   

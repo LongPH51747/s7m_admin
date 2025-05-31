@@ -13,6 +13,8 @@ const TabDraw = () => {
         <li><Link to="/order">📦 Đơn hàng</Link></li>
         <li><Link to="/statistic">📊 Thống kê</Link></li>
         <li><Link to="/chat">💬 Chat</Link></li>
+        <li><Link to="/">🚪 log out</Link></li>
+
       </ul>
     </div>
   );

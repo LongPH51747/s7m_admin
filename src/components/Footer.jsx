@@ -1,4 +1,8 @@
 import React from 'react';
+import ggPlay from '../image/ggPlay.png';
+import appStore from '../image/appStore.png';
+
+
 import '../css/Footer.css';
 
 const Footer = () => (
@@ -42,8 +46,8 @@ const Footer = () => (
                 <div className='footer-apps'>
                     <img src="" alt="QR" className="footer-qr" />
                     <div>
-                        <img src="" alt="Google Play" className="footer-store" />
-                        <img src="" alt="App Store" className="footer-store" />
+                        <img src={ggPlay} alt="Google Play" className="footer-store" />
+                        <img src={appStore} alt="App Store" className="footer-store" />
                     </div>
                 </div>
                 <div className='footer-socials'>

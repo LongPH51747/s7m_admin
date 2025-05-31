@@ -1,0 +1,32 @@
+{
+    "product":[
+        {
+            "id": 1,
+            "name": "Product A",
+            "price": 29.99,
+            "description": "Description for Product A",
+            "category": "Category 1"
+        },
+        {
+            "id": 2,
+            "name": "Product B",
+            "price": 49.99,
+            "description": "Description for Product B",
+            "category": "Category 2"
+        },
+        {
+            "id": 3,
+            "name": "Product C",
+            "price": 19.99,
+            "description": "Description for Product C",
+            "category": "Category 1"
+        }
+    ],
+    "user":[
+        {
+            "id": 1,
+            "name": "John Doe",
+            "email": ""
+        }
+    ]
+}

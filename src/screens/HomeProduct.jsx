@@ -11,8 +11,17 @@ function HomeProduct() {
       <TabBar />
 
       <div className="main-content">
-        <TabDraw />
-        <ProductList />
+        <div className="sidebar">
+          <TabDraw />
+        </div>
+        <div className="product-content">
+          <div className="top-stats">
+            <div className="stat-box">Tổng sản phẩm: <b>1000</b></div>
+            <div className="stat-box">Tổng đơn hàng hôm nay: <b>10</b></div>
+            <div className="stat-box">Doanh thu: <b>2.000.000Đ</b></div>
+          </div>
+          <ProductList />
+        </div>
       </div>
 
       <Footer />

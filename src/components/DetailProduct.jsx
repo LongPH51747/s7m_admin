@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '../css/DetailProduct.css';
-import TopBar from "../components/TopBar";
-import Footer from "../components/Footer";
+import TopBar from "./TopBar";
+import Footer from "./Footer";
 
 const images = [
   "https://watermark.lovepik.com/photo/20211208/large/lovepik-fashionable-womens-clothing-picture_501667331.jpg",

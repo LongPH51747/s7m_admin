@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import "../css/ProductList.css";
 
 const newProducts = [
@@ -104,16 +104,37 @@ const bestSellers = [
 ];
 
 const ProductList = () => {
+  // Tạo ref cho cả hai hàng sản phẩm
+  const newRowRef = useRef(null);
+  const allRowRef = useRef(null);
+
+  useEffect(() => {
+    // Hàm xử lý sự kiện lăn chuột
+    const handleWheel = (rowElement) => (e) => {
+      if (e.deltaY === 0) return;
+      e.preventDefault();
+      rowElement.scrollLeft += e.deltaY;
+    };
+
+    const newRow = newRowRef.current;
+    const allRow = allRowRef.current;
+
+    // Thêm event listener cho cả hai hàng nếu tồn tại
+    if (newRow) newRow.addEventListener("wheel", handleWheel(newRow), { passive: false });
+    if (allRow) allRow.addEventListener("wheel", handleWheel(allRow), { passive: false });
+
+    // Cleanup function để gỡ bỏ event listener khi component unmount
+    return () => {
+      if (newRow) newRow.removeEventListener("wheel", handleWheel(newRow));
+      if (allRow) allRow.removeEventListener("wheel", handleWheel(allRow));
+    };
+  }, []); // Dependency array rỗng nghĩa là effect chỉ chạy 1 lần sau render đầu tiên
+
   return (
     <div className="product-container">
-      <div className="top-stats">
-        <div className="stat-box">Tổng sản phẩm: <b>1000</b></div>
-        <div className="stat-box">Tổng đơn hàng hôm nay: <b>10</b></div>
-        <div className="stat-box">Doanh thu: <b>2.000.000Đ</b></div>
-      </div>
-
       <h2>Sản phẩm mới nhất</h2>
-      <div className="product-row">
+      {/* Gán ref cho hàng "Sản phẩm mới nhất" */}
+      <div className="product-row" ref={newRowRef}>
         {newProducts.map((item, index) => (
           <div key={index} className="card">
             <div className="img-wrapper">
@@ -133,8 +154,10 @@ const ProductList = () => {
         ))}
       </div>
 
-      <h2>Bán chạy nhất</h2>
-      <div className="product-row">
+      {/* <h2>Tất cả</h2> */}
+      {/* Giữ lại nút/link Xem tất cả */}
+      <a href="/ViewAll" className="view-all-button">Xem tất cả</a>
+      <div className="product-row" ref={allRowRef}>
         {bestSellers.map((item, index) => (
           <div key={index} className="card">
             <div className="img-wrapper">

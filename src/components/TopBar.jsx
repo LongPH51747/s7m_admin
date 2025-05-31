@@ -13,7 +13,7 @@ const TopBar = () => {
 
       {/* Navigation */}
       <div className="nav">
-        <Link to="/" className="active">Home</Link>
+        <Link to="/home" className="active">Home</Link>
         <Link to="/contact">Contact</Link>
         <Link to="/about">About</Link>
         <Link to="/signup">Sign Up</Link>
