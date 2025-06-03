@@ -7,7 +7,7 @@ import Orders from './screens/Orders.js';
 import OrderDetail from './screens/OrderDetail.js';
 function App() {
   return (
-    <Router>
+    <Router basename="/LongPH51747/s7m_admin">
       <Routes>
         <Route path="/categories" element={<CategoryAdmin />} />
         <Route path="/users" element={<Users />} />
@@ -15,6 +15,7 @@ function App() {
         <Route path="/category/:categorySlug" element={<CategoryDetailScreen />} />
         <Route path="/orders/:orderCode" element={<OrderDetail />} />
 
+        <Route path="/" element={<CategoryAdmin />} />
       </Routes>
     </Router>
   );

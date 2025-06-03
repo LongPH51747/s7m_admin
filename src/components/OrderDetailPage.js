@@ -1,5 +1,5 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
+// import { useParams } from 'react-router-dom';
 
 const mockOrder = {
   code: 'BH62744',
@@ -21,7 +21,7 @@ const mockOrder = {
 };
 
 const OrderDetailPage = () => {
-  const { orderCode } = useParams();
+  // const { orderCode } = useParams(); 
   const order = mockOrder; // sau này bạn có thể fetch theo orderCode
 
   const total = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);

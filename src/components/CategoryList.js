@@ -3,15 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import { X } from 'lucide-react';
 import axios from 'axios';
 
+const API_BASE = 'https://4775-2405-4803-fdbd-ede0-49a3-c651-a6f1-4e8.ngrok-free.app/api';
+
 const CategoryList = () => {
     const [categories, setCategories] = useState([]);
     const navigate = useNavigate();
     const fileInputRef = useRef(null);
 
     useEffect(() => {
-        axios.get('http://localhost:5000/categories')
-            .then(res => setCategories(res.data))
-            .catch(err => console.log(err));
+        const fetchCategories = async () => {
+            try {
+                const res = await axios.get(`${API_BASE}/category/get-all`);
+                console.log('Category API response:', res.data);
+
+                // Kiểm tra nếu response là mảng hoặc object chứa mảng
+                const data = Array.isArray(res.data) ? res.data : res.data.data || [];
+                setCategories(data);
+            } catch (err) {
+                console.error('Lỗi lấy danh mục:', err);
+                setCategories([]);
+            }
+        };
+        fetchCategories();
     }, []);
 
     const handleClick = (slug) => {
@@ -31,8 +44,12 @@ const CategoryList = () => {
                         src: e.target.result
                     };
 
-                    const response = await axios.post('http://localhost:5000/categories', newCategory);
-                    setCategories([...categories, response.data]);
+                    try {
+                        const response = await axios.post(`${API_BASE}/category/add`, newCategory);
+                        setCategories([...categories, response.data]);
+                    } catch (error) {
+                        console.error('Lỗi thêm danh mục:', error);
+                    }
                 }
             };
             reader.readAsDataURL(file);
@@ -41,8 +58,12 @@ const CategoryList = () => {
 
     const handleRemoveCategory = async (id) => {
         if (window.confirm('Bạn có chắc chắn muốn xóa danh mục này không?')) {
-            await axios.delete(`http://localhost:5000/categories/${id}`);
-            setCategories(categories.filter(cat => cat.id !== id));
+            try {
+                await axios.delete(`${API_BASE}/category/delete/${id}`);
+                setCategories(categories.filter(cat => cat.id !== id));
+            } catch (err) {
+                console.error('Lỗi xóa danh mục:', err);
+            }
         }
     };
 
@@ -50,14 +71,14 @@ const CategoryList = () => {
         <div className="mt-8">
             <h2 className="text-xl font-bold mb-4">Danh mục sản phẩm</h2>
             <div className="grid grid-cols-4 gap-4">
-                {categories.map(cat => (
+                {Array.isArray(categories) && categories.map(cat => (
                     <div
                         key={cat.id}
                         className="border rounded-lg p-2 relative cursor-pointer"
                         onClick={() => handleClick(cat.slug)}
                     >
                         <img
-                            src={cat.src.startsWith('data:image') ? cat.src : `${process.env.PUBLIC_URL}${cat.src}`}
+                            src={cat.src?.startsWith('data:image') ? cat.src : `${process.env.PUBLIC_URL}${cat.src}`}
                             alt={cat.name}
                             className="rounded w-full h-48 object-contain bg-gray-100"
                         />
