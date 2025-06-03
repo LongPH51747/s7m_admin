@@ -1,34 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useOrders } from '../contexts/OrderContext';
 
-const orders = [
-  { code: 'MDI9303', customer: 'Nguyễn Văn A', date: '2025-05-02', status: 'Thành công' },
-  { code: 'BH62744', customer: 'Trần Trương B', date: '2025-03-15', status: 'Đang giao' },
-  { code: 'KH817363', customer: 'Phan Mạnh Q', date: '2025-02-30', status: 'Chờ xác nhận' },
-  { code: 'PJ717284', customer: 'Nguyễn Tuấn H', date: '2025-01-14', status: 'Thành công' },
-  { code: 'UH62735', customer: 'Đàm Vĩnh L', date: '2024-07-22', status: 'Đang giao' },
-  { code: 'AH27362', customer: 'Thích Là Nhích', date: '2023-05-26', status: 'Hoàn hàng' },
-];
+import statusColors from '../utils/StatusColors';
 
-const statusColors = {
-  'Thành công': 'bg-green-200 text-green-800',
-  'Đang giao': 'bg-orange-300 text-white',
-  'Chờ xác nhận': 'bg-yellow-200 text-black',
-  'Hoàn hàng': 'bg-red-600 text-white',
-};
 
 const CategoryDetailProduct = () => {
+  const { orders } = useOrders();
   const [search, setSearch] = useState('');
   const [sortAsc, setSortAsc] = useState(false);
   const navigate = useNavigate();
 
   const filteredOrders = orders
-    .filter((order) => order.code.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => {
-      return sortAsc
-        ? new Date(a.date) - new Date(b.date)
-        : new Date(b.date) - new Date(a.date);
-    });
+    .filter(order => order.code.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) =>
+      sortAsc ? new Date(a.date) - new Date(b.date) : new Date(b.date) - new Date(a.date)
+    );
 
   return (
     <div className="p-6">
@@ -65,12 +52,10 @@ const CategoryDetailProduct = () => {
                 onClick={() => navigate(`/orders/${order.code}`)}
               >
                 <td className="p-3 font-medium">{order.code}</td>
-                <td className="p-3">{order.customer}</td>
+                <td className="p-3">{order.customer?.name}</td>
                 <td className="p-3">{order.date}</td>
                 <td className="p-3">
-                  <span
-                    className={`px-4 py-1 rounded-full font-semibold text-sm ${statusColors[order.status]}`}
-                  >
+                  <span className={`px-4 py-1 rounded-full font-semibold text-sm ${statusColors[order.status]}`}>
                     {order.status}
                   </span>
                 </td>
