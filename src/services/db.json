@@ -1,32 +1,55 @@
 {
-    "product":[
-        {
-            "id": 1,
-            "name": "Product A",
-            "price": 29.99,
-            "description": "Description for Product A",
-            "category": "Category 1"
-        },
-        {
-            "id": 2,
-            "name": "Product B",
-            "price": 49.99,
-            "description": "Description for Product B",
-            "category": "Category 2"
-        },
-        {
-            "id": 3,
-            "name": "Product C",
-            "price": 19.99,
-            "description": "Description for Product C",
-            "category": "Category 1"
-        }
-    ],
-    "user":[
-        {
-            "id": 1,
-            "name": "John Doe",
-            "email": ""
-        }
-    ]
+  "products": [
+    {
+      "ID_Product": 1,
+      "ID_Category": 1,
+      "Image_Cover": "ao_Black_1.jpg",
+      "Name_Product": "Áo thun nam",
+      "Create_AI": "2023-01-01",
+      "Update_AI": "2023-01-05",
+      "description": "Áo thun nam chất liệu cotton",
+      "sold": 100,
+      "rate": 4.5
+    },
+    {
+      "ID_Product": 2,
+      "ID_Category": 1,
+      "Image_Cover": "ao_White_1.jpg",
+      "Name_Product": "Áo sơ mi nữ",
+      "Create_AI": "2023-01-02",
+      "Update_AI": "2023-01-06",
+      "description": "Áo sơ mi nữ dáng dài",
+      "sold": 150,
+      "rate": 4.2
+    }
+  ],
+  "variants": [
+    {
+      "ID_Variant": 1,
+      "ID_Product": 1,
+      "Color": "Trắng",
+      "Size": "M",
+      "Price": 200000,
+      "Amount": 50,
+      "Img": "ao_Black_2.jpg"
+    },
+    {
+      "ID_Variant": 2,
+      "ID_Product": 1,
+      "Color": "Đen",
+      "Size": "L",
+      "Price": 220000,
+      "Amount": 30,
+      "Img": "ao_Black_3.jpg"
+    },
+    {
+      "ID_Variant": 3,
+      "ID_Product": 2,
+      "Color": "Hồng",
+      "Size": "S",
+      "Price": 250000,
+      "Amount": 40,
+      "Img": "ao_White_2.jpg"
+    }
+  ]
 }

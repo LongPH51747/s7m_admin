@@ -2,7 +2,7 @@ import React from 'react';
 import TabBar from '../components/TopBar';
 import Footer from '../components/Footer';
 import TabDraw from '../components/TabDraws';
-import ProductList from '../components/ProductList';
+import ProductList from '../components/HomeProduct';
 import '../css/HomeProduct.css'; // for layout
 
 function HomeProduct() {
