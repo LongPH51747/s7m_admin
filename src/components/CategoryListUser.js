@@ -1,81 +1,30 @@
-import React, { useState } from 'react';
-
-const sampleUsers = [
-  {
-    id: 1,
-    name: 'Đinh Gia Bảo',
-    email: 'bao123@gmail.com',
-    phone: '0987654321',
-    address: 'Tiên Nội Duy Tiên Hà Nam',
-  },
-  {
-    id: 2,
-    name: 'Lê Thành Long',
-    email: 'longden@gmail.com',
-    phone: '0987654321',
-    address: 'Hà Đông - Hà Nội',
-  },
-  {
-    id: 3,
-    name: 'Hạ Việt Hải',
-    email: 'haiviet@gmail.com',
-    phone: '0987654321',
-    address: 'Chương Mỹ - Hà Nội',
-  },
-  {
-    id: 4,
-    name: 'Đinh Tiến Đạt',
-    email: 'datAnCut@gmail.com',
-    phone: '0987654321',
-    address: 'Tiên Nội Duy Tiên Hà Nam',
-  },
-  {
-    id: 5,
-    name: 'Hoàng Thùy Linh',
-    email: 'linhthuy@gmail.com',
-    phone: '0987654321',
-    address: 'Tiên Nội Duy Tiên Hà Nam',
-  },
-  {
-    id: 6,
-    name: 'Đinh Gia Bảo',
-    email: 'bao123@gmail.com',
-    phone: '0987654321',
-    address: 'Tiên Nội Duy Tiên Hà Nam',
-  },
-  {
-    id: 7,
-    name: 'Đinh Gia Bảo',
-    email: 'bao123@gmail.com',
-    phone: '0987654321',
-    address: 'Tiên Nội Duy Tiên Hà Nam',
-  },
-  {
-    id: 8,
-    name: 'Đinh Gia Bảo',
-    email: 'bao123@gmail.com',
-    phone: '0987654321',
-    address: 'Tiên Nội Duy Tiên Hà Nam',
-  },
-  {
-    id: 9,
-    name: 'Đinh Gia Bảo',
-    email: 'bao123@gmail.com',
-    phone: '0987654321',
-    address: 'Tiên Nội Duy Tiên Hà Nam',
-  },
-  {
-    id: 10,
-    name: 'Đinh Gia Bảo',
-    email: 'bao123@gmail.com',
-    phone: '0987654321',
-    address: 'Tiên Nội Duy Tiên Hà Nam',
-  },
-];
+import React, { useState, useEffect } from 'react';
+import { getAllUsers } from '../services/userServices';
 
 const CategoryListUser = () => {
+  const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
   const [blockedUsers, setBlockedUsers] = useState({});
+
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const data = await getAllUsers();
+        setUsers(data);
+
+        // Khởi tạo trạng thái chặn theo is_allowed
+        const initialBlocked = {};
+        data.forEach(user => {
+          initialBlocked[user._id] = !user.is_allowed; 
+        });
+        setBlockedUsers(initialBlocked);
+      } catch (error) {
+        console.error('Lỗi khi lấy danh sách người dùng:', error);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   const handleSearchChange = (e) => {
     setSearch(e.target.value);
@@ -95,8 +44,9 @@ const CategoryListUser = () => {
     }
   };
 
-  const filteredUsers = sampleUsers.filter((user) =>
-    user.name.toLowerCase().includes(search.toLowerCase())
+  // Lọc người dùng theo họ tên
+  const filteredUsers = users.filter((user) =>
+    user.fullname?.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -104,13 +54,12 @@ const CategoryListUser = () => {
       <h1 className="text-xl font-semibold mb-6">Quản lý người dùng</h1>
 
       <div className="flex justify-end gap-4 mb-4">
-        <button className="bg-gray-200 px-4 py-2 rounded">Top 10</button>
         <div className="relative">
           <input
             type="text"
             value={search}
             onChange={handleSearchChange}
-            placeholder="Tìm kiếm"
+            placeholder="Tìm kiếm theo họ tên"
             className="border rounded px-3 py-2 pr-10"
           />
           <span className="absolute right-3 top-2.5">🔍</span>
@@ -120,7 +69,8 @@ const CategoryListUser = () => {
       <table className="w-full table-auto border-collapse">
         <thead>
           <tr className="bg-gray-100 text-left">
-            <th className="p-3 border">Name</th>
+            <th className="p-3 border">Họ và tên</th>
+            <th className="p-3 border">Tên người dùng</th>
             <th className="p-3 border">Email</th>
             <th className="p-3 border">SĐT</th>
             <th className="p-3 border">Địa chỉ</th>
@@ -129,35 +79,28 @@ const CategoryListUser = () => {
         </thead>
         <tbody>
           {filteredUsers.map((user) => {
-            const isBlocked = blockedUsers[user.id];
+            const isBlocked = blockedUsers[user._id];
             return (
               <tr
-                key={user.id}
-                className={`border-b transition-opacity duration-300 ${isBlocked ? 'opacity-50' : 'opacity-100'
-                  }`}
+                key={user._id}
+                className={`border-b transition-opacity duration-300 ${isBlocked ? 'opacity-50' : 'opacity-100'}`}
               >
-                <td className={`p-3 border ${!isBlocked ? 'font-semibold' : 'font-normal'}`}>
-                  {user.name}
-                </td>
-                <td className={`p-3 border ${!isBlocked ? 'font-semibold' : 'font-normal'}`}>
-                  {user.email}
-                </td>
-                <td className={`p-3 border ${!isBlocked ? 'font-semibold' : 'font-normal'}`}>
-                  {user.phone}
-                </td>
-                <td className={`p-3 border ${!isBlocked ? 'font-semibold' : 'font-normal'}`}>
-                  {user.address}
-                </td>
+                <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>{user.fullname}</td>
+                <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>{user.username}</td>
+                <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>{user.email}</td>
+                <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>{user.telephone}</td>
+                <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>N/A</td>
                 <td className="p-3 border text-center">
                   <input
                     type="checkbox"
                     checked={!!isBlocked}
-                    onChange={() => handleBlockToggle(user.id)}
+                    onChange={() => handleBlockToggle(user._id)}
                   />
                 </td>
               </tr>
-
             );
+
+
           })}
         </tbody>
       </table>
