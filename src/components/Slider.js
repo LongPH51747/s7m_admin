@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
-import axios from 'axios';
+import {
+  getAllBanners,
+  addBanner,
+  deleteBannerById
+} from '../services/bannerService';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
-const API_BASE_URL = 'https://4775-2405-4803-fdbd-ede0-49a3-c651-a6f1-4e8.ngrok-free.app/api/banner';
 
 const Slider = () => {
   const [banners, setBanners] = useState([]);
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [showAll, setShowAll] = useState(false); // ✅ trạng thái hiển thị đầy đủ
   const fileInputRef = useRef(null);
 
-  // Sửa lỗi: Kiểm tra kiểu dữ liệu an toàn
   const formatBase64 = (base64, type = 'image/png') => {
     if (!base64 || typeof base64 !== 'string') return '';
     return base64.startsWith('data:image')
@@ -18,29 +21,23 @@ const Slider = () => {
   };
 
   useEffect(() => {
-    axios.get(`${API_BASE_URL}/get-all-banner`)
-      .then(res => {
-        const data = Array.isArray(res.data) ? res.data : res.data.data || [];
-
-        const formatted = data.map(b => ({
+    const fetchData = async () => {
+      try {
+        const data = await getAllBanners();
+        const array = Array.isArray(data) ? data : data.data || [];
+        const formatted = array.map(b => ({
           ...b,
           banner_image_base64: formatBase64(b.banner_image_base64, b.banner_image_type)
         }));
-
         setBanners(formatted);
-      })
-      .catch(err => {
+      } catch (err) {
         console.error('GET error:', err);
         setBanners([]);
-      });
-  }, []);
+      }
+    };
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide(prev => (banners.length ? (prev + 1) % banners.length : 0));
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [banners]);
+    fetchData();
+  }, []);
 
   const handleAddBanner = (event) => {
     const file = event.target.files[0];
@@ -57,10 +54,11 @@ const Slider = () => {
         banner_image_type: file.type
       };
 
-      try {
-        const res = await axios.post(`${API_BASE_URL}/add-banner`, newBanner);
-        const newItem = res.data;
+      const isConfirmed = window.confirm('Bạn có muốn thêm banner không?');
+      if (!isConfirmed) return;
 
+      try {
+        const newItem = await addBanner(newBanner);
         setBanners(prev => [
           ...prev,
           {
@@ -68,6 +66,7 @@ const Slider = () => {
             banner_image_base64: formatBase64(newItem.banner_image_base64, newItem.banner_image_type)
           }
         ]);
+        window.location.reload();
       } catch (error) {
         console.error('POST error:', error);
       }
@@ -80,22 +79,44 @@ const Slider = () => {
     if (!window.confirm('Bạn có chắc muốn xóa banner này không?')) return;
 
     try {
-      await axios.delete(`${API_BASE_URL}/delete-banner-by-id/id/${id}`);
+      await deleteBannerById(id);
       setBanners(prev => prev.filter(b => b._id !== id));
     } catch (err) {
       console.error('DELETE error:', err);
     }
   };
+
+  const visibleBanners = showAll ? banners : banners.slice(0, 3); // ✅ chỉ hiện 3 nếu chưa mở rộng
+
   return (
     <div className="mt-4">
-      <h2 className="text-xl font-bold mb-4">Danh mục Banner</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">Danh mục Banner</h2>
+        {banners.length > 3 && !showAll && (
+  <button
+    onClick={() => setShowAll(true)}
+    className="flex items-center gap-2 px-3 py-1 text-sm font-medium text-white bg-blue-500 rounded-full hover:bg-blue-600 shadow"
+  >
+    <ChevronDown size={16} /> Xem thêm
+  </button>
+)}
+
+{showAll && (
+  <button
+    onClick={() => setShowAll(false)}
+    className="flex items-center gap-2 px-3 py-1 text-sm font-medium text-white bg-red-500 rounded-full hover:bg-red-600 shadow"
+  >
+    <ChevronUp size={16} /> Thu gọn
+  </button>
+)}
+
+      </div>
+
       <div className="flex flex-wrap gap-4">
-        {banners.map((banner, index) => (
+        {visibleBanners.map((banner) => (
           <div
-          key={banner._id}
-            className={`relative w-72 h-44 rounded-md overflow-hidden shadow-md transition-opacity duration-500 ${
-              index === currentSlide ? 'opacity-100' : 'opacity-50'
-            }`}
+            key={banner._id}
+            className="relative w-72 h-44 rounded-md overflow-hidden shadow-md opacity-100"
           >
             <img
               src={banner.banner_image_url}

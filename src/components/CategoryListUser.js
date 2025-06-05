@@ -82,10 +82,17 @@ const CategoryListUser = () => {
   };
 
   const handleBlockToggle = (id) => {
-    setBlockedUsers((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
+    const isCurrentlyBlocked = blockedUsers[id];
+    const confirmMessage = isCurrentlyBlocked
+      ? 'Bạn có chắc chắn muốn bỏ chặn người này không?'
+      : 'Bạn có chắc chắn muốn chặn người này không?';
+
+    if (window.confirm(confirmMessage)) {
+      setBlockedUsers((prev) => ({
+        ...prev,
+        [id]: !prev[id],
+      }));
+    }
   };
 
   const filteredUsers = sampleUsers.filter((user) =>
@@ -121,21 +128,37 @@ const CategoryListUser = () => {
           </tr>
         </thead>
         <tbody>
-          {filteredUsers.map((user) => (
-            <tr key={user.id} className="border-b">
-              <td className="p-3 border">{user.name}</td>
-              <td className="p-3 border">{user.email}</td>
-              <td className="p-3 border">{user.phone}</td>
-              <td className="p-3 border">{user.address}</td>
-              <td className="p-3 border text-center">
-                <input
-                  type="checkbox"
-                  checked={!!blockedUsers[user.id]}
-                  onChange={() => handleBlockToggle(user.id)}
-                />
-              </td>
-            </tr>
-          ))}
+          {filteredUsers.map((user) => {
+            const isBlocked = blockedUsers[user.id];
+            return (
+              <tr
+                key={user.id}
+                className={`border-b transition-opacity duration-300 ${isBlocked ? 'opacity-50' : 'opacity-100'
+                  }`}
+              >
+                <td className={`p-3 border ${!isBlocked ? 'font-semibold' : 'font-normal'}`}>
+                  {user.name}
+                </td>
+                <td className={`p-3 border ${!isBlocked ? 'font-semibold' : 'font-normal'}`}>
+                  {user.email}
+                </td>
+                <td className={`p-3 border ${!isBlocked ? 'font-semibold' : 'font-normal'}`}>
+                  {user.phone}
+                </td>
+                <td className={`p-3 border ${!isBlocked ? 'font-semibold' : 'font-normal'}`}>
+                  {user.address}
+                </td>
+                <td className="p-3 border text-center">
+                  <input
+                    type="checkbox"
+                    checked={!!isBlocked}
+                    onChange={() => handleBlockToggle(user.id)}
+                  />
+                </td>
+              </tr>
+
+            );
+          })}
         </tbody>
       </table>
     </div>

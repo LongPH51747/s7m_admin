@@ -1,118 +1,153 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X } from 'lucide-react';
-import axios from 'axios';
-
-const API_BASE = 'https://4775-2405-4803-fdbd-ede0-49a3-c651-a6f1-4e8.ngrok-free.app/api';
+import { X, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  getAllCategories,
+  addCategory,
+  deleteCategory
+} from '../services/categoryService';
 
 const CategoryList = () => {
-    const [categories, setCategories] = useState([]);
-    const navigate = useNavigate();
-    const fileInputRef = useRef(null);
+  const [categories, setCategories] = useState([]);
+  const [showAll, setShowAll] = useState(false); // ✅ Trạng thái xem thêm
+  const fileInputRef = useRef(null);
+  const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchCategories = async () => {
-            try {
-                const res = await axios.get(`${API_BASE}/category/get-all`);
-                console.log('Category API response:', res.data);
-
-                // Kiểm tra nếu response là mảng hoặc object chứa mảng
-                const data = Array.isArray(res.data) ? res.data : res.data.data || [];
-                setCategories(data);
-            } catch (err) {
-                console.error('Lỗi lấy danh mục:', err);
-                setCategories([]);
-            }
-        };
-        fetchCategories();
-    }, []);
-
-    const handleClick = (slug) => {
-        navigate(`/category/${slug}`);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const data = await getAllCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error('Lỗi khi lấy danh mục:', error);
+        setCategories([]);
+      }
     };
 
-    const handleAddCategory = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                const newCategoryName = prompt('Tên danh mục sản phẩm mới:');
-                if (newCategoryName) {
-                    const newCategory = {
-                        slug: newCategoryName.toLowerCase(),
-                        name: newCategoryName,
-                        src: e.target.result
-                    };
+    fetchCategories();
+  }, []);
 
-                    try {
-                        const response = await axios.post(`${API_BASE}/category/add`, newCategory);
-                        setCategories([...categories, response.data]);
-                    } catch (error) {
-                        console.error('Lỗi thêm danh mục:', error);
-                    }
-                }
-            };
-            reader.readAsDataURL(file);
-        }
+  const handleAddCategory = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const name = prompt('Nhập tên danh mục mới:');
+      if (!name) return;
+
+      const isDuplicate = categories.some(
+        cat => cat.category_name.toLowerCase().trim() === name.toLowerCase().trim()
+      );
+
+      if (isDuplicate) {
+        alert('Tên danh mục đã tồn tại!');
+        return;
+      }
+
+      const newCategory = {
+        category_name: name.trim(),
+        category_image: e.target.result,
+      };
+
+      try {
+        const added = await addCategory(newCategory);
+        setCategories(prev => [...prev, added]);
+      } catch (error) {
+        console.error('Lỗi khi thêm danh mục:', error);
+      }
     };
 
-    const handleRemoveCategory = async (id) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa danh mục này không?')) {
-            try {
-                await axios.delete(`${API_BASE}/category/delete/${id}`);
-                setCategories(categories.filter(cat => cat.id !== id));
-            } catch (err) {
-                console.error('Lỗi xóa danh mục:', err);
-            }
-        }
-    };
+    reader.readAsDataURL(file);
+  };
 
-    return (
-        <div className="mt-8">
-            <h2 className="text-xl font-bold mb-4">Danh mục sản phẩm</h2>
-            <div className="grid grid-cols-4 gap-4">
-                {Array.isArray(categories) && categories.map(cat => (
-                    <div
-                        key={cat.id}
-                        className="border rounded-lg p-2 relative cursor-pointer"
-                        onClick={() => handleClick(cat.slug)}
-                    >
-                        <img
-                            src={cat.src?.startsWith('data:image') ? cat.src : `${process.env.PUBLIC_URL}${cat.src}`}
-                            alt={cat.name}
-                            className="rounded w-full h-48 object-contain bg-gray-100"
-                        />
-                        <button
-                            className="absolute top-1 right-1 text-red-600 font-bold"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleRemoveCategory(cat.id);
-                            }}
-                        >
-                            <X size={16} />
-                        </button>
-                        <p className="mt-2 text-center">{cat.name}</p>
-                    </div>
-                ))}
+  const handleRemoveCategory = async (id, e) => {
+    e.stopPropagation();
+    const confirm = window.confirm('Bạn có chắc chắn muốn xóa danh mục này không?');
+    if (!confirm) return;
 
-                <div
-                    className="flex justify-center items-center border-2 border-dashed border-gray-400 rounded-lg text-5xl text-gray-400 cursor-pointer hover:text-gray-600 hover:border-gray-600 transition"
-                    onClick={() => fileInputRef.current.click()}
-                >
-                    +
-                </div>
+    try {
+      await deleteCategory(id);
+      setCategories(prev => prev.filter(cat => cat._id !== id));
+    } catch (error) {
+      console.error('Lỗi khi xóa danh mục:', error);
+    }
+  };
 
-                <input
-                    type="file"
-                    accept="image/*"
-                    ref={fileInputRef}
-                    className="hidden"
-                    onChange={handleAddCategory}
-                />
-            </div>
-            <button className="border rounded p-2 mt-6">Xem thêm</button>
+  const handleClick = (slugSource) => {
+    const slug = slugSource.toLowerCase().replace(/\s+/g, '-');
+    navigate(`/category/${slug}`);
+  };
+
+  const visibleCategories = showAll ? categories : categories.slice(0, 4); // ✅ Hiển thị 4 danh mục ban đầu
+
+  return (
+  <div className="mt-8">
+    {/* Tiêu đề và nút cùng dòng */}
+    <div className="flex justify-between items-center mb-4">
+      <h2 className="text-xl font-bold">Danh mục sản phẩm</h2>
+
+      {categories.length > 4 && (
+        <button
+          onClick={() => setShowAll(prev => !prev)}
+          className={`flex items-center gap-2 px-3 py-1 text-sm font-medium text-white rounded-full shadow transition
+            ${showAll ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-500 hover:bg-blue-600'}`}
+        >
+          {showAll ? (
+            <>
+              <ChevronUp size={16} /> Thu gọn
+            </>
+          ) : (
+            <>
+              <ChevronDown size={16} /> Xem thêm
+            </>
+          )}
+        </button>
+      )}
+    </div>
+
+    {/* Danh sách danh mục */}
+    <div className="grid grid-cols-4 gap-4">
+      {visibleCategories.map(cat => (
+        <div
+          key={cat._id}
+          className="border rounded-lg p-2 relative cursor-pointer"
+          onClick={() => handleClick(cat.category_name)}
+        >
+          <img
+            src={cat.category_image}
+            alt={cat.category_name}
+            className="rounded w-full h-48 object-contain bg-gray-100"
+          />
+          <button
+            onClick={(e) => handleRemoveCategory(cat._id, e)}
+            className="absolute top-1 right-1 text-red-600 font-bold"
+          >
+            <X size={16} />
+          </button>
+          <p className="mt-2 text-center">{cat.category_name}</p>
         </div>
-    );
+      ))}
+
+      {/* Thêm danh mục */}
+      <div
+        className="flex justify-center items-center border-2 border-dashed border-gray-400 rounded-lg text-5xl text-gray-400 cursor-pointer hover:text-gray-600 hover:border-gray-600 transition"
+        onClick={() => fileInputRef.current.click()}
+      >
+        +
+      </div>
+
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef}
+        className="hidden"
+        onChange={handleAddCategory}
+      />
+    </div>
+  </div>
+);
+
 };
 
 export default CategoryList;
