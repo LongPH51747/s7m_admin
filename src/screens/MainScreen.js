@@ -19,7 +19,7 @@ const MainScreen = () => {
             }}
           ></div>
         </div>
-        <div style={{width: "100%"}}>
+        <div style={{width: '100%'}}>
           <StatisticsDashboard></StatisticsDashboard>
         </div>
       </div>

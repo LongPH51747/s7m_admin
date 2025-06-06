@@ -4,7 +4,6 @@ import { parseDate } from "../untils";
 
 // Trạng thái đơn hàng được tính vào doanh thu
 const REVENUE_GENERATING_STATUSES = ["đã giao"]; // QUAN TRỌNG: Xác nhận lại!
-
 export const response = await axios.get("http://192.168.1.9:3001/order");
 const allOrders = response.data; // Giả lập
 // Lấy các đơn hàng hợp lệ để tính doanh thu
