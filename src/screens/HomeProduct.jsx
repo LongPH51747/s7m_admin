@@ -2,7 +2,7 @@ import React from 'react';
 import TabBar from '../components/TopBar';
 import Footer from '../components/Footer';
 import TabDraw from '../components/TabDraws';
-import ProductList from '../components/HomeProduct';
+import ProductItem from '../components/ProductItem';
 import '../css/HomeProduct.css'; // for layout
 
 function HomeProduct() {
@@ -20,7 +20,7 @@ function HomeProduct() {
             <div className="stat-box">Tổng đơn hàng hôm nay: <b>10</b></div>
             <div className="stat-box">Doanh thu: <b>2.000.000Đ</b></div>
           </div>
-          <ProductList />
+          <ProductItem />
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 import React from 'react'
 import TopBar from '../components/TopBar'
 import TabDraw from '../components/TabDraws'
-import ProductList from '../components/ProductList'
+import ProductItem from '../components/ProductItem'
 import Footer from '../components/Footer'
 import "../css/ProductScreen.css";
 
@@ -19,7 +19,7 @@ const ProductScreen = () => {
                     <div className='button-add'>
                         <button className='btn-add-product'>Thêm sản phẩm</button>
                     </div>
-                    <ProductList/>
+                    <ProductItem/>
                 </div>
             </div>
         </div>

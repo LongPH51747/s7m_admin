@@ -1,6 +1,6 @@
 import React from 'react';
-import ggPlay from '../components/image/ggPlay.png';
-import appStore from '../components/image/appStore.png';
+import ggPlay from '../image/ggPlay.png';
+import appStore from '../image/appStore.png';
 
 
 import '../css/Footer.css';
