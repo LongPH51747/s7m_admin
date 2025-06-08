@@ -4,6 +4,7 @@ import LoginPage from "./screens/LoginPage.jsx";
 import HomeProduct from "./screens/HomeProduct.jsx";
 import DetailProduct from "./screens/DetailProduct.jsx";
 import ProductScreen from "./screens/ProductScreen.jsx";
+import AddProduct from './screens/AddProduct';
 import React from "react";
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
         <Route path="/home" element={<HomeProduct />} />
         <Route path="/product/:id" element={<DetailProduct />} />
         <Route path="/product" element={<ProductScreen/>} />
+        <Route path="/add-product" element={<AddProduct />} />
       </Routes>
     </Router>
   );
