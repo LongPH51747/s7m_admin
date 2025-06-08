@@ -1,0 +1,92 @@
+/* src/components/LoginForm.css */
+/* Login Section */
+.login-section {
+    background-color: #fff;
+    padding: 40px 60px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 450px;
+    width: 100%;
+}
+
+.logo img {
+    max-width: 180px; /* Adjust logo size */
+    margin-bottom: 30px;
+}
+
+.login-form-container h2 {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+.login-form-container p {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 30px;
+}
+
+.input-group {
+    text-align: left;
+    margin-bottom: 20px;
+}
+
+.input-group label {
+    display: block;
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 8px;
+}
+
+.input-group input {
+    width: calc(100% - 20px); /* Account for padding */
+    padding: 12px 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    box-sizing: border-box; /* Include padding in width */
+}
+
+.input-group input:focus {
+    border-color: #a0a0a0;
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.login-button {
+    width: 100%;
+    padding: 14px;
+    background-color: #E74C3C; /* Màu đỏ tương tự trong ảnh */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-bottom: 15px;
+}
+
+.login-button:hover {
+    background-color: #c0392b;
+}
+
+.forgot-password {
+    display: block;
+    font-size: 14px;
+    color: #E74C3C; /* Màu đỏ */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.forgot-password:hover {
+    color: #c0392b;
+    text-decoration: underline;
+}
+
+.error-message {
+    color: #e74c3c;
+    font-size: 14px;
+    margin-bottom: 15px;
+}

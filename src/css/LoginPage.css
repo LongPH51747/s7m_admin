@@ -1,0 +1,63 @@
+/* src/pages/LoginPage.css */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0; /* Light background for the page */
+}
+
+.login-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Đảm bảo trang chiếm toàn bộ chiều cao màn hình */
+}
+
+.login-wrapper { /* <-- CONTAINER MỚI BAO QUANH LOGO VÀ FORM */
+    flex: 1; /* Cho phép container này mở rộng, đẩy footer xuống dưới */
+    display: flex; /* Dùng Flexbox */
+    justify-content: center; /* Căn giữa theo chiều ngang */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    padding: 20px;
+    gap: 50px; /* Khoảng cách giữa logo và form */
+    max-width: 1000px; /* Giới hạn chiều rộng tổng thể của khối login */
+    margin: auto; /* Căn giữa khối login trên trang */
+}
+
+/* Các phần tử bên trong login-wrapper */
+.login-logo-section { /* <-- Đây sẽ là phần chứa logo */
+    flex-shrink: 0; /* Không cho phép co lại */
+    text-align: center;
+}
+
+.login-logo-section img {
+    max-width: 500px; /* Điều chỉnh kích thước logo */
+    height: 500px;
+}
+
+.login-form-container-wrapper { /* <-- Đây sẽ là phần bao quanh form đăng nhập */
+    flex-grow: 1; /* Cho phép form mở rộng */
+    max-width: 450px; /* Giới hạn chiều rộng của form (tương tự LoginForm.css) */
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 992px) { /* Khi màn hình nhỏ hơn, chuyển sang bố cục cột */
+    .login-wrapper {
+        flex-direction: column; /* Đặt logo và form thành cột */
+        gap: 30px; /* Giảm khoảng cách */
+    }
+
+    .login-logo-section img {
+        max-width: 200px; /* Logo nhỏ hơn trên mobile */
+    }
+
+    .login-form-container-wrapper {
+        max-width: 400px; /* Điều chỉnh lại chiều rộng form */
+    }
+}
+
+@media (max-width: 768px) {
+    .login-wrapper {
+        padding: 15px;
+    }
+}   
