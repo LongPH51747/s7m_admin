@@ -10,9 +10,14 @@ import {
   CircularProgress,
   Rating,
   IconButton,
+  Container,
 } from "@mui/material";
 import { Select as AntSelect } from "antd";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
+import TopBar from "../components/TopBar";
+import Footer from "../components/Footer";
+import TabDraws from "../components/TabDraws";
+import '../css/DetailProduct.css';
 
 const formatImageData = (variant) => {
   console.log('Formatting image data for variant:', variant);
@@ -84,7 +89,7 @@ const ProductDetail = () => {
       setLoading(true);
       setError('');
       try {
-        const response = await axios.get(`https://0185-2405-4802-21f-72d0-c451-84e5-9b5b-457a.ngrok-free.app/api/products/get-products-by-id/id/${id}`, {
+        const response = await axios.get(`/api/products/get-products-by-id/id/${id}`, {
           headers: {
             'ngrok-skip-browser-warning': 'true'
           }
@@ -243,261 +248,293 @@ const ProductDetail = () => {
     // Thêm logic gọi API ở đây
   };
 
-  if (loading) {
-    return <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh' }}><CircularProgress /></Box>;
-  }
+  const mainContent = (
+    <Container className="main-container">
+      <Box className="title-section">
+        <Typography variant="h4" component="h1" className="page-title">
+          Chi tiết sản phẩm
+        </Typography>
+      </Box>
 
-  if (error) {
-    return <Typography variant="h6" color="error" sx={{ textAlign: 'center', mt: 4 }}>{error}</Typography>;
-  }
+      {product && (
+        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }} className="product-grid">
+          {/* Phần hình ảnh sản phẩm */}
+          <Grid item xs={12} md={6}>
+            <Box className="image-container">
+              <img
+                src={currentImage}
+                alt={product?.product_name || 'Product Image'}
+                className="product-image"
+              />
+              
+              {/* Navigation Arrows */}
+              {productImages.length > 1 && (
+                <>
+                  <IconButton
+                    className="arrow-button"
+                    onClick={() => setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? productImages.length - 1 : prevIndex - 1))}
+                  >
+                    <ArrowBackIos />
+                  </IconButton>
+                  <IconButton
+                    className="arrow-button"
+                    onClick={() => setCurrentImageIndex((prevIndex) => (prevIndex === productImages.length - 1 ? 0 : prevIndex + 1))}
+                  >
+                    <ArrowForwardIos />
+                  </IconButton>
+                  
+                  {/* Dot Indicators */}
+                  <Box className="dot-indicators">
+                    {productImages.map((_, index) => (
+                      <Box
+                        key={index}
+                        className={`dot ${currentImageIndex === index ? 'active' : ''}`}
+                        onClick={() => setCurrentImageIndex(index)}
+                      />
+                    ))}
+                  </Box>
+                </>
+              )}
+            </Box>
 
-  if (!product) {
-    return <Typography variant="h6" sx={{ textAlign: 'center', mt: 4 }}>Không tìm thấy sản phẩm</Typography>;
-  }
-
-  return (
-    <Box sx={{ padding: 3, maxWidth: 1200, margin: 'auto' }}>
-      <Grid container spacing={4}>
-        <Grid item xs={12} md={6}>
-          <Box sx={{
-            position: 'relative',
-            width: '250px',  // Set fixed width
-            height: '250px', // Set fixed height
-            backgroundColor: '#f5f5f5',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            border: '1px solid #e0e0e0',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            margin: 'auto', // Center the box
-          }}>
-            <img
-              src={currentImage}
-              alt={product.product_name}
-              style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '250px',  // Set fixed width
-                height: '250px', // Set fixed height
-                objectFit: 'contain', // Changed to contain to prevent image distortion
-              }}
-            />
-            
-            {/* Navigation Arrows - Adjusted positions */}
-            {productImages.length > 1 && (
-              <>
-                <IconButton
-                  sx={{
-                    position: 'absolute',
-                    left: 8,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    bgcolor: 'rgba(255,255,255,0.7)',
-                    '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
-                    zIndex: 1, // Ensure arrows are above image
-                  }}
-                  onClick={() => setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? productImages.length - 1 : prevIndex - 1))}
+            {/* Thumbnail Gallery */}
+            <Box className="thumbnail-gallery">
+              {productImages.map((image, index) => (
+                <Box
+                  key={index}
+                  className={`thumbnail ${currentImageIndex === index ? 'active' : ''}`}
+                  onClick={() => setCurrentImageIndex(index)}
                 >
-                  <ArrowBackIos />
-                </IconButton>
-                <IconButton
-                  sx={{
-                    position: 'absolute',
-                    right: 8,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    bgcolor: 'rgba(255,255,255,0.7)',
-                    '&:hover': { bgcolor: 'rgba(255,255,255,0.9)' },
-                    zIndex: 1, // Ensure arrows are above image
-                  }}
-                  onClick={() => setCurrentImageIndex((prevIndex) => (prevIndex === productImages.length - 1 ? 0 : prevIndex + 1))}
-                >
-                  <ArrowForwardIos />
-                </IconButton>
-                
-                {/* Dot Indicators - Adjusted position */}
-                <Box sx={{
-                  position: 'absolute',
-                  bottom: 16,
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  display: 'flex',
-                  gap: 1,
-                  zIndex: 1, // Ensure dots are above image
-                }}>
-                  {productImages.map((_, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: '50%',
-                        bgcolor: currentImageIndex === index ? '#db4444' : 'rgba(0,0,0,0.5)',
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => setCurrentImageIndex(index)}
-                    />
+                  <img
+                    src={image}
+                    alt={`Thumbnail ${index + 1}`}
+                  />
+                </Box>
+              ))}
+            </Box>
+          </Grid>
+          
+          {/* Phần thông tin sản phẩm */}
+          <Grid item xs={12} md={6}>
+            <Box className="product-info">
+              <Typography variant="h4" component="h1" className="product-name">
+                {product.product_name}
+              </Typography>
+              
+              <Box className="rating-container">
+                <Rating name="product-rating" value={4} precision={0.5} readOnly />
+                <Typography variant="body2" className="rating-text">
+                  (150 Đánh giá)
+                </Typography>
+              </Box>
+              
+              <Typography
+                variant="h5"
+                className="price"
+              >
+                {currentPrice.toLocaleString('vi-VN')} VND
+              </Typography>
+              
+              <Box className="color-container">
+                <Typography variant="subtitle1" className="label">
+                  Màu sắc
+                </Typography>
+                <Box className="color-options">
+                  {availableColors.map((color) => (
+                    <Button
+                      key={color}
+                      className={`color-button ${selectedColor === color ? 'selected' : ''}`}
+                      onClick={() => setSelectedColor(color)}
+                    >
+                      {color}
+                    </Button>
                   ))}
                 </Box>
-              </>
-            )}
-          </Box>
-        </Grid>
-        
-        <Grid item xs={12} md={6}>
-          <Typography variant="h4" component="h1" gutterBottom>
-            {product.product_name}
-          </Typography>
-          
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Rating name="product-rating" value={4} precision={0.5} readOnly /> {/* Giá trị cứng 4 sao, có thể thay đổi */} 
-            <Typography variant="body2" sx={{ ml: 1 }}> (150 Reviews)</Typography>
-          </Box>
-          
-          <Typography variant="h5" color="text.secondary" sx={{ mb: 2 }}>
-            {currentPrice.toLocaleString('vi-VN')}VND
-          </Typography>
-          
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-              Màu sắc
-            </Typography>
-            <AntSelect
-              value={selectedColor}
-              onChange={(value) => setSelectedColor(value)}
-              sx={{ width: 200 }}
-            >
-              {availableColors.map((color) => (
-                <AntSelect.Option key={color} value={color}>
-                  {color}
-                </AntSelect.Option>
-              ))}
-            </AntSelect>
-          </Box>
-          
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-              Size
-            </Typography>
-            <Box sx={{ display: 'flex', gap: 1 }}>
-              {availableSizes.map((size) => (
-                <Button
-                  key={size}
-                  variant={selectedSize === size ? "contained" : "outlined"}
-                  onClick={() => setSelectedSize(size)}
-                  sx={{
-                    minWidth: 40,
-                    height: 40,
-                    borderRadius: '4px',
-                    borderColor: selectedSize === size ? '#db4444' : '#ccc',
-                    color: selectedSize === size ? '#fff' : '#333',
-                    backgroundColor: selectedSize === size ? '#db4444' : 'transparent',
-                    '&:hover': {
-                      borderColor: selectedSize === size ? '#db4444' : '#999',
-                      backgroundColor: selectedSize === size ? '#b83232' : 'rgba(0,0,0,0.04)',
-                    },
-                  }}
+              </Box>
+              
+              <Box className="size-container">
+                <Typography variant="subtitle1" className="label">
+                  Size
+                </Typography>
+                <Box className="size-options">
+                  {availableSizes.map((size) => (
+                    <Button
+                      key={size}
+                      className={`size-button ${selectedSize === size ? 'selected' : ''}`}
+                      onClick={() => setSelectedSize(size)}
+                    >
+                      {size}
+                    </Button>
+                  ))}
+                </Box>
+              </Box>
+
+              <Box className="quantity-container">
+                <Typography variant="subtitle1" className="label">
+                  Số lượng
+                </Typography>
+                <Box className="quantity-options">
+                  <Button
+                    className="quantity-button"
+                    onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                  >
+                    -
+                  </Button>
+                  <TextField
+                    value={quantity}
+                    onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
+                    inputProps={{
+                      min: 1,
+                      style: { textAlign: 'center', width: '50px' }
+                    }}
+                    variant="outlined"
+                    size="small"
+                  />
+                  <Button
+                    className="quantity-button"
+                    onClick={() => setQuantity(prev => prev + 1)}
+                  >
+                    +
+                  </Button>
+                </Box>
+              </Box>
+
+              <Button
+                className="add-to-cart-button"
+                onClick={handleAddToCart}
+              >
+                Thêm vào giỏ hàng
+              </Button>
+
+              <Box className="description-container">
+                <Typography
+                  variant="h6"
+                  component="h2"
+                  className="description-title"
                 >
-                  {size}
-                </Button>
-              ))}
+                  Mô tả sản phẩm
+                </Typography>
+                <Typography
+                  className="description-text"
+                >
+                  {product.product_description}
+                </Typography>
+              </Box>
             </Box>
-          </Box>
-
-          <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mt: 3 }}>
-            Số lượng: {quantity}
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-            <Button onClick={() => setQuantity(prev => Math.max(1, prev - 1))}>-</Button>
-            <TextField
-              value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-              inputProps={{ min: 1, style: { textAlign: 'center' } }}
-              sx={{ width: 60 }}
-            />
-            <Button onClick={() => setQuantity(prev => prev + 1)}>+</Button>
-          </Box>
-
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="h6" component="h2" sx={{ bgcolor: '#f0f0f0', p: 1, mb: 2, borderRadius: '4px' }}>
-              Mô tả sản phẩm
-            </Typography>
-            <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
-              {product.product_description}
-            </Typography>
-          </Box>
-
-          <Button
-            variant="contained"
-            sx={{ mt: 3, bgcolor: '#db4444', '&:hover': { bgcolor: '#b83232' } }}
-            onClick={handleAddToCart}
-          >
-            Add to Cart
-          </Button>
+          </Grid>
         </Grid>
-      </Grid>
+      )}
       
-      <Box sx={{ mt: 5 }}>
-        <Typography variant="h5" fontWeight="bold" gutterBottom>Đánh giá sản phẩm</Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6" fontWeight="bold">4 trên 5 sao</Typography>
-          <Rating name="review-summary-rating" value={4} precision={0.5} readOnly sx={{ ml: 1 }} />
-          <Typography variant="body2" sx={{ ml: 1 }}>(150 Reviews)</Typography>
-        </Box>
-
-        {/* Review filter buttons */}
-        <Box sx={{ display: 'flex', gap: 1, mb: 4, flexWrap: 'wrap' }}>
-          <Button variant="outlined">Tất cả</Button>
-          <Button variant="outlined">5 sao</Button>
-          <Button variant="outlined">4 sao</Button>
-          <Button variant="outlined">3 sao</Button>
-          <Button variant="outlined">2 sao</Button>
-          <Button variant="outlined">1 sao</Button>
-        </Box>
-
-        {/* Individual reviews - Placeholder */}
-        <Box sx={{ mt: 3 }}>
-          {/* Review 1 */}
-          <Box sx={{ display: 'flex', mb: 4 }}>
-            <Box sx={{ mr: 2 }}>
-              {/* Placeholder for Avatar */}
-              <Box sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: '#bdbdbd' }} />
-            </Box>
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold">dinhbao08</Typography>
-              <Rating name="user-rating-1" value={5} precision={0.5} readOnly size="small" />
-              <Typography variant="body2" color="text.secondary">20-1-2023 | Màu Xanh | Size M</Typography>
-              <Typography variant="body1" sx={{ mt: 1 }}>Lần đầu tiên mua sản phẩm của shop mà ưng quá cả nhà ơi. Màu xanh navi mặc tone da cực kì luôn ạ. Mặc có vuông nhìn người gọn lắm nha. Đáng ủng hộ shop ạ</Typography>
-              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                {/* Placeholder for review images */}
-                <Box sx={{ width: 80, height: 80, bgcolor: '#e0e0e0', borderRadius: '4px' }} />
-                <Box sx={{ width: 80, height: 80, bgcolor: '#e0e0e0', borderRadius: '4px' }} />
-                <Box sx={{ width: 80, height: 80, bgcolor: '#e0e0e0', borderRadius: '4px' }} />
-              </Box>
-            </Box>
+      {/* Phần đánh giá sản phẩm */}
+      {product && (
+        <Box className="review-container">
+          <Typography variant="h5" className="review-title">
+            Đánh giá sản phẩm
+          </Typography>
+          
+          <Box className="summary-container">
+            <Typography variant="h6" className="summary-title">4.0</Typography>
+            <Rating name="review-summary-rating" value={4} precision={0.5} readOnly />
+            <Typography className="summary-text">(150 Đánh giá)</Typography>
           </Box>
 
-          {/* Review 2 */}
-          <Box sx={{ display: 'flex', mb: 4 }}>
-            <Box sx={{ mr: 2 }}>
-              {/* Placeholder for Avatar */}
-              <Box sx={{ width: 40, height: 40, borderRadius: '50%', bgcolor: '#bdbdbd' }} />
-            </Box>
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold">lelong113</Typography>
-              <Rating name="user-rating-2" value={5} precision={0.5} readOnly size="small" />
-              <Typography variant="body2" color="text.secondary">20-1-2023 | Màu Xanh | Size M</Typography>
-              <Typography variant="body1" sx={{ mt: 1 }}>Lần đầu tiên mua sản phẩm của shop mà ưng quá cả nhà ơi. Màu xanh navi mặc tone da cực kì luôn ạ. Mặc có vuông nhìn người gọn lắm nha. Đáng ủng hộ shop ạ</Typography>
-              <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-                {/* Placeholder for review images */}
-                <Box sx={{ width: 80, height: 80, bgcolor: '#e0e0e0', borderRadius: '4px' }} />
-                <Box sx={{ width: 80, height: 80, bgcolor: '#e0e0e0', borderRadius: '4px' }} />
-                <Box sx={{ width: 80, height: 80, bgcolor: '#e0e0e0', borderRadius: '4px' }} />
-              </Box>
-            </Box>
+          <Box className="filter-container">
+            {['Tất cả', '5 sao', '4 sao', '3 sao', '2 sao', '1 sao'].map((filter) => (
+              <Button
+                key={filter}
+                className="filter-button"
+              >
+                {filter}
+              </Button>
+            ))}
           </Box>
+
+          {/* Review items */}
+          <Box className="review-items">
+            {[1, 2].map((review, index) => (
+              <Box
+                key={index}
+                className="review-item"
+              >
+                <Box className="user-info">
+                  <Box
+                    className={`user-icon ${index === 0 ? 'db' : 'll'}`}
+                  >
+                    {index === 0 ? 'DB' : 'LL'}
+                  </Box>
+                </Box>
+                
+                <Box className="review-content">
+                  <Typography className="user-name">
+                    {index === 0 ? 'dinhbao08' : 'lelong113'}
+                  </Typography>
+                  <Rating name={`user-rating-${index}`} value={5} precision={0.5} readOnly size="small" />
+                  <Typography className="review-date">
+                    20-1-2023 | Màu Xanh | Size M
+                  </Typography>
+                  <Typography className="review-text">
+                    Lần đầu tiên mua sản phẩm của shop mà ưng quá cả nhà ơi. Màu xanh navi mặc tone da cực kì luôn ạ. Mặc có vuông nhìn người gọn lắm nha. Đáng ủng hộ shop ạ
+                  </Typography>
+                  
+                  <Box className="review-images">
+                    {[1, 2, 3].map((img, imgIndex) => (
+                      <Box
+                        key={imgIndex}
+                        className="review-image"
+                      >
+                        <Box
+                          className="image-background"
+                        >
+                          Ảnh {imgIndex + 1}
+                        </Box>
+                      </Box>
+                    ))}
+                  </Box>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        </Box>
+      )}
+    </Container>
+  );
+
+  const loadingView = (
+    <Box className="center-content">
+      <CircularProgress />
+    </Box>
+  );
+
+  const errorView = (
+    <Box className="center-content">
+      <Typography variant="h6" color="error">{error}</Typography>
+    </Box>
+  );
+
+  const noProductView = (
+    <Box className="center-content">
+      <Typography variant="h6">Không tìm thấy sản phẩm</Typography>
+    </Box>
+  );
+
+  return (
+    <Box className="root-container">
+      <TopBar className="top-bar" />
+      
+      <Box className="main-layout">
+        <Box className="sidebar">
+          <TabDraws />
+        </Box>
+
+        <Box className="content-area">
+          {loading ? loadingView : 
+           error ? errorView :
+           !product ? noProductView :
+           mainContent}
         </Box>
       </Box>
+
+      <Footer className="footer" />
     </Box>
   );
 };

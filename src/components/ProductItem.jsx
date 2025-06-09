@@ -10,7 +10,7 @@ const ProductItem = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-       const response = await axios.get('https://0185-2405-4802-21f-72d0-c451-84e5-9b5b-457a.ngrok-free.app/api/products/get-all-products', {
+       const response = await axios.get('https://059f-2405-4802-4b2-2810-c455-f308-457-aa78.ngrok-free.app/api/products/get-all-products', {
       headers: {
         // Thêm header này để bỏ qua trang cảnh báo của Ngrok
         'ngrok-skip-browser-warning': 'true' 
