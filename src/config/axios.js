@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_BASE_URL, getFullUrl } from './api';
+import { getFullUrl } from './api';
 
 const axiosInstance = axios.create({
   headers: {

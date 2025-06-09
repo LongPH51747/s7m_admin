@@ -12,10 +12,10 @@ import {
   TableRow,
   Paper,
   IconButton,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
+  // Select,
+  // MenuItem,
+  // FormControl,
+  // InputLabel,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import axiosInstance from '../config/axios';
@@ -76,7 +76,7 @@ const AddProduct = () => {
   const [productName, setProductName] = useState('');
   const [category, setCategory] = useState('');
   const [newCategory, setNewCategory] = useState('');
-  const [price, setPrice] = useState('');
+  // const [price, setPrice] = useState('');
   const [description, setDescription] = useState('');
   const [color, setColor] = useState('');
   const [size, setSize] = useState('');
@@ -92,36 +92,17 @@ const AddProduct = () => {
       setError(null);
       try {
         console.log('Fetching categories...');
-        const response = await fetch(ENDPOINTS.GET_ALL_CATEGORIES, {
+        const response = await axiosInstance.get(ENDPOINTS.GET_ALL_CATEGORIES, {
           headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
+            'ngrok-skip-browser-warning': 'true'
           }
         });
 
-        // Log response details for debugging
         console.log('Response status:', response.status);
-        console.log('Response headers:', response.headers);
+        console.log('Response data:', response.data);
         
-        // Check if response is ok
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        // Try to parse response as JSON
-        let data;
-        const textData = await response.text();
-        try {
-          data = JSON.parse(textData);
-        } catch (parseError) {
-          console.error('Failed to parse response as JSON:', textData);
-          throw new Error('Invalid JSON response from server');
-        }
-
-        console.log('Categories API Response:', data);
-
-        if (data) {
-          const categoriesList = Array.isArray(data) ? data : data.categories;
+        if (response.data) {
+          const categoriesList = Array.isArray(response.data) ? response.data : response.data.categories;
           
           if (Array.isArray(categoriesList)) {
             console.log('Categories list:', categoriesList);
@@ -131,12 +112,22 @@ const AddProduct = () => {
             setError('Định dạng dữ liệu danh mục không hợp lệ');
           }
         } else {
-          console.error('No data in response:', data);
+          console.error('No data in response');
           setError('Không nhận được dữ liệu từ server');
         }
       } catch (error) {
         console.error('Error fetching categories:', error);
-        setError('Không thể tải danh mục sản phẩm: ' + error.message);
+        let errorMessage = 'Không thể tải danh mục sản phẩm';
+        
+        if (error.response) {
+          errorMessage += `: ${error.response.data?.message || error.response.statusText}`;
+        } else if (error.request) {
+          errorMessage += ': Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.';
+        } else {
+          errorMessage += `: ${error.message}`;
+        }
+        
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -421,7 +412,7 @@ const AddProduct = () => {
     // Chuẩn bị dữ liệu sản phẩm
     const productData = {
       product_name: productName.trim(),
-      product_image: mainVariant.variant_image_base64 || '',
+      product_image: `data:${mainVariant.variant_image_type};base64,${mainVariant.variant_image_base64}` || '',
       product_price: parseFloat(mainVariant.variant_price) || 0,
       product_description: description.trim(),
       product_status: true,

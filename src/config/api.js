@@ -5,7 +5,7 @@
 const CORS_PROXY = 'https://corsproxy.io/?';
 
 // API Base URL - use relative path when proxy is configured
-const API_BASE = '/api';
+const API_BASE = 'https://059f-2405-4802-4b2-2810-c455-f308-457-aa78.ngrok-free.app/api';
 
 // Endpoints
 const ENDPOINTS = {
