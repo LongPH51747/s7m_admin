@@ -18,7 +18,8 @@ import {
   InputLabel,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import axios from 'axios';
+import axiosInstance from '../config/axios';
+import { ENDPOINTS } from '../config/api';
 import '../css/AddProduct.css';
 
 // Hàm chuyển đổi URL thành Base64
@@ -82,104 +83,170 @@ const AddProduct = () => {
   const [variants, setVariants] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Thêm useEffect để lấy danh sách danh mục
+  // Fetch categories when component mounts
   useEffect(() => {
     const fetchCategories = async () => {
+      setLoading(true);
+      setError(null);
       try {
-        const response = await axios.get(
-          'https://059f-2405-4802-4b2-2810-c455-f308-457-aa78.ngrok-free.app/api/categories/get-all-categories',
-          {
-            headers: {
-              'ngrok-skip-browser-warning': 'true'
-            }
+        console.log('Fetching categories...');
+        const response = await fetch(ENDPOINTS.GET_ALL_CATEGORIES, {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
           }
-        );
-        console.log('Categories response:', response.data);
-        setCategories(response.data);
+        });
+
+        // Log response details for debugging
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        
+        // Check if response is ok
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Try to parse response as JSON
+        let data;
+        const textData = await response.text();
+        try {
+          data = JSON.parse(textData);
+        } catch (parseError) {
+          console.error('Failed to parse response as JSON:', textData);
+          throw new Error('Invalid JSON response from server');
+        }
+
+        console.log('Categories API Response:', data);
+
+        if (data) {
+          const categoriesList = Array.isArray(data) ? data : data.categories;
+          
+          if (Array.isArray(categoriesList)) {
+            console.log('Categories list:', categoriesList);
+            setCategories(categoriesList);
+          } else {
+            console.error('Categories data is not an array:', categoriesList);
+            setError('Định dạng dữ liệu danh mục không hợp lệ');
+          }
+        } else {
+          console.error('No data in response:', data);
+          setError('Không nhận được dữ liệu từ server');
+        }
       } catch (error) {
-        console.error('Error fetching categories:', error.response || error);
+        console.error('Error fetching categories:', error);
+        setError('Không thể tải danh mục sản phẩm: ' + error.message);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchCategories();
   }, []);
 
-  // Sửa lại hàm xử lý thêm danh mục mới
-  const handleAddNewCategory = async () => {
-    if (!newCategory.trim()) return;
-
-    try {
-      // Kiểm tra xem danh mục đã tồn tại chưa
-      const existingCategory = categories.find(
-        cat => cat.category_name.toLowerCase() === newCategory.toLowerCase()
-      );
-
-      if (existingCategory) {
-        // Nếu danh mục đã tồn tại, sử dụng danh mục đó
-        setCategory(existingCategory._id);
-        setNewCategory('');
-        alert('Danh mục này đã tồn tại. Đã chọn danh mục có sẵn.');
-        return;
-      }
-
-      // Nếu danh mục chưa tồn tại, tạo mới
-      const response = await axios.post(
-        'https://059f-2405-4802-4b2-2810-c455-f308-457-aa78.ngrok-free.app/api/categories/create-category',
-        { category_name: newCategory },
-        {
-          headers: {
-            'ngrok-skip-browser-warning': 'true'
-          }
-        }
-      );
-      
-      console.log('New category created:', response.data);
-      setCategories([...categories, response.data]);
-      setCategory(response.data._id);
-      setNewCategory('');
-      alert('Đã thêm danh mục mới thành công!');
-    } catch (error) {
-      console.error('Error handling category:', error.response || error);
-      alert('Có lỗi khi xử lý danh mục!');
+  // Hàm thêm danh mục mới
+  const handleAddCategory = async () => {
+    if (!newCategory.trim()) {
+      alert('Vui lòng nhập tên danh mục!');
+      return;
     }
-  };
 
-  // Sửa lại hàm refreshCategories với endpoint đúng
-  const refreshCategories = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(
-        'https://059f-2405-4802-4b2-2810-c455-f308-457-aa78.ngrok-free.app/api/categories/get-all-categories',
-        {
+      console.log('Creating new category:', newCategory.trim());
+      const response = await fetch(ENDPOINTS.CREATE_CATEGORY, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          category_name: newCategory.trim()
+        })
+      });
+
+      // Log response details for debugging
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+
+      // Check if response is ok
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Try to parse response as JSON
+      let data;
+      const textData = await response.text();
+      try {
+        data = JSON.parse(textData);
+      } catch (parseError) {
+        console.error('Failed to parse response as JSON:', textData);
+        throw new Error('Invalid JSON response from server');
+      }
+
+      console.log('Create category response:', data);
+
+      if (data) {
+        // Refresh categories list after adding new category
+        const refreshResponse = await fetch(ENDPOINTS.GET_ALL_CATEGORIES, {
           headers: {
-            'ngrok-skip-browser-warning': 'true'
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!refreshResponse.ok) {
+          throw new Error(`HTTP error! status: ${refreshResponse.status}`);
+        }
+
+        const refreshText = await refreshResponse.text();
+        let refreshData;
+        try {
+          refreshData = JSON.parse(refreshText);
+        } catch (parseError) {
+          console.error('Failed to parse refresh response as JSON:', refreshText);
+          throw new Error('Invalid JSON response from server during refresh');
+        }
+
+        const updatedCategories = Array.isArray(refreshData) ? 
+          refreshData : refreshData.categories;
+
+        if (Array.isArray(updatedCategories)) {
+          setCategories(updatedCategories);
+          // Find the newly created category and select it
+          const newCat = updatedCategories.find(cat => cat.category_name === newCategory.trim());
+          if (newCat) {
+            setCategory(newCat._id || newCat.category_name);
           }
         }
-      );
-      console.log('Categories data:', response.data);
-      if (Array.isArray(response.data)) {
-        setCategories(response.data);
-      } else {
-        console.error('Invalid categories data format:', response.data);
-        alert('Dữ liệu danh mục không hợp lệ');
+        
+        setNewCategory('');
+        alert('Thêm danh mục thành công!');
       }
     } catch (error) {
-      console.error('Error fetching categories:', error.response || error);
-      alert('Không thể tải danh sách danh mục');
+      console.error('Error adding category:', error);
+      alert('Có lỗi xảy ra khi thêm danh mục: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    refreshCategories();
-  }, []);
-
   // Hàm xử lý thêm variant
   const handleAddVariant = () => {
     if (!color || !size) {
       alert('Vui lòng nhập đầy đủ màu và size!');
+      return;
+    }
+
+    // Kiểm tra trùng lặp variant
+    const existingVariant = variants.find(
+      v => v.variant_color.toLowerCase() === color.toLowerCase() && 
+           v.variant_size.toLowerCase() === size.toLowerCase()
+    );
+
+    if (existingVariant) {
+      alert('Biến thể này đã tồn tại!');
       return;
     }
 
@@ -189,7 +256,8 @@ const AddProduct = () => {
       variant_price: '',
       variant_stock: 0,
       variant_image_url: '',
-      isMainProduct: variants.length === 0 // Variant đầu tiên sẽ là sản phẩm chính
+      variant_image_base64: '',
+      variant_image_type: 'image/jpeg'
     };
 
     setVariants([...variants, newVariant]);
@@ -211,9 +279,10 @@ const AddProduct = () => {
         const imageData = await urlToBase64(value);
         newVariants[index] = {
           ...newVariants[index],
-          variant_image_base64: imageData.base64, // Chỉ lưu phần data
+          variant_image_base64: imageData.base64,
           variant_image_type: imageData.type,
-          variant_image_url: `data:${imageData.type};base64,${imageData.base64}` // URL đầy đủ để preview
+          variant_image_url: value,
+          [field]: value
         };
       } catch (error) {
         console.error('Error converting image URL:', error);
@@ -221,17 +290,34 @@ const AddProduct = () => {
         return;
       }
     } else {
+      // Xử lý các trường số
+      if (field === 'variant_price' || field === 'variant_stock') {
+        value = value.replace(/[^0-9]/g, ''); // Chỉ giữ lại số
+        if (value === '') value = '0';
+      }
+      
       newVariants[index] = {
         ...newVariants[index],
         [field]: value
       };
     }
     setVariants(newVariants);
+    
+    // Log để debug
+    console.log('Updated variant:', newVariants[index]);
   };
 
   // Hàm xử lý upload ảnh
   const handleImageUpload = async (index, file) => {
     try {
+      if (!file) return;
+      
+      // Kiểm tra kích thước file
+      if (file.size > 5 * 1024 * 1024) { // 5MB
+        alert('Kích thước ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 5MB.');
+        return;
+      }
+
       const reader = new FileReader();
       reader.onloadend = async () => {
         const img = new Image();
@@ -259,24 +345,32 @@ const AddProduct = () => {
           const ctx = canvas.getContext('2d');
           ctx.drawImage(img, 0, 0, width, height);
 
-          // Giảm chất lượng xuống 0.5 (50%)
           const base64String = canvas.toDataURL('image/jpeg', 0.5);
-          const base64Data = base64String.split(',')[1]; // Lấy phần sau dấu phẩy
+          const base64Data = base64String.split(',')[1];
 
           const newVariants = [...variants];
           newVariants[index] = {
             ...newVariants[index],
-            variant_image_base64: base64Data, // Chỉ lưu phần data
+            variant_image_base64: base64Data,
             variant_image_type: 'image/jpeg',
-            variant_image_url: base64String // URL đầy đủ để preview
+            variant_image_url: base64String
           };
           setVariants(newVariants);
+          
+          // Log để debug
+          console.log('Uploaded image for variant:', {
+            index,
+            hasBase64: !!base64Data,
+            imageType: 'image/jpeg',
+            previewUrl: base64String.substring(0, 50) + '...'
+          });
         };
         img.src = reader.result;
       };
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error uploading image:', error);
+      alert('Có lỗi xảy ra khi tải ảnh. Vui lòng thử lại.');
     }
   };
 
@@ -324,70 +418,29 @@ const AddProduct = () => {
     // Lấy variant đầu tiên làm thông tin chính của sản phẩm
     const mainVariant = variants[0];
 
-    // Hàm helper để format base64 image
-    const formatBase64Image = (base64String, imageType = 'image/jpeg') => {
-      if (!base64String) return '';
-      // Nếu đã có prefix, trả về nguyên gốc
-      if (base64String.startsWith('data:')) return base64String;
-      // Nếu chưa có prefix, thêm vào
-      return `data:${imageType};base64,${base64String}`;
-    };
-
-    // Chuẩn bị dữ liệu sản phẩm theo format yêu cầu
+    // Chuẩn bị dữ liệu sản phẩm
     const productData = {
       product_name: productName.trim(),
-      // Đảm bảo ảnh chính có prefix đúng
-      product_image: mainVariant.variant_image_base64 ? 
-        formatBase64Image(mainVariant.variant_image_base64, mainVariant.variant_image_type) : '',
+      product_image: mainVariant.variant_image_base64 || '',
       product_price: parseFloat(mainVariant.variant_price) || 0,
       product_description: description.trim(),
       product_status: true,
       product_variant: variants.map(variant => ({
-        // Đảm bảo ảnh variant có prefix đúng
-        variant_image_base64: variant.variant_image_base64 ? 
-          formatBase64Image(variant.variant_image_base64, variant.variant_image_type) : '',
-        variant_image_type: variant.variant_image_type || 'image/jpeg',
         variant_color: variant.variant_color.trim(),
         variant_size: variant.variant_size.trim(),
         variant_price: parseFloat(variant.variant_price) || 0,
-        variant_stock: parseInt(variant.variant_stock) || 0
+        variant_stock: parseInt(variant.variant_stock) || 0,
+        variant_image_base64: variant.variant_image_base64 && variant.variant_image_base64.includes('base64,') ? 
+          variant.variant_image_base64.split('base64,')[1] : variant.variant_image_base64,
+        variant_image_type: variant.variant_image_type || 'image/jpeg'
       })),
       product_category: [category],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
 
-    // Log chi tiết dữ liệu trước khi gửi
-    console.log('Product Data Structure:', {
-      name: productData.product_name,
-      description: productData.product_description,
-      category: productData.product_category,
-      mainPrice: productData.product_price,
-      variantsCount: productData.product_variant.length,
-      hasMainImage: !!productData.product_image,
-      mainImagePreview: productData.product_image.substring(0, 100) + '...',
-      variants: productData.product_variant.map(v => ({
-        color: v.variant_color,
-        size: v.variant_size,
-        price: v.variant_price,
-        stock: v.variant_stock,
-        hasImage: !!v.variant_image_base64,
-        imagePreview: v.variant_image_base64 ? v.variant_image_base64.substring(0, 100) + '...' : 'No image'
-      }))
-    });
-
     try {
-      const response = await axios.post(
-        'https://059f-2405-4802-4b2-2810-c455-f308-457-aa78.ngrok-free.app/api/products/create-product',
-        productData,
-        {
-          headers: {
-            'ngrok-skip-browser-warning': 'true',
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      
+      const response = await axiosInstance.post(ENDPOINTS.CREATE_PRODUCT, productData);
       console.log('Server Response:', response.data);
       alert('Thêm sản phẩm thành công!');
       
@@ -400,13 +453,6 @@ const AddProduct = () => {
       setColor('');
       setSize('');
     } catch (error) {
-      console.error('Error Details:', {
-        status: error.response?.status,
-        statusText: error.response?.statusText,
-        data: error.response?.data,
-        message: error.message
-      });
-
       let errorMessage = 'Có lỗi xảy ra khi thêm sản phẩm!';
       
       if (error.response) {
@@ -429,92 +475,90 @@ const AddProduct = () => {
     }
   };
 
-  return (
-    <Box className="add-product-container">
-      <Typography variant="h4" className="add-product-title">
-        Thêm sản phẩm
-      </Typography>
+  // Render error message if there's an error
+  if (error) {
+    return (
+      <div className="error-message" style={{ color: 'red', padding: '20px' }}>
+        <h3>Lỗi tải danh mục</h3>
+        <p>{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#f44336',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        >
+          Tải lại trang
+        </button>
+      </div>
+    );
+  }
 
+  return (
+    <div className="add-product-container">
+      <h1>Thêm sản phẩm</h1>
       <form onSubmit={handleSubmit}>
-        <Box className="form-section">
-          <TextField
-            required
-            fullWidth
-            label="Tên sản phẩm"
+        <div className="form-group">
+          <label>Tên sản phẩm *</label>
+          <input
+            type="text"
             value={productName}
             onChange={(e) => setProductName(e.target.value)}
-            className="form-field"
+            required
           />
+        </div>
 
-          <Box className="category-section">
-            <FormControl fullWidth>
-              <InputLabel>Danh mục có sẵn</InputLabel>
-              <Select
+        <div className="form-group">
+          <label>Danh mục *</label>
+          <div className="category-input-group">
+            <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                label="Danh mục có sẵn"
                 disabled={loading}
-              >
-                <MenuItem value="">
-                  <em>Không chọn danh mục</em>
-                </MenuItem>
-                {loading ? (
-                  <MenuItem disabled>
-                    <em>Đang tải danh mục...</em>
-                  </MenuItem>
-                ) : categories && categories.length > 0 ? (
-                  categories.map((cat) => (
-                    <MenuItem key={cat._id} value={cat._id}>
+              required
+            >
+              <option value="">Chọn danh mục</option>
+              {categories.map((cat) => (
+                <option key={cat._id || cat.category_name} value={cat._id || cat.category_name}>
                       {cat.category_name}
-                    </MenuItem>
-                  ))
-                ) : (
-                  <MenuItem disabled>
-                    <em>Không có danh mục nào</em>
-                  </MenuItem>
-                )}
-              </Select>
-            </FormControl>
-
-            <Box className="new-category-section">
-              <TextField
-                fullWidth
-                label="Danh mục mới"
+                </option>
+              ))}
+            </select>
+            <div className="new-category-input">
+              <input
+                type="text"
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value)}
-                placeholder="Nhập tên danh mục mới"
-              />
-              <Button 
-                variant="contained" 
-                onClick={handleAddNewCategory}
-                disabled={!newCategory.trim() || loading}
-              >
-                Thêm mới
-              </Button>
-              <Button
-                variant="outlined"
-                onClick={refreshCategories}
+                placeholder="Thêm danh mục mới"
                 disabled={loading}
-                title="Tải lại danh sách danh mục"
+              />
+              <button
+                type="button"
+                onClick={handleAddCategory}
+                disabled={!newCategory.trim() || loading}
+                className="add-category-btn"
               >
-                {loading ? '...' : '↻'}
-              </Button>
-            </Box>
-          </Box>
+                {loading ? 'Đang xử lý...' : 'Thêm mới'}
+              </button>
+            </div>
+            {loading && <div className="loading-indicator">Đang tải...</div>}
+          </div>
+        </div>
 
-          <TextField
-            required
-            fullWidth
-            multiline
-            rows={4}
-            label="Mô tả"
+        <div className="form-group">
+          <label>Mô tả *</label>
+          <textarea
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="form-field"
+            required
           />
-        </Box>
+        </div>
 
-        <Box className="variant-section">
+        <div className="variant-section">
           <Typography variant="h6" className="add-product-title">
             Thêm biến thể
           </Typography>
@@ -533,7 +577,7 @@ const AddProduct = () => {
               Thêm biến thể
             </Button>
           </Box>
-        </Box>
+        </div>
 
         {variants.length > 0 && (
           <TableContainer component={Paper} className="variant-table">
@@ -623,7 +667,7 @@ const AddProduct = () => {
           Thêm sản phẩm
         </Button>
       </form>
-    </Box>
+    </div>
   );
 };
 

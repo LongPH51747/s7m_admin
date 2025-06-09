@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardMedia, Typography, Grid, Box } from '@mui/material';
+import '../css/ProductItem.css';
+
 
 const ProductItem = () => {
   const [products, setProducts] = useState([]);

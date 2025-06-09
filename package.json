@@ -2,6 +2,7 @@
   "name": "s7m_admin",
   "version": "0.1.0",
   "private": true,
+  "proxy": "https://059f-2405-4802-4b2-2810-c455-f308-457-aa78.ngrok-free.app/",
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
