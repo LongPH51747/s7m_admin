@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -8,15 +8,18 @@ import {
   Grid,
   TextField,
   CircularProgress,
-  Rating,
   IconButton,
   Container,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Alert,
 } from "@mui/material";
 // import { Select as AntSelect } from "antd";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
-import TabDraws from "../components/TabDraws";
 import '../css/DetailProduct.css';
 
 const formatImageData = (variant) => {
@@ -72,18 +75,22 @@ const formatImageData = (variant) => {
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const [product, setProduct] = useState(null); // Sửa: Khởi tạo là null
+  const navigate = useNavigate();
+  const [product, setProduct] = useState(null);
   const [variants, setVariants] = useState([]);
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [currentPrice, setCurrentPrice] = useState(0);
-  const [currentImage, setCurrentImage] = useState(""); // State mới cho ảnh
-  const [currentImageIndex, setCurrentImageIndex] = useState(0); // State mới cho index ảnh hiện tại
-  const [productImages, setProductImages] = useState([]); // State mới cho danh sách ảnh sản phẩm
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [productImages, setProductImages] = useState([]);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-// Effect chính để fetch dữ liệu sản phẩm
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [deleteSuccess, setDeleteSuccess] = useState(false);
+
+  // Effect chính để fetch dữ liệu sản phẩm
   useEffect(() => {
     const fetchProductData = async () => {
       setLoading(true);
@@ -149,16 +156,15 @@ const ProductDetail = () => {
           setCurrentPrice(firstVariant.variant_price);
           // Ưu tiên sử dụng variant_image_url cho biến thể đầu tiên
           if (firstVariant.variant_image_url) {
-            setCurrentImage(firstVariant.variant_image_url);
+            setCurrentImageIndex(0);
           } else {
-            setCurrentImage(formatImageData(firstVariant));
+            setCurrentImageIndex(0);
           }
         } else {
           console.log('No variants, using main product data');
           setCurrentPrice(productData.product_price);
-          setCurrentImage(productData.product_image || 'https://placehold.co/600x400?text=No+Image');
+          setCurrentImageIndex(0);
         }
-        setCurrentImageIndex(0);
 
       } catch (err) {
         console.error('Error fetching product data:', err);
@@ -199,15 +205,7 @@ const ProductDetail = () => {
         setCurrentPrice(selectedVariant.variant_price);
         // Ưu tiên sử dụng variant_image_url
         if (selectedVariant.variant_image_url) {
-          setCurrentImage(selectedVariant.variant_image_url);
-        } else {
-          setCurrentImage(formatImageData(selectedVariant));
-        }
-        
-        // Cập nhật currentImageIndex nếu ảnh có trong danh sách
-        const imageIndex = productImages.indexOf(selectedVariant.variant_image_url);
-        if (imageIndex !== -1) {
-          setCurrentImageIndex(imageIndex);
+          setCurrentImageIndex(productImages.indexOf(selectedVariant.variant_image_url));
         }
       }
     }
@@ -216,9 +214,9 @@ const ProductDetail = () => {
   // Effect để cập nhật ảnh khi index thay đổi
   useEffect(() => {
     if (productImages.length > 0) {
-      setCurrentImage(productImages[currentImageIndex]);
+      setCurrentImageIndex(0);
     }
-  }, [currentImageIndex, productImages]);
+  }, [productImages]);
 
   // Dùng useMemo để tính toán các màu và size có sẵn, tránh re-render không cần thiết
   const availableColors = useMemo(() => [...new Set(variants.map(v => v.variant_color))], [variants]);
@@ -248,119 +246,127 @@ const ProductDetail = () => {
     // Thêm logic gọi API ở đây
   };
 
+  const handleDeleteProduct = async () => {
+    try {
+      setLoading(true);
+      setDeleteError("");
+      
+      await axios.delete(`https://059f-2405-4802-4b2-2810-c455-f308-457-aa78.ngrok-free.app/api/products/delete-product-by-id/id/${id}`, {
+        headers: {
+          'ngrok-skip-browser-warning': 'true'
+        }
+      });
+
+      setDeleteSuccess(true);
+      
+      // Chờ 1.5 giây trước khi chuyển hướng để người dùng thấy thông báo thành công
+      setTimeout(() => {
+        navigate('/products'); // Điều hướng về trang danh sách sản phẩm
+      }, 1500);
+
+    } catch (err) {
+      console.error('Error deleting product:', err);
+      setDeleteError(err.response?.data?.message || 'Không thể xóa sản phẩm. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Thêm các handlers cho dialog
+  const handleOpenDeleteDialog = () => setOpenDeleteDialog(true);
+  const handleCloseDeleteDialog = () => {
+    setOpenDeleteDialog(false);
+    setDeleteError("");
+  };
+
   const mainContent = (
     <Container className="main-container">
-      <Box className="title-section">
-        <Typography variant="h4" component="h1" className="page-title">
-          Chi tiết sản phẩm
-        </Typography>
-      </Box>
-
       {product && (
-        <Grid container spacing={{ xs: 2, sm: 3, md: 4 }} className="product-grid">
-          {/* Phần hình ảnh sản phẩm */}
+        <Grid container spacing={4}>
+          {/* Cột hình ảnh sản phẩm */}
           <Grid item xs={12} md={6}>
-            <Box className="image-container">
-              <img
-                src={currentImage}
-                alt={product?.product_name || 'Product Image'}
-                className="product-image"
-              />
-              
-              {/* Navigation Arrows */}
-              {productImages.length > 1 && (
-                <>
+            <Box className="product-images">
+              {/* Ảnh chính với nút điều hướng ở hai bên */}
+              <Box className="main-image-section">
+                {productImages.length > 1 && (
                   <IconButton
-                    className="arrow-button"
-                    onClick={() => setCurrentImageIndex((prevIndex) => (prevIndex === 0 ? productImages.length - 1 : prevIndex - 1))}
+                    className="nav-button prev"
+                    onClick={() => setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : productImages.length - 1))}
                   >
                     <ArrowBackIos />
                   </IconButton>
+                )}
+
+                <Box className="main-image-container">
+                  <img
+                    src={productImages[currentImageIndex] || 'https://placehold.co/600x400?text=No+Image'}
+                    alt={`Product ${currentImageIndex + 1}`}
+                    className="main-image"
+                  />
+                </Box>
+
+                {productImages.length > 1 && (
                   <IconButton
-                    className="arrow-button"
-                    onClick={() => setCurrentImageIndex((prevIndex) => (prevIndex === productImages.length - 1 ? 0 : prevIndex + 1))}
+                    className="nav-button next"
+                    onClick={() => setCurrentImageIndex((prev) => (prev < productImages.length - 1 ? prev + 1 : 0))}
                   >
                     <ArrowForwardIos />
                   </IconButton>
-                  
-                  {/* Dot Indicators */}
-                  <Box className="dot-indicators">
-                    {productImages.map((_, index) => (
-                      <Box
-                        key={index}
-                        className={`dot ${currentImageIndex === index ? 'active' : ''}`}
-                        onClick={() => setCurrentImageIndex(index)}
-                      />
-                    ))}
-                  </Box>
-                </>
-              )}
-            </Box>
-
-            {/* Thumbnail Gallery */}
-            <Box className="thumbnail-gallery">
-              {productImages.map((image, index) => (
-                <Box
-                  key={index}
-                  className={`thumbnail ${currentImageIndex === index ? 'active' : ''}`}
-                  onClick={() => setCurrentImageIndex(index)}
-                >
-                  <img
-                    src={image}
-                    alt={`Thumbnail ${index + 1}`}
-                  />
-                </Box>
-              ))}
-            </Box>
-          </Grid>
-          
-          {/* Phần thông tin sản phẩm */}
-          <Grid item xs={12} md={6}>
-            <Box className="product-info">
-              <Typography variant="h4" component="h1" className="product-name">
-                {product.product_name}
-              </Typography>
-              
-              <Box className="rating-container">
-                <Rating name="product-rating" value={4} precision={0.5} readOnly />
-                <Typography variant="body2" className="rating-text">
-                  (150 Đánh giá)
-                </Typography>
+                )}
               </Box>
               
-              <Typography
-                variant="h5"
-                className="price"
-              >
-                {currentPrice.toLocaleString('vi-VN')} VND
+              {/* Container cho thumbnails */}
+              <Box className="thumbnail-container">
+                {productImages.map((image, index) => (
+                  <img
+                    key={index}
+                    src={image}
+                    alt={`Thumbnail ${index + 1}`}
+                    className={`thumbnail ${index === currentImageIndex ? 'active' : ''}`}
+                    onClick={() => setCurrentImageIndex(index)}
+                  />
+                ))}
+              </Box>
+            </Box>
+          </Grid>
+
+          {/* Right side - Product Info */}
+          <Grid item xs={12} md={6}>
+            <Box className="product-info">
+              <Typography variant="h1" className="product-name">
+                {product.product_name}
               </Typography>
-              
-              <Box className="color-container">
-                <Typography variant="subtitle1" className="label">
+
+              <Box className="price-section">
+                <Typography variant="h4" className="price">
+                  {currentPrice?.toLocaleString('vi-VN')} VND
+                </Typography>
+              </Box>
+
+              <Box className="variant-section">
+                <Typography variant="subtitle1" className="section-title">
                   Màu sắc
                 </Typography>
                 <Box className="color-options">
                   {availableColors.map((color) => (
                     <Button
                       key={color}
-                      className={`color-button ${selectedColor === color ? 'selected' : ''}`}
+                      className={`variant-button ${selectedColor === color ? 'selected' : ''}`}
                       onClick={() => setSelectedColor(color)}
                     >
                       {color}
                     </Button>
                   ))}
                 </Box>
-              </Box>
-              
-              <Box className="size-container">
-                <Typography variant="subtitle1" className="label">
+
+                <Typography variant="subtitle1" className="section-title">
                   Size
                 </Typography>
                 <Box className="size-options">
                   {availableSizes.map((size) => (
                     <Button
                       key={size}
-                      className={`size-button ${selectedSize === size ? 'selected' : ''}`}
+                      className={`variant-button ${selectedSize === size ? 'selected' : ''}`}
                       onClick={() => setSelectedSize(size)}
                     >
                       {size}
@@ -369,132 +375,59 @@ const ProductDetail = () => {
                 </Box>
               </Box>
 
-              <Box className="quantity-container">
-                <Typography variant="subtitle1" className="label">
+              <Box className="quantity-section">
+                <Typography variant="subtitle1" className="section-title">
                   Số lượng
                 </Typography>
-                <Box className="quantity-options">
-                  <Button
-                    className="quantity-button"
+                <Box className="quantity-selector">
+                  <IconButton 
                     onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                    disabled={quantity <= 1}
                   >
                     -
-                  </Button>
+                  </IconButton>
                   <TextField
                     value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-                    inputProps={{
-                      min: 1,
-                      style: { textAlign: 'center', width: '50px' }
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      if (!isNaN(val) && val > 0) {
+                        setQuantity(val);
+                      }
                     }}
-                    variant="outlined"
-                    size="small"
+                    inputProps={{
+                      style: { 
+                        textAlign: 'center',
+                        width: '50px',
+                        padding: '8px'
+                      }
+                    }}
                   />
-                  <Button
-                    className="quantity-button"
-                    onClick={() => setQuantity(prev => prev + 1)}
-                  >
+                  <IconButton onClick={() => setQuantity(prev => prev + 1)}>
                     +
-                  </Button>
+                  </IconButton>
                 </Box>
               </Box>
 
               <Button
-                className="add-to-cart-button"
+                variant="contained"
+                className="add-to-cart"
                 onClick={handleAddToCart}
+                fullWidth
               >
-                Thêm vào giỏ hàng
+                THÊM VÀO GIỎ HÀNG
               </Button>
 
-              <Box className="description-container">
-                <Typography
-                  variant="h6"
-                  component="h2"
-                  className="description-title"
-                >
+              <Box className="description-section">
+                <Typography variant="h6" className="section-title">
                   Mô tả sản phẩm
                 </Typography>
-                <Typography
-                  className="description-text"
-                >
+                <Typography variant="body1" className="description">
                   {product.product_description}
                 </Typography>
               </Box>
             </Box>
           </Grid>
         </Grid>
-      )}
-      
-      {/* Phần đánh giá sản phẩm */}
-      {product && (
-        <Box className="review-container">
-          <Typography variant="h5" className="review-title">
-            Đánh giá sản phẩm
-          </Typography>
-          
-          <Box className="summary-container">
-            <Typography variant="h6" className="summary-title">4.0</Typography>
-            <Rating name="review-summary-rating" value={4} precision={0.5} readOnly />
-            <Typography className="summary-text">(150 Đánh giá)</Typography>
-          </Box>
-
-          <Box className="filter-container">
-            {['Tất cả', '5 sao', '4 sao', '3 sao', '2 sao', '1 sao'].map((filter) => (
-              <Button
-                key={filter}
-                className="filter-button"
-              >
-                {filter}
-              </Button>
-            ))}
-          </Box>
-
-          {/* Review items */}
-          <Box className="review-items">
-            {[1, 2].map((review, index) => (
-              <Box
-                key={index}
-                className="review-item"
-              >
-                <Box className="user-info">
-                  <Box
-                    className={`user-icon ${index === 0 ? 'db' : 'll'}`}
-                  >
-                    {index === 0 ? 'DB' : 'LL'}
-                  </Box>
-                </Box>
-                
-                <Box className="review-content">
-                  <Typography className="user-name">
-                    {index === 0 ? 'dinhbao08' : 'lelong113'}
-                  </Typography>
-                  <Rating name={`user-rating-${index}`} value={5} precision={0.5} readOnly size="small" />
-                  <Typography className="review-date">
-                    20-1-2023 | Màu Xanh | Size M
-                  </Typography>
-                  <Typography className="review-text">
-                    Lần đầu tiên mua sản phẩm của shop mà ưng quá cả nhà ơi. Màu xanh navi mặc tone da cực kì luôn ạ. Mặc có vuông nhìn người gọn lắm nha. Đáng ủng hộ shop ạ
-                  </Typography>
-                  
-                  <Box className="review-images">
-                    {[1, 2, 3].map((img, imgIndex) => (
-                      <Box
-                        key={imgIndex}
-                        className="review-image"
-                      >
-                        <Box
-                          className="image-background"
-                        >
-                          Ảnh {imgIndex + 1}
-                        </Box>
-                      </Box>
-                    ))}
-                  </Box>
-                </Box>
-              </Box>
-            ))}
-          </Box>
-        </Box>
       )}
     </Container>
   );
@@ -519,22 +452,58 @@ const ProductDetail = () => {
 
   return (
     <Box className="root-container">
-      <TopBar className="top-bar" />
-      
-      <Box className="main-layout">
-        <Box className="sidebar">
-          <TabDraws />
-        </Box>
+      <TopBar />
+      <Box className="main-content">
+        {loading ? loadingView : 
+         error ? errorView :
+         !product ? noProductView :
+         (
+           <>
+             {/* Thêm nút Delete vào đây, ở đầu component */}
+             <Box display="flex" justifyContent="flex-end" mb={2}>
+               <Button
+                 variant="contained"
+                 color="error"
+                 onClick={handleOpenDeleteDialog}
+                 sx={{ ml: 2 }}
+               >
+                 Xóa Sản Phẩm
+               </Button>
+             </Box>
 
-        <Box className="content-area">
-          {loading ? loadingView : 
-           error ? errorView :
-           !product ? noProductView :
-           mainContent}
-        </Box>
+             {/* Dialog xác nhận xóa */}
+             <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
+               <DialogTitle>Xác nhận xóa sản phẩm</DialogTitle>
+               <DialogContent>
+                 {deleteError && <Alert severity="error" sx={{ mb: 2 }}>{deleteError}</Alert>}
+                 {deleteSuccess ? (
+                   <Alert severity="success">Sản phẩm đã được xóa thành công!</Alert>
+                 ) : (
+                   <Typography>
+                     Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác.
+                   </Typography>
+                 )}
+               </DialogContent>
+               <DialogActions>
+                 <Button onClick={handleCloseDeleteDialog} disabled={deleteSuccess}>
+                   Hủy
+                 </Button>
+                 <Button 
+                   onClick={handleDeleteProduct}
+                   color="error"
+                   disabled={deleteSuccess}
+                   autoFocus
+                 >
+                   {loading ? <CircularProgress size={24} /> : "Xóa"}
+                 </Button>
+               </DialogActions>
+             </Dialog>
+
+             {mainContent}
+           </>
+         )}
       </Box>
-
-      <Footer className="footer" />
+      <Footer />
     </Box>
   );
 };

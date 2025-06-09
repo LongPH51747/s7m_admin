@@ -1,8 +1,8 @@
 /* src/css/ProductItem.css */
 .product-page {
-  padding: 24px;
   background-color: #f5f7fb;
   min-height: 100vh;
+  padding: 24px 0;
 }
 
 .product-header {
@@ -40,48 +40,36 @@
   box-shadow: 0 6px 16px rgba(102, 126, 234, 0.35);
 }
 
-.product-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
-  padding: 24px;
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-}
-
-.product-item {
-  position: relative;
-  background: white;
-  border-radius: 12px;
+.product-card {
+  height: 100%;
+  border-radius: 12px !important;
   overflow: hidden;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  background: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
 }
 
-.product-item:hover {
+.product-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
 }
 
-.product-image-wrapper {
+.product-image-container {
   position: relative;
   width: 100%;
-  padding-top: 100%;
-  background: #f8f9fa;
+  height: 280px;
+  overflow: hidden;
 }
 
 .product-image {
-  position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
-  height: 100%;
+  height: 100% !important;
   object-fit: cover;
+  background-color: #f8f9fa;
   transition: transform 0.3s ease;
 }
 
-.product-item:hover .product-image {
+.product-card:hover .product-image {
   transform: scale(1.05);
 }
 
@@ -96,107 +84,97 @@
   transition: all 0.3s ease;
 }
 
-.product-item:hover .product-actions {
+.product-card:hover .product-actions {
   opacity: 1;
   transform: translateY(0);
 }
 
-.action-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  backdrop-filter: blur(4px);
+.action-button {
+  text-decoration: none;
 }
 
-.action-icon:hover {
+.view-button, .edit-button, .delete-button {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  color: #2c3e50 !important;
+  transition: all 0.3s ease !important;
+  backdrop-filter: blur(4px);
+  width: 36px !important;
+  height: 36px !important;
+}
+
+.view-button:hover {
+  background-color: #3498db !important;
+  color: white !important;
   transform: scale(1.1);
 }
 
-.action-icon.view i {
-  color: #3498db;
-  font-size: 16px;
+.edit-button:hover {
+  background-color: #2ecc71 !important;
+  color: white !important;
+  transform: scale(1.1);
 }
 
-.action-icon.edit i {
-  color: #2ecc71;
-  font-size: 16px;
+.delete-button:hover {
+  background-color: #e74c3c !important;
+  color: white !important;
+  transform: scale(1.1);
 }
 
-.product-details {
-  padding: 16px;
-  background: white;
+.product-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.MuiCardContent-root {
+  padding: 16px !important;
 }
 
 .product-name {
-  font-size: 16px;
-  font-weight: 500;
-  color: #2c3e50;
-  margin: 0 0 8px 0;
-  display: -webkit-box;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  color: #2c3e50 !important;
+  margin-bottom: 8px !important;
+  display: -webkit-box !important;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  line-height: 1.4;
+  line-height: 1.4 !important;
+  height: 44px;
+}
+
+.product-description {
+  font-size: 14px !important;
+  color: #64748b !important;
+  margin-bottom: 12px !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  height: 40px;
 }
 
 .product-price {
-  font-size: 18px;
-  font-weight: 600;
-  background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin: 0;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: #ff4d4f !important;
+  margin: 0 !important;
 }
 
-/* Responsive adjustments */
-@media (max-width: 1200px) {
-  .product-list {
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  }
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  color: #667eea;
+  font-size: 16px;
+  font-weight: 500;
 }
 
-@media (max-width: 768px) {
-  .product-page {
-    padding: 16px;
-  }
-
-  .product-header {
-    padding: 12px 16px;
-    margin-bottom: 16px;
-  }
-
-  .product-list {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 16px;
-    padding: 16px;
-  }
-
-  .product-details {
-    padding: 12px;
-  }
-
-  .product-name {
-    font-size: 14px;
-  }
-
-  .product-price {
-    font-size: 16px;
-  }
-
-  .action-icon {
-    width: 32px;
-    height: 32px;
-  }
-}
-
-/* Animation keyframes */
+/* Animation */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -208,6 +186,75 @@
   }
 }
 
-.product-item {
+.MuiGrid-item {
   animation: fadeIn 0.5s ease forwards;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .product-header {
+    margin: 0 16px 24px;
+  }
+}
+
+@media (max-width: 960px) {
+  .product-image-container {
+    height: 240px;
+  }
+}
+
+@media (max-width: 600px) {
+  .product-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+    margin: 0 16px 16px;
+    padding: 16px;
+  }
+
+  .product-image-container {
+    height: 200px;
+  }
+
+  .product-name {
+    font-size: 14px !important;
+    height: 40px;
+  }
+
+  .product-description {
+    font-size: 12px !important;
+    height: 36px;
+  }
+
+  .product-price {
+    font-size: 16px !important;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .product-page {
+    background-color: #1a1f36;
+  }
+
+  .product-header,
+  .MuiCard-root,
+  .MuiCardContent-root,
+  .MuiGrid-container {
+    background: #242b42 !important;
+  }
+
+  .product-header h2,
+  .MuiTypography-h6 {
+    color: #e2e8f0 !important;
+  }
+
+  .MuiTypography-body2 {
+    color: #94a3b8 !important;
+  }
+
+  .loading-state {
+    background: #242b42;
+    color: #667eea;
+  }
 }

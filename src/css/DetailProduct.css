@@ -496,3 +496,106 @@
   position: relative;
   z-index: 1000;
 }
+
+.product-images {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.main-image-section {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.main-image-container {
+  width: 100%;
+  max-width: 500px;
+}
+
+.main-image {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.nav-button {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-radius: 50% !important;
+  width: 40px !important;
+  height: 40px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  flex-shrink: 0;
+}
+
+.nav-button:hover {
+  background-color: rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.nav-button.prev {
+  margin-right: -20px;
+}
+
+.nav-button.next {
+  margin-left: -20px;
+}
+
+.thumbnail-container {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 10px 0;
+  width: 100%;
+  max-width: 500px;
+}
+
+.thumbnail {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+}
+
+.thumbnail:hover {
+  transform: scale(1.05);
+}
+
+.thumbnail.active {
+  border-color: #6366f1;
+}
+
+/* Hide scrollbar but keep functionality */
+.thumbnail-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.thumbnail-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.thumbnail-container::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+.thumbnail-container::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

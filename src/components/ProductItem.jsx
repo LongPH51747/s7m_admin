@@ -1,69 +1,125 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardMedia, Typography, Grid, Box } from '@mui/material';
+import { Card, CardContent, CardMedia, Typography, Grid, Box, Container, IconButton } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import '../css/ProductItem.css';
-
 
 const ProductItem = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-       const response = await axios.get('https://059f-2405-4802-4b2-2810-c455-f308-457-aa78.ngrok-free.app/api/products/get-all-products', {
-      headers: {
-        // Thêm header này để bỏ qua trang cảnh báo của Ngrok
-        'ngrok-skip-browser-warning': 'true' 
-      }});
-        setProducts(response.data);
-        console.log("Response data:", response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-        setLoading(false);
-      }
-    };
-
     fetchProducts();
   }, []);
 
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get('https://059f-2405-4802-4b2-2810-c455-f308-457-aa78.ngrok-free.app/api/products/get-all-products', {
+        headers: {
+          'ngrok-skip-browser-warning': 'true'
+        }
+      });
+      setProducts(response.data);
+      console.log("Response data:", response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (productId) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+      try {
+        await axios.delete(`https://059f-2405-4802-4b2-2810-c455-f308-457-aa78.ngrok-free.app/api/products/delete/${productId}`, {
+          headers: {
+            'ngrok-skip-browser-warning': 'true'
+          }
+        });
+        // Refresh product list after deletion
+        fetchProducts();
+        alert('Xóa sản phẩm thành công!');
+      } catch (error) {
+        console.error('Error deleting product:', error);
+        alert('Có lỗi xảy ra khi xóa sản phẩm!');
+      }
+    }
+  };
+
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="loading-state">
+        <span>Đang tải...</span>
+      </div>
+    );
   }
 
   return (
-    <Box sx={{ padding: 3 }}>      
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box className="product-header">
+        <Typography variant="h4" component="h2">
+          Danh sách sản phẩm
+        </Typography>
+        <Link to="/add-product" className="add-product-btn">
+          Thêm sản phẩm
+        </Link>
+      </Box>
+      
       <Grid container spacing={3}>
         {products.map((product) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
-            <Link to={`/product/${product._id}`} style={{ textDecoration: 'none' }}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Grid item xs={12} sm={6} md={3} key={product._id}>
+            <Card className="product-card">
+              <div className="product-image-container">
                 <CardMedia
                   component="img"
-                  height="200"
-                  image={  product.product_image || 'https://via.placeholder.com/200'}
+                  height="280"
+                  image={product.product_image || 'https://via.placeholder.com/280'}
                   alt={product.product_name}
+                  className="product-image"
                 />
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography gutterBottom variant="h6" component="div">
+                <div className="product-actions">
+                  <Link to={`/product/${product._id}`} className="action-button">
+                    <IconButton className="view-button">
+                      <VisibilityIcon />
+                    </IconButton>
+                  </Link>
+                  <Link to={`/edit-product/${product._id}`} className="action-button">
+                    <IconButton className="edit-button">
+                      <EditIcon />
+                    </IconButton>
+                  </Link>
+                  <IconButton 
+                    className="delete-button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDelete(product._id);
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </div>
+              </div>
+              <CardContent>
+                <Link to={`/product/${product._id}`} className="product-link">
+                  <Typography variant="h6" className="product-name">
                     {product.product_name}
                   </Typography>
-                  {/* <Rating value={product.rate} precision={0.5} readOnly /> */}
-                  <Typography variant="body2" color="text.secondary">
-                    {product.product_description.substring(0, 50)}...
+                  <Typography variant="body2" className="product-description">
+                    {product.product_description?.substring(0, 50)}...
                   </Typography>
-                  <Typography variant="h6" color="primary" sx={{ mt: 1 }}>
-                    {product.product_price.toLocaleString('vi-VN')}VND
+                  <Typography variant="h6" className="product-price">
+                    {product.product_price?.toLocaleString('vi-VN')}VNĐ
                   </Typography>
-                </CardContent>
-              </Card>
-            </Link>
+                </Link>
+              </CardContent>
+            </Card>
           </Grid>
         ))}
       </Grid>
-    </Box>
+    </Container>
   );
 };
 
