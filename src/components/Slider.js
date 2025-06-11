@@ -10,7 +10,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react';
 
 const Slider = () => {
   const [banners, setBanners] = useState([]);
-  const [showAll, setShowAll] = useState(false); // ✅ trạng thái hiển thị đầy đủ
+  const [showAll, setShowAll] = useState(false); 
   const fileInputRef = useRef(null);
 
   const formatBase64 = (base64, type = 'image/png') => {
@@ -86,7 +86,7 @@ const Slider = () => {
     }
   };
 
-  const visibleBanners = showAll ? banners : banners.slice(0, 3); // ✅ chỉ hiện 3 nếu chưa mở rộng
+  const visibleBanners = showAll ? banners : banners.slice(0, 3); 
 
   return (
     <div className="mt-4">

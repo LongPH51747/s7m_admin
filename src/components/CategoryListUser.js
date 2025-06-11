@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { getAllUsers } from '../services/userServices';
+import { getAllUsers, updateUserPermission } from '../services/userServices';
 
 const CategoryListUser = () => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
   const [blockedUsers, setBlockedUsers] = useState({});
-
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -13,10 +12,10 @@ const CategoryListUser = () => {
         const data = await getAllUsers();
         setUsers(data);
 
-        // Khởi tạo trạng thái chặn theo is_allowed
+       
         const initialBlocked = {};
         data.forEach(user => {
-          initialBlocked[user._id] = !user.is_allowed; 
+          initialBlocked[user._id] = !user.is_allowed;
         });
         setBlockedUsers(initialBlocked);
       } catch (error) {
@@ -30,21 +29,31 @@ const CategoryListUser = () => {
     setSearch(e.target.value);
   };
 
-  const handleBlockToggle = (id) => {
+  const handleBlockToggle = async (id) => {
     const isCurrentlyBlocked = blockedUsers[id];
     const confirmMessage = isCurrentlyBlocked
       ? 'Bạn có chắc chắn muốn bỏ chặn người này không?'
       : 'Bạn có chắc chắn muốn chặn người này không?';
 
-    if (window.confirm(confirmMessage)) {
+    if (!window.confirm(confirmMessage)) return;
+
+    const newBlocked = !isCurrentlyBlocked;
+
+    try {
+      
+      await updateUserPermission(id, !newBlocked); 
+
+      // Cập nhật UI
       setBlockedUsers((prev) => ({
         ...prev,
-        [id]: !prev[id],
+        [id]: newBlocked,
       }));
+    } catch (err) {
+      console.error('Lỗi khi cập nhật trạng thái chặn:', err);
+      alert('Không thể cập nhật trạng thái chặn. Vui lòng thử lại.');
     }
   };
 
-  // Lọc người dùng theo họ tên
   const filteredUsers = users.filter((user) =>
     user.fullname?.toLowerCase().includes(search.toLowerCase())
   );
@@ -89,7 +98,7 @@ const CategoryListUser = () => {
                 <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>{user.username}</td>
                 <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>{user.email}</td>
                 <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>{user.telephone}</td>
-                <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>N/A</td>
+                <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>{user.address || 'N/A'}</td>
                 <td className="p-3 border text-center">
                   <input
                     type="checkbox"
@@ -99,8 +108,6 @@ const CategoryListUser = () => {
                 </td>
               </tr>
             );
-
-
           })}
         </tbody>
       </table>
