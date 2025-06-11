@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -10,13 +10,7 @@ import {
   CircularProgress,
   IconButton,
   Container,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Alert,
 } from "@mui/material";
-// import { Select as AntSelect } from "antd";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import TopBar from "../components/TopBar";
 import Footer from "../components/Footer";
@@ -75,7 +69,6 @@ const formatImageData = (variant) => {
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [variants, setVariants] = useState([]);
   const [selectedColor, setSelectedColor] = useState("");
@@ -86,9 +79,6 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [deleteError, setDeleteError] = useState("");
-  const [deleteSuccess, setDeleteSuccess] = useState(false);
 
   // Effect chính để fetch dữ liệu sản phẩm
   useEffect(() => {
@@ -96,7 +86,7 @@ const ProductDetail = () => {
       setLoading(true);
       setError('');
       try {
-        const response = await axios.get(`/api/products/get-products-by-id/id/${id}`, {
+        const response = await axios.get(`https://82ab-2405-4802-4b2-2810-c468-2961-3771-9afb.ngrok-free.app/api/products/get-products-by-id/id/${id}`, {
           headers: {
             'ngrok-skip-browser-warning': 'true'
           }
@@ -244,39 +234,6 @@ const ProductDetail = () => {
       price: currentPrice
     });
     // Thêm logic gọi API ở đây
-  };
-
-  const handleDeleteProduct = async () => {
-    try {
-      setLoading(true);
-      setDeleteError("");
-      
-      await axios.delete(`https://059f-2405-4802-4b2-2810-c455-f308-457-aa78.ngrok-free.app/api/products/delete-product-by-id/id/${id}`, {
-        headers: {
-          'ngrok-skip-browser-warning': 'true'
-        }
-      });
-
-      setDeleteSuccess(true);
-      
-      // Chờ 1.5 giây trước khi chuyển hướng để người dùng thấy thông báo thành công
-      setTimeout(() => {
-        navigate('/products'); // Điều hướng về trang danh sách sản phẩm
-      }, 1500);
-
-    } catch (err) {
-      console.error('Error deleting product:', err);
-      setDeleteError(err.response?.data?.message || 'Không thể xóa sản phẩm. Vui lòng thử lại.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Thêm các handlers cho dialog
-  const handleOpenDeleteDialog = () => setOpenDeleteDialog(true);
-  const handleCloseDeleteDialog = () => {
-    setOpenDeleteDialog(false);
-    setDeleteError("");
   };
 
   const mainContent = (
@@ -457,51 +414,7 @@ const ProductDetail = () => {
         {loading ? loadingView : 
          error ? errorView :
          !product ? noProductView :
-         (
-           <>
-             {/* Thêm nút Delete vào đây, ở đầu component */}
-             <Box display="flex" justifyContent="flex-end" mb={2}>
-               <Button
-                 variant="contained"
-                 color="error"
-                 onClick={handleOpenDeleteDialog}
-                 sx={{ ml: 2 }}
-               >
-                 Xóa Sản Phẩm
-               </Button>
-             </Box>
-
-             {/* Dialog xác nhận xóa */}
-             <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
-               <DialogTitle>Xác nhận xóa sản phẩm</DialogTitle>
-               <DialogContent>
-                 {deleteError && <Alert severity="error" sx={{ mb: 2 }}>{deleteError}</Alert>}
-                 {deleteSuccess ? (
-                   <Alert severity="success">Sản phẩm đã được xóa thành công!</Alert>
-                 ) : (
-                   <Typography>
-                     Bạn có chắc chắn muốn xóa sản phẩm này? Hành động này không thể hoàn tác.
-                   </Typography>
-                 )}
-               </DialogContent>
-               <DialogActions>
-                 <Button onClick={handleCloseDeleteDialog} disabled={deleteSuccess}>
-                   Hủy
-                 </Button>
-                 <Button 
-                   onClick={handleDeleteProduct}
-                   color="error"
-                   disabled={deleteSuccess}
-                   autoFocus
-                 >
-                   {loading ? <CircularProgress size={24} /> : "Xóa"}
-                 </Button>
-               </DialogActions>
-             </Dialog>
-
-             {mainContent}
-           </>
-         )}
+         mainContent}
       </Box>
       <Footer />
     </Box>

@@ -27,7 +27,7 @@ const ProductDetail = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(`https://059f-2405-4802-4b2-2810-c455-f308-457-aa78.ngrok-free.app/api/products/get/${id}`, {
+        const response = await axios.get(`https://bd53-2405-4802-4b2-2810-257c-7231-d6d4-719c.ngrok-free.app/api/products/get/${id}`, {
           headers: {
             'ngrok-skip-browser-warning': 'true'
           }

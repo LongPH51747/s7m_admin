@@ -17,7 +17,7 @@ const ProductItem = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('https://059f-2405-4802-4b2-2810-c455-f308-457-aa78.ngrok-free.app/api/products/get-all-products', {
+      const response = await axios.get('https://82ab-2405-4802-4b2-2810-c468-2961-3771-9afb.ngrok-free.app/api/products/get-all-products', {
         headers: {
           'ngrok-skip-browser-warning': 'true'
         }
@@ -34,17 +34,24 @@ const ProductItem = () => {
   const handleDelete = async (productId) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
       try {
-        await axios.delete(`https://059f-2405-4802-4b2-2810-c455-f308-457-aa78.ngrok-free.app/api/products/delete/${productId}`, {
+        setLoading(true);
+        await axios.delete(`https://82ab-2405-4802-4b2-2810-c468-2961-3771-9afb.ngrok-free.app/api/products/delete-product-by-id/id/${productId}`, {
           headers: {
             'ngrok-skip-browser-warning': 'true'
           }
         });
-        // Refresh product list after deletion
-        fetchProducts();
+        
         alert('Xóa sản phẩm thành công!');
+        
+        setTimeout(async () => {
+          await fetchProducts();
+          setLoading(false);
+        }, 1000);
+        
       } catch (error) {
         console.error('Error deleting product:', error);
         alert('Có lỗi xảy ra khi xóa sản phẩm!');
+        setLoading(false);
       }
     }
   };
