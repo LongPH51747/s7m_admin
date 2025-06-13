@@ -1,60 +1,68 @@
-import { createContext, useContext, useEffect, useState } from "react";
+// src/contexts/AuthContext.js
+
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 export const AuthProvider = ({children}) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [loadingAuth, setLoadingAuth] = useState(true);
+    const [accessToken, setAccessToken] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
-        // kiểm tra local storage khi component mount
-        const token = localStorage.getItem('jwtToken');
+        const token = localStorage.getItem('accessToken');
         const storedUser = localStorage.getItem('username');
         const storedRole = localStorage.getItem('userRole');
         const storedUserId = localStorage.getItem('userId');
         const storedFullName = localStorage.getItem('fullName');
 
-        if(token &&  storedUser && storedRole && storedUserId && storedFullName){
+        if(token && storedUser && storedRole && storedUserId && storedFullName){
+            setAccessToken(token);
             setUser ({
                 _id: storedUserId,
                 username: storedUser,
                 role: storedRole,
                 fullName: storedFullName
             });
-            setIsAuthenticated(true)
+            setIsAuthenticated(true);
         }else{
             localStorage.clear();
             setUser(null);
             setIsAuthenticated(false);
+            setAccessToken(null);
         }
-        setLoadingAuth(false)
+        setLoadingAuth(false);
     }, []);
 
-    const login = (userData, accessToken, refreshToken) => {
-        localStorage.setItem('jwtToken', accessToken);
+    // Bọc hàm login trong useCallback, không cần navigate trong dependency vì nó stable
+    const login = useCallback((userData, receivedAccessToken, refreshToken) => {
+        localStorage.setItem('accessToken', receivedAccessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.setItem('userId', userData._id);
         localStorage.setItem('username', userData.username);
         localStorage.setItem('userRole', userData.role);
         localStorage.setItem('fullName', userData.fullName);
 
+        setAccessToken(receivedAccessToken);
         setUser(userData);
         setIsAuthenticated(true);
 
         if(userData.role === 'admin'){
             navigate('/');
         }
-    };
+    }, []); // navigate là stable, có thể bỏ qua
 
-    const logout = () => {
+    // Bọc hàm logout trong useCallback, không cần navigate trong dependency vì nó stable
+    const logout = useCallback(() => {
         localStorage.clear();
         setUser(null);
         setIsAuthenticated(false);
+        setAccessToken(null);
         navigate('/login');
-    };
+    }, []); // navigate là stable, có thể bỏ qua
 
     const value = {
         user,
@@ -62,6 +70,7 @@ export const AuthProvider = ({children}) => {
         loadingAuth,
         login,
         logout,
+        accessToken,
     };
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

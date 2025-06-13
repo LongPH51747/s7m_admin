@@ -1,0 +1,83 @@
+.chat-room-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.chat-room-item:hover {
+    background-color: #f5f5f5;
+}
+
+.chat-room-item.selected {
+    background-color: #e6f7ff; /* Màu nền khi được chọn */
+    border-left: 3px solid #1890ff; /* Border màu xanh làm nổi bật */
+}
+
+.chat-room-avatar-wrapper {
+    position: relative;
+    margin-right: 15px;
+}
+
+.chat-room-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.unread-badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background-color: #ff4d4f; /* Màu đỏ */
+    color: white;
+    border-radius: 50%;
+    padding: 3px 7px;
+    font-size: 0.8em;
+    font-weight: bold;
+    min-width: 25px; /* Đảm bảo đủ rộng cho số 2 chữ số */
+    text-align: center;
+    line-height: 1; /* Căn giữa văn bản theo chiều dọc */
+    transform: translate(25%, 25%); /* Dịch chuyển ra góc */
+}
+
+.chat-room-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Ẩn nội dung tràn */
+}
+
+.chat-room-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.chat-room-username {
+    font-weight: bold;
+    color: #333;
+    font-size: 1.1em;
+    white-space: nowrap; /* Ngăn ngắt dòng */
+    overflow: hidden; /* Ẩn nội dung tràn */
+    text-overflow: ellipsis; /* Hiển thị dấu ba chấm */
+    max-width: 70%; /* Giới hạn chiều rộng để thời gian có chỗ */
+}
+
+.chat-room-time {
+    font-size: 0.9em;
+    color: #888;
+    white-space: nowrap; /* Ngăn ngắt dòng */
+}
+
+.chat-room-last-message {
+    font-size: 0.95em;
+    color: #666;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis; /* Hiển thị dấu ba chấm nếu dài quá */
+}

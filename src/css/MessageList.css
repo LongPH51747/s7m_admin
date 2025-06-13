@@ -1,0 +1,17 @@
+.message-list {
+    flex: 1; /* Cho phép nó chiếm không gian còn lại trong chat-messages-container */
+    overflow-y: auto; /* Cho phép cuộn */
+    padding: 20px;
+    background-color: #fefefe; /* Màu nền nhẹ hơn */
+    display: flex; /* Để căn chỉnh nội dung theo chiều dọc */
+    flex-direction: column; /* Tin nhắn xếp từ trên xuống dưới */
+}
+
+.no-messages {
+    text-align: center;
+    color: #888;
+    margin-top: 50px;
+    font-size: 1.1em;
+}
+
+/* Các khoảng cách và căn chỉnh khác đã được định nghĩa trong ChatMain.css (chat-messages-container) */

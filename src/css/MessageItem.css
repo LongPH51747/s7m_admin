@@ -1,0 +1,104 @@
+.message-item-container {
+    display: flex;
+    align-items: flex-end; /* Căn dưới cùng của bubble */
+    margin-bottom: 10px;
+    max-width: 80%; /* Giới hạn chiều rộng tin nhắn */
+}
+
+.message-item-container.my-message {
+    justify-content: flex-end; /* Căn phải cho tin nhắn của tôi */
+    margin-left: auto; /* Đẩy tin nhắn của tôi sang phải */
+}
+
+.message-item-container.other-message {
+    justify-content: flex-start; /* Căn trái cho tin nhắn của người khác */
+    margin-right: auto; /* Đẩy tin nhắn của người khác sang trái */
+}
+
+.message-avatar-wrapper {
+    margin-right: 10px; /* Khoảng cách giữa avatar và bubble */
+    flex-shrink: 0; /* Ngăn avatar co lại */
+}
+
+.message-item-container.my-message .message-avatar-wrapper {
+    display: none; /* Ẩn avatar của tôi nếu bạn không muốn hiển thị */
+    /* Hoặc bạn có thể di chuyển nó sang bên phải nếu muốn */
+    /* margin-left: 10px;
+    margin-right: 0; */
+}
+
+
+.message-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.message-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Mặc định căn trái */
+}
+
+.message-item-container.my-message .message-content-wrapper {
+    align-items: flex-end; /* Căn phải cho nội dung và trạng thái của tôi */
+}
+
+.message-bubble {
+    padding: 10px 15px;
+    border-radius: 18px;
+    position: relative;
+    max-width: 100%;
+    word-wrap: break-word; /* Xuống dòng nếu quá dài */
+    line-height: 1.4;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.message-item-container.other-message .message-bubble {
+    background-color: #e0e0e0; /* Màu nền cho tin nhắn người khác */
+    color: #333;
+    border-bottom-left-radius: 2px; /* Góc nhọn */
+}
+
+.message-item-container.my-message .message-bubble {
+    background-color: #1890ff; /* Màu nền cho tin nhắn của tôi */
+    color: white;
+    border-bottom-right-radius: 2px; /* Góc nhọn */
+}
+
+.message-text {
+    margin: 0;
+    font-size: 0.95em;
+}
+
+.message-time {
+    font-size: 0.75em;
+    color: #777; /* Màu thời gian */
+    margin-top: 5px;
+    display: block; /* Đảm bảo thời gian xuống dòng */
+    text-align: right; /* Căn phải cho thời gian */
+}
+
+.message-item-container.my-message .message-time {
+    color: rgba(255, 255, 255, 0.8); /* Màu thời gian trên bubble của tôi */
+    text-align: right;
+}
+
+.message-status {
+    font-size: 0.7em;
+    color: #999;
+    margin-top: 3px;
+    text-align: right; /* Luôn căn phải trạng thái */
+    width: 100%; /* Chiếm toàn bộ chiều rộng của wrapper */
+}
+
+.message-item-container.my-message .message-status {
+    text-align: right; /* Đảm bảo căn phải cho tin nhắn của tôi */
+    color: #888;
+}
+
+.read-status {
+    color: #1890ff; /* Màu xanh nổi bật cho "Đã xem" */
+    font-weight: bold;
+}

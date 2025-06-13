@@ -7,21 +7,24 @@ import { BrowserRouter } from 'react-router-dom';
 
 // Import AuthProvider của bạn
 import { AuthProvider } from './contexts/AuthContext';
-// import { SocketProvider } from './contexts/SocketContext'; // SocketProvider đã được di chuyển vào App.js
-// import { OrderProvider } from './contexts/OrderContext'; // OrderProvider đã được di chuyển vào App.js
-
+// Đảm bảo SocketProvider được import và bao bọc App
+import { SocketProvider } from './contexts/SocketContext'; 
+import { OrderProvider } from './contexts/OrderContext'; // Giữ nguyên nếu bạn có OrderContext
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-    <React.StrictMode>
-        {/* BrowserRouter phải là wrapper ngoài cùng để cung cấp context cho Router */}
+    // <React.StrictMode> {/* Bạn đã chọn tắt StrictMode, giữ nguyên */}
         <BrowserRouter basename="/LongPH51747/s7m_admin"> {/* Đảm bảo basename đúng */}
-            {/* AuthProvider bao bọc App để tất cả các component trong App có thể dùng AuthContext */}
             <AuthProvider>
-                <App />
+                
+                <SocketProvider> 
+                    <OrderProvider> 
+                           <App />
+                    </OrderProvider>
+                </SocketProvider>
             </AuthProvider>
         </BrowserRouter>
-    </React.StrictMode>
+    // </React.StrictMode>
 );
 
 reportWebVitals();
