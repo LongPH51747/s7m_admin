@@ -40,3 +40,18 @@ export const updateOrderStatusApi = async (id, status) => {
   );
 
 };
+
+export const getOrderById = async (id) => {
+  try {
+    const response = await axios.get(`${ORDER_API}/getById/${id}`, {
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+      },
+    });
+
+    return response.data; // giả định API trả về chi tiết đơn hàng
+  } catch (error) {
+    console.error(`❌ Lỗi khi lấy đơn hàng với ID ${id}:`, error);
+    throw error;
+  }
+};

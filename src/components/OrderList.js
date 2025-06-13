@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllOrder } from '../services/orderService';
 import { getAllUsers } from '../services/userServices';
+import { getFullNameAtAddress } from '../services/addressService';
 import statusColors from '../utils/StatusColors';
 
 const CategoryDetailProduct = () => {
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
+  const [addressMap, setAddressMap] = useState({});
   const [search, setSearch] = useState('');
   const [sortAsc, setSortAsc] = useState(false);
   const navigate = useNavigate();
@@ -20,6 +22,17 @@ const CategoryDetailProduct = () => {
         ]);
         setOrders(orderData);
         setUsers(userData);
+
+        const addressMapTemp = {};
+        for (const order of orderData) {
+          try {
+            const fullName = await getFullNameAtAddress(order.id_address);
+            addressMapTemp[order.id_address] = fullName || 'Không rõ';
+          } catch {
+            addressMapTemp[order.id_address] = 'Không rõ';
+          }
+        }
+        setAddressMap(addressMapTemp);
       } catch (error) {
         console.error('Lỗi khi tải dữ liệu:', error);
       }
@@ -29,7 +42,7 @@ const CategoryDetailProduct = () => {
 
   const filteredOrders = orders
     .filter(order =>
-      order._id.toLowerCase().includes(search.toLowerCase())
+      (`SMT${order._id}`).toLowerCase().includes(search.toLowerCase())
     )
     .sort((a, b) =>
       sortAsc
@@ -72,11 +85,11 @@ const CategoryDetailProduct = () => {
               <tr
                 key={order._id}
                 className="bg-gray-50 border-b cursor-pointer hover:bg-gray-100"
-                onClick={() => navigate(`/orders/${order._id}`)}
+                onClick={() => navigate(`/orders/SMT${order._id}`)}
               >
-                <td className="p-3 font-medium">{order._id}</td>
+                <td className="p-3 font-medium">SMT{order._id}</td>
                 <td className="p-3">{getUserNameById(order.userId)}</td>
-                <td className="p-3">{order.id_address}</td>
+                <td className="p-3">{addressMap[order.id_address] || '...'}</td>
                 <td className="p-3">{new Date(order.createdAt).toLocaleDateString()}</td>
                 <td className="p-3">
                   <span className={`px-4 py-1 rounded-full font-semibold text-sm ${statusColors[order.status]}`}>
