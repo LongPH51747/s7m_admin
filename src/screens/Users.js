@@ -1,6 +1,6 @@
 import React from 'react';
 import Sidebar from '../components/Sidebar.js';
-import CategoryListUser from '../components/CategoryListUser.js';
+import CategoryListUser from '../components/ListUser.js';
 import HeaderTwo from '../components/HeaderTwo.js';
 
 const Users = () => {

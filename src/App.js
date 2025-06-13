@@ -8,7 +8,7 @@ import Orders from './screens/Orders';
 import OrderDetail from './screens/OrderDetail';
 
 // Component dùng context
-import CategoryDetailProduct from './components/CategoryDetailProduct';
+import CategoryDetailProduct from './components/OrderList';
 import OrderDetailPage from './components/OrderDetailPage';
 
 // Context

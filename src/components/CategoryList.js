@@ -17,6 +17,8 @@ const CategoryList = () => {
     const fetchCategories = async () => {
       try {
         const data = await getAllCategories();
+        console.log("dataCate", data);
+        
         setCategories(data);
       } catch (error) {
         console.error('Lỗi khi lấy danh mục:', error);
@@ -78,7 +80,8 @@ const CategoryList = () => {
     const slug = slugSource.toLowerCase().replace(/\s+/g, '-');
     navigate(`/category/${slug}`);
   };
-
+  console.log("categori",categories);
+  
   const visibleCategories = showAll ? categories : categories.slice(0, 4); // ✅ Hiển thị 4 danh mục ban đầu
 
   return (

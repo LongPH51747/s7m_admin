@@ -45,8 +45,8 @@ const OrderDetailPage = () => {
 
           <div className="bg-white p-4 rounded shadow">
             <h2 className="font-bold text-lg mb-2">Thông Tin Khách Hàng</h2>
-            <p>Tên: <strong>{order.customer.name}</strong></p>
-            <p>Email: {order.customer.email}</p>
+            <p>Tên người nhận: <strong>{order.customer.name}</strong></p>
+            {/* <p>Email: {order.customer.email}</p> */}
             <p>Điện thoại: {order.customer.phone}</p>
             <p>Địa chỉ: {order.customer.address}</p>
           </div>

@@ -4,20 +4,22 @@ import { getAllUsers, updateUserPermission } from '../services/userServices';
 const CategoryListUser = () => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
-  const [blockedUsers, setBlockedUsers] = useState({});
 
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const data = await getAllUsers();
-        setUsers(data);
+        console.log("day la user", data);
 
-       
-        const initialBlocked = {};
-        data.forEach(user => {
-          initialBlocked[user._id] = !user.is_allowed;
-        });
-        setBlockedUsers(initialBlocked);
+        // Đảm bảo data là một mảng
+        if (Array.isArray(data)) {
+          setUsers(data);
+        } else if (data && Array.isArray(data.data)) { // Trường hợp API trả về { data: [...] }
+          setUsers(data.data);
+        } else {
+          console.warn("Dữ liệu trả về từ getAllUsers không phải là mảng hợp lệ:", data);
+          setUsers([]);
+        }
       } catch (error) {
         console.error('Lỗi khi lấy danh sách người dùng:', error);
       }
@@ -30,24 +32,42 @@ const CategoryListUser = () => {
   };
 
   const handleBlockToggle = async (id) => {
-    const isCurrentlyBlocked = blockedUsers[id];
-    const confirmMessage = isCurrentlyBlocked
-      ? 'Bạn có chắc chắn muốn bỏ chặn người này không?'
-      : 'Bạn có chắc chắn muốn chặn người này không?';
+    console.log("id truyen vao: ", id);
+    
+    const userToToggle = users.find(user => user._id === id);
+    
+    console.log(userToToggle._id);
+    
+    if (!userToToggle) {
+      console.error("Không tìm thấy người dùng với ID:", id);
+      return;
+    }
+
+    // Xác định trạng thái hiện tại của `is_allowed`
+    // Nếu `is_allowed` là true, tức là người dùng hiện đang được phép (chưa bị chặn)
+    // Nếu `is_allowed` là false, tức là người dùng hiện đang bị chặn
+    const isCurrentlyAllowed = userToToggle.is_allowed;
+
+    const confirmMessage = isCurrentlyAllowed
+      ? 'Bạn có chắc chắn muốn chặn người này không?' // Hiện tại đang được phép, hỏi chặn
+      : 'Bạn có chắc chắn muốn bỏ chặn người này không?'; // Hiện tại đang bị chặn, hỏi bỏ chặn
 
     if (!window.confirm(confirmMessage)) return;
 
-    const newBlocked = !isCurrentlyBlocked;
+    // Trạng thái `is_allowed` mới sẽ là ngược lại của trạng thái hiện tại
+    const newIsAllowedStatus = !isCurrentlyAllowed;
 
     try {
-      
-      await updateUserPermission(id, !newBlocked); 
+      // Gửi request cập nhật trạng thái mới
+      // payload là { is_allowed: true/false }
+      await updateUserPermission(id, { is_allowed: newIsAllowedStatus });
 
-      // Cập nhật UI
-      setBlockedUsers((prev) => ({
-        ...prev,
-        [id]: newBlocked,
-      }));
+      // Cập nhật UI: Tạo một bản sao của mảng users và cập nhật user cụ thể
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user._id === id ? { ...user, is_allowed: newIsAllowedStatus } : user
+        )
+      );
     } catch (err) {
       console.error('Lỗi khi cập nhật trạng thái chặn:', err);
       alert('Không thể cập nhật trạng thái chặn. Vui lòng thử lại.');
@@ -78,31 +98,32 @@ const CategoryListUser = () => {
       <table className="w-full table-auto border-collapse">
         <thead>
           <tr className="bg-gray-100 text-left">
-            <th className="p-3 border">Họ và tên</th>
             <th className="p-3 border">Tên người dùng</th>
+            {/* <th className="p-3 border">Tên người dùng</th> */}
             <th className="p-3 border">Email</th>
             <th className="p-3 border">SĐT</th>
-            <th className="p-3 border">Địa chỉ</th>
-            <th className="p-3 border text-center">Chặn</th>
+            {/* <th className="p-3 border">Địa chỉ</th> */}
+            <th className="p-3 border text-center">Trạng thái</th> {/* Đổi tên cột */}
           </tr>
         </thead>
         <tbody>
           {filteredUsers.map((user) => {
-            const isBlocked = blockedUsers[user._id];
+            // `isBlocked` là true nếu `is_allowed` là false
+            const isBlocked = user.is_allowed === false;
             return (
               <tr
                 key={user._id}
                 className={`border-b transition-opacity duration-300 ${isBlocked ? 'opacity-50' : 'opacity-100'}`}
               >
                 <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>{user.fullname}</td>
-                <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>{user.username}</td>
+                {/* <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>{user.username}</td> */}
                 <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>{user.email}</td>
                 <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>{user.telephone}</td>
-                <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>{user.address || 'N/A'}</td>
+                {/* <td className={`p-3 border ${isBlocked ? 'font-normal' : 'font-semibold'}`}>{user.address || 'N/A'}</td> */}
                 <td className="p-3 border text-center">
                   <input
                     type="checkbox"
-                    checked={!!isBlocked}
+                    checked={isBlocked} // Checkbox được chọn nếu người dùng BỊ chặn (is_allowed === false)
                     onChange={() => handleBlockToggle(user._id)}
                   />
                 </td>

@@ -1,18 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X } from 'lucide-react';
-import {
-  getAllBanners,
-  addBanner,
-  deleteBannerById
-} from '../services/bannerService';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-
+import { X, ChevronDown, ChevronUp } from 'lucide-react';
+import { getAllBanners, addBanner, deleteBannerById } from '../services/bannerService';
 
 const Slider = () => {
   const [banners, setBanners] = useState([]);
-  const [showAll, setShowAll] = useState(false); 
+  const [showAll, setShowAll] = useState(false);
   const fileInputRef = useRef(null);
 
+  // Format base64 string if needed
   const formatBase64 = (base64, type = 'image/png') => {
     if (!base64 || typeof base64 !== 'string') return '';
     return base64.startsWith('data:image')
@@ -20,22 +15,25 @@ const Slider = () => {
       : `data:${type};base64,${base64}`;
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getAllBanners();
-        const array = Array.isArray(data) ? data : data.data || [];
-        const formatted = array.map(b => ({
-          ...b,
-          banner_image_base64: formatBase64(b.banner_image_base64, b.banner_image_type)
-        }));
-        setBanners(formatted);
-      } catch (err) {
-        console.error('GET error:', err);
-        setBanners([]);
-      }
-    };
+  const fetchData = async () => {
+    try {
+      console.log("đã chạy vào fetchData");
+      
+      const data = await getAllBanners();
+      console.log("data:", data);
+      
+      const formatted = data.map(b => ({
+        ...b,
+        banner_image_base64: formatBase64(b.banner_image_base64, b.banner_image_type)
+      }));
+      setBanners(formatted);
+    } catch (err) {
+      console.error('❌ GET error:', err);
+      setBanners([]);
+    }
+  };
 
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -54,21 +52,13 @@ const Slider = () => {
         banner_image_type: file.type
       };
 
-      const isConfirmed = window.confirm('Bạn có muốn thêm banner không?');
-      if (!isConfirmed) return;
+      if (!window.confirm('Bạn có muốn thêm banner?')) return;
 
       try {
-        const newItem = await addBanner(newBanner);
-        setBanners(prev => [
-          ...prev,
-          {
-            ...newItem,
-            banner_image_base64: formatBase64(newItem.banner_image_base64, newItem.banner_image_type)
-          }
-        ]);
-        window.location.reload();
-      } catch (error) {
-        console.error('POST error:', error);
+        await addBanner(newBanner);
+        await fetchData(); // reload banners
+      } catch (err) {
+        console.error('❌ POST error:', err);
       }
     };
 
@@ -76,52 +66,53 @@ const Slider = () => {
   };
 
   const handleRemoveBanner = async (id) => {
-    if (!window.confirm('Bạn có chắc muốn xóa banner này không?')) return;
+    if (!window.confirm('Bạn có chắc muốn xoá banner này không?')) return;
 
     try {
       await deleteBannerById(id);
       setBanners(prev => prev.filter(b => b._id !== id));
     } catch (err) {
-      console.error('DELETE error:', err);
+      console.error('❌ DELETE error:', err);
     }
   };
 
-  const visibleBanners = showAll ? banners : banners.slice(0, 3); 
+  const visibleBanners = showAll ? banners : banners.slice(0, 3);
 
   return (
     <div className="mt-4">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Danh mục Banner</h2>
+
         {banners.length > 3 && !showAll && (
-  <button
-    onClick={() => setShowAll(true)}
-    className="flex items-center gap-2 px-3 py-1 text-sm font-medium text-white bg-blue-500 rounded-full hover:bg-blue-600 shadow"
-  >
-    <ChevronDown size={16} /> Xem thêm
-  </button>
-)}
+          <button
+            onClick={() => setShowAll(true)}
+            className="flex items-center gap-2 px-3 py-1 text-sm font-medium text-white bg-blue-500 rounded-full hover:bg-blue-600 shadow"
+          >
+            <ChevronDown size={16} /> Xem thêm
+          </button>
+        )}
 
-{showAll && (
-  <button
-    onClick={() => setShowAll(false)}
-    className="flex items-center gap-2 px-3 py-1 text-sm font-medium text-white bg-red-500 rounded-full hover:bg-red-600 shadow"
-  >
-    <ChevronUp size={16} /> Thu gọn
-  </button>
-)}
-
+        {showAll && (
+          <button
+            onClick={() => setShowAll(false)}
+            className="flex items-center gap-2 px-3 py-1 text-sm font-medium text-white bg-red-500 rounded-full hover:bg-red-600 shadow"
+          >
+            <ChevronUp size={16} /> Thu gọn
+          </button>
+        )}
       </div>
 
       <div className="flex flex-wrap gap-4">
         {visibleBanners.map((banner) => (
           <div
             key={banner._id}
-            className="relative w-72 h-44 rounded-md overflow-hidden shadow-md opacity-100"
+            className="relative w-72 h-44 rounded-md overflow-hidden shadow-md"
           >
             <img
               src={banner.banner_image_url}
               alt={banner.banner_name}
               className="object-cover w-full h-full"
+              onError={() => console.warn('❌ Không load được ảnh', banner)}
             />
             <button
               onClick={() => handleRemoveBanner(banner._id)}
