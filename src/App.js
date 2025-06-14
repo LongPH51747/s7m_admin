@@ -5,6 +5,7 @@ import HomeProduct from "./screens/HomeProduct.jsx";
 import DetailProduct from "./screens/DetailProduct.jsx";
 import ProductScreen from "./screens/ProductScreen.jsx";
 import AddProduct from './screens/AddProduct';
+import UpdateProduct from './screens/UpdateProduct';
 import React from "react";
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Route path="/product/:id" element={<DetailProduct />} />
         <Route path="/product" element={<ProductScreen/>} />
         <Route path="/add-product" element={<AddProduct />} />
+        <Route path="/products/edit/:id" element={<UpdateProduct />} />
       </Routes>
     </Router>
   );

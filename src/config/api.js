@@ -5,16 +5,16 @@
 const CORS_PROXY = 'https://corsproxy.io/?';
 
 // API Base URL - use relative path when proxy is configured
-const API_BASE = 'https://82ab-2405-4802-4b2-2810-c468-2961-3771-9afb.ngrok-free.app/api';
+const API_BASE = 'https://7f47-2405-4802-1cdd-790-fd65-3bce-f97a-9cd1.ngrok-free.app/api';
 
 // Endpoints
 const ENDPOINTS = {
   // Products
   CREATE_PRODUCT: `${API_BASE}/products/create-product`,
-  GET_PRODUCTS: `${API_BASE}/products`,
-  GET_PRODUCT: (id) => `${API_BASE}/products/${id}`,
-  UPDATE_PRODUCT: (id) => `${API_BASE}/products/${id}`,
-  DELETE_PRODUCT: (id) => `${API_BASE}/products/${id}`,
+  GET_PRODUCTS: `${API_BASE}/products/get-all-products`,
+  GET_PRODUCT_BY_ID: (id) => `${API_BASE}/products/get-products-by-id/id/${id}`,
+  UPDATE_PRODUCT_BY_ID: (id) => `${API_BASE}/products/update-product-by-id/id/${id}`,
+  DELETE_PRODUCT_BY_ID: (id) => `${API_BASE}/products/delete-product-by-id/id/${id}`,
   
   // Categories
   GET_ALL_CATEGORIES: `${API_BASE}/categories/get-all-categories`,

@@ -6,6 +6,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import '../css/ProductItem.css';
+import { ENDPOINTS } from '../config/api';
 
 const ProductItem = () => {
   const [products, setProducts] = useState([]);
@@ -17,7 +18,7 @@ const ProductItem = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get('https://82ab-2405-4802-4b2-2810-c468-2961-3771-9afb.ngrok-free.app/api/products/get-all-products', {
+      const response = await axios.get(ENDPOINTS.GET_PRODUCTS, {
         headers: {
           'ngrok-skip-browser-warning': 'true'
         }
@@ -35,7 +36,7 @@ const ProductItem = () => {
     if (window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
       try {
         setLoading(true);
-        await axios.delete(`https://82ab-2405-4802-4b2-2810-c468-2961-3771-9afb.ngrok-free.app/api/products/delete-product-by-id/id/${productId}`, {
+        await axios.delete(ENDPOINTS.DELETE_PRODUCT_BY_ID(productId), {
           headers: {
             'ngrok-skip-browser-warning': 'true'
           }
@@ -93,8 +94,13 @@ const ProductItem = () => {
                       <VisibilityIcon />
                     </IconButton>
                   </Link>
-                  <Link to={`/edit-product/${product._id}`} className="action-button">
-                    <IconButton className="edit-button">
+                  <Link to={`/products/edit/${product._id}`} className="action-button">
+                    <IconButton className="edit-button" sx={{
+                      color: 'primary.main',
+                      '&:hover': {
+                        backgroundColor: 'rgba(25, 118, 210, 0.04)'
+                      }
+                    }}>
                       <EditIcon />
                     </IconButton>
                   </Link>
@@ -120,6 +126,11 @@ const ProductItem = () => {
                   <Typography variant="h6" className="product-price">
                     {product.product_price?.toLocaleString('vi-VN')}VNĐ
                   </Typography>
+                  {Array.isArray(product.product_variant) && (
+                    <Typography variant="body2" className="product-quantity" sx={{ color: '#1976d2', fontWeight: 500, mt: 1 }}>
+                      Số lượng: {product.product_variant.reduce((sum, v) => sum + (parseInt(v.variant_quantity) || 0), 0)}
+                    </Typography>
+                  )}
                 </Link>
               </CardContent>
             </Card>

@@ -624,7 +624,7 @@ const AddProduct = () => {
                             Upload
                           </Button>
                         </label>
-                        {variant.variant_image_url && (
+                        {variant.variant_image_url && typeof variant.variant_image_url === 'string' && variant.variant_image_url.trim() !== '' && (
                           <img
                             src={variant.variant_image_url}
                             alt="Preview"

@@ -44,7 +44,8 @@ const Footer = () => (
                 <h4>Download App</h4>
                 <p className='footer-app-desc'>Save $3 with App New User Only</p>
                 <div className='footer-apps'>
-                    <img src="" alt="QR" className="footer-qr" />
+                    {/* Nếu có QR code, truyền src vào đây. Nếu không, không render img */}
+                    {/* <img src={qrCodeSrc} alt="QR" className="footer-qr" /> */}
                     <div>
                         <img src={ggPlay} alt="Google Play" className="footer-store" />
                         <img src={appStore} alt="App Store" className="footer-store" />
