@@ -43,16 +43,16 @@ export const updateUserPermission = async (userId, is_allowed) => {
 
 export const getUserById = async (id) => {
   try {
-    const response = await axios.get(`${USER_API}/get-by-id/id/${id}`, {
+    const response = await axios.get(`${USER_API}/get-by-id/${id}`, { // ✅ đúng
       headers: {
         'ngrok-skip-browser-warning': 'true',
       },
     });
-
-    return response.data; // giả định API trả về user object
+    return response.data;
   } catch (error) {
     console.error(`❌ Lỗi khi lấy user với ID ${id}:`, error);
     throw error;
   }
 };
+
 

@@ -1,18 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { getOrderById } from '../services/orderService';
-import { getUserById } from '../services/userServices';
-import { getFullNameAtAddress } from '../services/addressService';
+import { getOrderById, updateOrderStatusApi } from '../services/orderService';
+import { getByIdAddress } from '../services/addressService';
 import statusColors from '../utils/StatusColors';
 
 const OrderDetailPage = () => {
-  const { orderCode } = useParams(); // SMT + _id
+  const { orderCode } = useParams();
   const rawId = orderCode.replace(/^SMT/, '');
 
   const [order, setOrder] = useState(null);
-  const [user, setUser] = useState(null);
-  const [receiverName, setReceiverName] = useState('');
+  const [receiverName, setReceiverName] = useState('...');
+  const [phone, setPhone] = useState('...');
+  const [address, setAddress] = useState('...');
   const [newStatus, setNewStatus] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -21,28 +22,44 @@ const OrderDetailPage = () => {
         setOrder(orderData);
         setNewStatus(orderData.status);
 
-        const userData = await getUserById(orderData.userId);
-        setUser(userData);
+       
+          const addressInfo = await getByIdAddress(orderData.id_address._id);
+          console.log("orderdata.address", orderData.id_address );
+          console.log( "orderdata", orderData);
+          
+          
+          console.log("📍 Thông tin địa chỉ:", addressInfo);
 
-        const fullName = await getFullNameAtAddress(orderData.id_address);
-        setReceiverName(fullName);
+          setReceiverName(addressInfo?.fullName || 'Không rõ');
+          setPhone(addressInfo?.phone_number || 'Không rõ');
+          setAddress(addressInfo?.addressDetail || 'Không rõ');
+        
+          console.warn('⚠️ Đơn hàng không có id_address.');
+        
       } catch (err) {
-        console.error('Lỗi khi tải chi tiết đơn hàng:', err);
+        console.error('❌ Lỗi khi tải chi tiết đơn hàng:', err);
       }
     };
+
     fetchDetail();
   }, [rawId]);
 
-  if (!order || !user || !receiverName) {
-    return (
-      <div className="p-6 text-center text-gray-600">
-        ⏳ Đang tải thông tin đơn hàng...
-      </div>
-    );
-  }
+  const handleUpdateStatus = async () => {
+    try {
+      setIsUpdating(true);
+      await updateOrderStatusApi(rawId, { status: newStatus });
+      alert("✅ Cập nhật trạng thái thành công!");
+    } catch (err) {
+      alert("❌ Cập nhật thất bại!");
+      console.error("Lỗi cập nhật trạng thái:", err);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
-  const total = order.items?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
-  const finalTotal = total - (order.voucher || 0);
+  if (!order) {
+    return <div className="p-6 text-center text-gray-600">⏳ Đang tải thông tin đơn hàng...</div>;
+  }
 
   return (
     <div className="max-w-5xl mx-auto p-6 border-2 border-blue-500 rounded-lg bg-gray-50">
@@ -58,16 +75,15 @@ const OrderDetailPage = () => {
           <div className="bg-white p-4 rounded shadow">
             <h2 className="font-bold text-lg mb-2">Thông Tin Đặt Hàng</h2>
             <p>Ngày đặt hàng: <strong>{new Date(order.createdAt).toLocaleDateString()}</strong></p>
-            <p>Vận chuyển: <strong>{order.shipping}</strong></p>
-            <p>Thanh toán: <strong>{order.paymentMethod}</strong></p>
+            <p>Vận chuyển: <strong>{order.shipping || '...'}</strong></p>
+            <p>Thanh toán: <strong>{order.paymentMethod || 'Không rõ'}</strong></p>
           </div>
 
           <div className="bg-white p-4 rounded shadow">
             <h2 className="font-bold text-lg mb-2">Thông Tin Khách Hàng</h2>
-            <p>Tên người đặt: <strong>{user.username}</strong></p>
             <p>Tên người nhận: <strong>{receiverName}</strong></p>
-            <p>Điện thoại: {order.customer?.phone || '...'}</p>
-            <p>Địa chỉ: {order.customer?.address || '...'}</p>
+            <p>Điện thoại: {phone}</p>
+            <p>Địa chỉ: {address}</p>
           </div>
         </div>
 
@@ -79,55 +95,25 @@ const OrderDetailPage = () => {
               value={newStatus}
               onChange={(e) => setNewStatus(e.target.value)}
             >
-              <option>Chờ xác nhận</option>
-              <option>Đang giao</option>
-              <option>Giao thành công</option>
-              <option>Hoàn hàng</option>
-              <option>Hủy</option>
+              {/* <option value="Chờ xác nhận">Chờ xác nhận</option> */}
+              <option value="Đã xác nhận">Đã xác nhận</option>
+              <option value="Đang giao">Đang giao</option>
+              <option value="Giao thành công">Giao thành công</option>
+              {/* <option value="Hoàn hàng">Hoàn hàng</option> */}
+              <option value="Hủy">Hủy</option>
             </select>
             <button
-              onClick={() => {
-                // gọi API update nếu có
-                console.log("Update status:", newStatus);
-              }}
               className="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700"
+              onClick={handleUpdateStatus}
+              disabled={isUpdating}
             >
-              Cập nhật
+              {isUpdating ? 'Đang cập nhật...' : 'Cập nhật'}
             </button>
           </div>
 
           <div className="bg-white p-4 rounded shadow">
             <h2 className="font-bold text-lg mb-2">Sản phẩm</h2>
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-1">Tên</th>
-                  <th className="text-center py-1">SL</th>
-                  <th className="text-right py-1">Giá</th>
-                </tr>
-              </thead>
-              <tbody>
-                {order.items?.map((item, idx) => (
-                  <tr key={idx} className="border-b">
-                    <td className="py-1">{item.name}</td>
-                    <td className="text-center py-1">{item.quantity}</td>
-                    <td className="text-right py-1">{item.price.toLocaleString()}₫</td>
-                  </tr>
-                ))}
-                <tr>
-                  <td colSpan="2" className="text-right font-semibold pt-2">Tổng:</td>
-                  <td className="text-right pt-2">{total.toLocaleString()}₫</td>
-                </tr>
-                <tr>
-                  <td colSpan="2" className="text-right">Voucher:</td>
-                  <td className="text-right text-red-500">-{order.voucher?.toLocaleString() || 0}₫</td>
-                </tr>
-                <tr>
-                  <td colSpan="2" className="text-right font-bold pt-2">Thanh toán:</td>
-                  <td className="text-right font-bold text-green-600">{finalTotal.toLocaleString()}₫</td>
-                </tr>
-              </tbody>
-            </table>
+            <p className="text-gray-500 italic">Chưa có dữ liệu sản phẩm.</p>
           </div>
         </div>
       </div>

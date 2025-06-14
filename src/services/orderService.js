@@ -35,19 +35,34 @@ export const getAllOrder = async () => {
 //   }
 // };
 export const updateOrderStatusApi = async (id, status) => {
- await axios.patch(`${ORDER_API}/updateStatus/${id}`, 
-    status,
-  );
-
+  try {
+    await axios.patch(`${ORDER_API}/updateStatus/${id}`, 
+       status , // ✅ sửa lại thành object JSON đúng
+      {
+        headers: {
+          'ngrok-skip-browser-warning': 'true',
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+  } catch (error) {
+    console.error("❌ Lỗi cập nhật trạng thái:", error);
+    throw error;
+  }
 };
+
 
 export const getOrderById = async (id) => {
   try {
+     console.log("đã nhảy vào getOrderById");
     const response = await axios.get(`${ORDER_API}/getById/${id}`, {
       headers: {
         'ngrok-skip-browser-warning': 'true',
       },
     });
+     console.log("đã chạy responseOrderById");
+
+console.log("responseOrderById", response.data);
 
     return response.data; // giả định API trả về chi tiết đơn hàng
   } catch (error) {
