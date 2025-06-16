@@ -7,7 +7,7 @@ import '../css/AdminChat.css';
 const AdminChat = () => {
     const { 
         isSocketReady,
-        chatRooms, // Lấy chatRooms từ SocketContext
+        chatRooms, 
         selectedRoomId,
         messages,
         isLoadingChatRooms,
@@ -17,14 +17,23 @@ const AdminChat = () => {
         selectAdminChatRoom,
         sendAdminMessage,
         onlineUsers,
-        currentUserId // Thêm currentUserId vào đây để truyền xuống MessageBox
+        currentUserId 
     } = useSocket();
 
     const [newMessageInput, setNewMessageInput] = useState('');
 
+    // ✅ Gửi khi submit form (bấm nút)
     const handleSendMessageSubmit = (e) => {
-        e.preventDefault();
+        e?.preventDefault();
+        if (!newMessageInput.trim()) return;
         sendAdminMessage(newMessageInput);
+        setNewMessageInput('');
+    };
+
+    // ✅ Gửi khi Enter trong InputEmoji
+    const handleSendMessageFromInputEmoji = (msg) => {
+        if (!msg?.trim()) return;
+        sendAdminMessage(msg);
         setNewMessageInput('');
     };
 
@@ -33,13 +42,13 @@ const AdminChat = () => {
     }
 
     if (chatRoomsError) {
-        return <div className="admin-chat-container"><p>Lỗi tải danh sách phòng chat: {chatRoomsError.message}</p></div>;
+        return <div className="admin-chat-container"><p>Lỗi: {chatRoomsError.message || "Không xác định"}</p></div>;
     }
 
-    if (!isLoadingChatRooms && (!chatRooms || chatRooms.length === 0)) { // Thêm kiểm tra !chatRooms
+    if (!isLoadingChatRooms && (!chatRooms || chatRooms.length === 0)) {
         return (
             <div className="admin-chat-container">
-                <p>Chưa có cuộc trò chuyện nào. Hãy chờ đợi người dùng bắt đầu chat.</p>
+                <p className="no-chat-rooms-fallback">Chưa có cuộc trò chuyện nào. Hãy chờ đợi người dùng bắt đầu chat.</p>
             </div>
         );
     }
@@ -47,7 +56,7 @@ const AdminChat = () => {
     return (
         <div className="admin-chat-container">
             <ChatSidebar
-                chatRooms={chatRooms || []} // Đảm bảo luôn truyền một mảng (hoặc mảng rỗng)
+                chatRooms={chatRooms || []} 
                 selectedRoomId={selectedRoomId}
                 onSelectRoom={selectAdminChatRoom}
             />
@@ -56,13 +65,14 @@ const AdminChat = () => {
                 newMessage={newMessageInput}
                 setNewMessage={setNewMessageInput}
                 handleSendMessage={handleSendMessageSubmit}
+                handleSendMessageFromInput={handleSendMessageFromInputEmoji}
                 isSocketReady={isSocketReady}
                 selectedRoomId={selectedRoomId}
                 isLoadingMessages={isLoadingMessages} 
                 messagesError={messagesError}
                 onlineUsers={onlineUsers} 
-                currentUserId={currentUserId} // Truyền currentUserId xuống
-                chatRooms={chatRooms || []} // Đảm bảo luôn truyền một mảng (hoặc mảng rỗng)
+                currentUserId={currentUserId} 
+                chatRooms={chatRooms || []} 
             />
         </div>
     );

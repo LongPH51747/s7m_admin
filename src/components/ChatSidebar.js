@@ -5,7 +5,11 @@ import moment from 'moment'; // Để định dạng thời gian
 const ChatSidebar = ({ chatRooms, selectedRoomId, onSelectRoom }) => {
     return (
         <div className="chat-sidebar">
-            <h2>Chat Rooms</h2>
+            <div className='header'>
+                <img src={require('../logo.png')} className='logo' alt="" />
+                <h2 className='title'>Hỗ trợ khách hàng</h2>
+            </div>
+            
             <div className="room-list">
                 {chatRooms.length === 0 ? (
                     <p className="no-chat-rooms">No chat rooms available.</p>
@@ -29,12 +33,15 @@ const ChatSidebar = ({ chatRooms, selectedRoomId, onSelectRoom }) => {
                                     <span className="unread-badge">{room.unreadCountAdmin}</span>
                                 )}
                             </div>
-                            <p className="last-message-preview">
+                            <div>
+                                <p className="last-message-preview">
                                 {room.lastMessageContent || 'No messages yet.'}
                             </p>
                             <span className="last-message-time">
                                 {room.lastMessageTimestamp ? moment(room.lastMessageTimestamp).fromNow() : ''}
                             </span>
+                            </div>
+                            
                         </div>
                     ))
                 )}
