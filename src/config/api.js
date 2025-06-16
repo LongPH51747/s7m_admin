@@ -1,30 +1,30 @@
-// CORS Proxy URL - you can use any of these services:
+// URL Proxy CORS - bạn có thể sử dụng bất kỳ dịch vụ nào trong số này:
 // - https://cors-anywhere.herokuapp.com/
 // - https://api.allorigins.win/raw?url=
 // - https://corsproxy.io/?
 const CORS_PROXY = 'https://corsproxy.io/?';
 
-// API Base URL - use relative path when proxy is configured
-const API_BASE = 'https://7f47-2405-4802-1cdd-790-fd65-3bce-f97a-9cd1.ngrok-free.app/api';
+// URL cơ sở API - sử dụng đường dẫn tương đối khi proxy được cấu hình
+const API_BASE = 'https://5858-2405-4802-478-8280-513c-6fd1-1481-f232.ngrok-free.app/api';
 
-// Endpoints
+// Các điểm cuối
 const ENDPOINTS = {
-  // Products
-  CREATE_PRODUCT: `${API_BASE}/products/create-product`,
-  GET_PRODUCTS: `${API_BASE}/products/get-all-products`,
-  GET_PRODUCT_BY_ID: (id) => `${API_BASE}/products/get-products-by-id/id/${id}`,
-  UPDATE_PRODUCT_BY_ID: (id) => `${API_BASE}/products/update-product-by-id/id/${id}`,
-  DELETE_PRODUCT_BY_ID: (id) => `${API_BASE}/products/delete-product-by-id/id/${id}`,
+  // Sản phẩm
+  CREATE_PRODUCT: `${API_BASE}/products/create-product`, // Tạo sản phẩm
+  GET_PRODUCTS: `${API_BASE}/products/get-all-products`, // Lấy tất cả sản phẩm
+  GET_PRODUCT_BY_ID: (id) => `${API_BASE}/products/get-products-by-id/id/${id}`, // Lấy sản phẩm theo ID
+  UPDATE_PRODUCT_BY_ID: (id) => `${API_BASE}/products/update-product-by-id/id/${id}`, // Cập nhật sản phẩm theo ID
+  DELETE_PRODUCT_BY_ID: (id) => `${API_BASE}/products/delete-product-by-id/id/${id}`, // Xóa sản phẩm theo ID
   
-  // Categories
-  GET_ALL_CATEGORIES: `${API_BASE}/categories/get-all-categories`,
-  CREATE_CATEGORY: `${API_BASE}/categories/create-category`
+  // Danh mục
+  GET_ALL_CATEGORIES: `${API_BASE}/categories/get-all-categories`, // Lấy tất cả danh mục
+  CREATE_CATEGORY: `${API_BASE}/categories/create-category` // Tạo danh mục
 };
 
-// Helper function to get full URL with CORS proxy
+// Hàm trợ giúp để lấy URL đầy đủ với proxy CORS
 const getFullUrl = (endpoint) => {
   const url = `${API_BASE}${endpoint}`;
-  // Only use CORS proxy in development
+  // Chỉ sử dụng proxy CORS trong môi trường phát triển
   if (process.env.NODE_ENV === 'development') {
     return `${CORS_PROXY}${encodeURIComponent(url)}`;
   }

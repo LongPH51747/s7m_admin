@@ -1,24 +1,24 @@
 import axios from 'axios';
 import { getFullUrl } from './api';
-
+// Tạo một instance axios với các cấu hình mặc định
 const axiosInstance = axios.create({
   headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'ngrok-skip-browser-warning': 'true'
+    'Content-Type': 'application/json',// Định dạng nội dung là JSON
+    'Accept': 'application/json',// Chấp nhận định dạng JSON
+    'ngrok-skip-browser-warning': 'true' // Bỏ qua cảnh báo của ngrok
   },
-  withCredentials: false
+  withCredentials: false// Không gửi cookie theo yêu cầu
 });
 
-// Add request interceptor
+// Thêm interceptor cho yêu cầu
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Use CORS proxy URL
+    // Sử dụng URL proxy CORS
     if (config.url && !config.url.startsWith('http')) {
-      config.url = getFullUrl(config.url);
+      config.url = getFullUrl(config.url); // Lấy URL đầy đủ với proxy
     }
     
-    // Log request data for debugging
+    // Ghi log dữ liệu yêu cầu để gỡ lỗi
     console.log('Request:', {
       url: config.url,
       method: config.method,
@@ -28,15 +28,15 @@ axiosInstance.interceptors.request.use(
     return config;
   },
   (error) => {
-    console.error('Request Error:', error);
+    console.error('Request Error:', error);  // Ghi log lỗi yêu cầu
     return Promise.reject(error);
   }
 );
 
-// Add response interceptor
+// Thêm interceptor cho phản hồi
 axiosInstance.interceptors.response.use(
   (response) => {
-    // Log response data for debugging
+    // Ghi log dữ liệu phản hồi để gỡ lỗi
     console.log('Response:', {
       status: response.status,
       statusText: response.statusText,
@@ -46,7 +46,7 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
-    // Log error details
+    // Ghi log chi tiết lỗi
     if (error.response) {
       console.error('Response Error:', {
         message: error.message,
@@ -56,10 +56,10 @@ axiosInstance.interceptors.response.use(
         headers: error.response.headers
       });
     } else {
-      console.error('Network Error:', error.message);
+      console.error('Network Error:', error.message); // Ghi log lỗi mạng
     }
     return Promise.reject(error);
   }
 );
 
-export default axiosInstance; 
+export default axiosInstance;  // Xuất instance axios
