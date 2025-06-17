@@ -28,10 +28,13 @@ const TopBar = () => {
             className="search-input"
           />
           <FiSearch className="search-icon" />
-        </div>
-        <Link to="/user" className="icon-btn"><FiUser /></Link>
+        </div>       
+       
+        
       </div>
+      
     </div>
+    
   );
 };
 

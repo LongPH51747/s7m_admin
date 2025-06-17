@@ -4,16 +4,18 @@ import Footer from '../components/Footer';
 import TabDraw from '../components/TabDraws';
 import ProductItem from '../components/ProductItem';
 import '../css/HomeProduct.css'; // for layout
-
+import Sidebar from '../components/Sidebar';
+import Header from '../components/Header';
+import TopBar from '../components/TopBar';
 function HomeProduct() {
   return (
     <div className="home-page">
-      <TabBar />
+      <TopBar />
 
       <div className="main-content">
-        <aside className="sidebar">
-          <TabDraw />
-        </aside>
+
+          <Sidebar />
+      
         <main className="product-content">
           <div className="top-stats">
             <div className="stat-box">
@@ -33,7 +35,7 @@ function HomeProduct() {
         </main>
       </div>
 
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }

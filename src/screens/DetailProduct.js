@@ -402,6 +402,14 @@ const ProductDetail = () => {
               </Box>
 
 
+              {/* <Button
+                variant="contained"
+                className="add-to-cart"
+                onClick={handleAddToCart}
+                fullWidth
+              >
+                THÊM VÀO GIỎ HÀNG
+              </Button> */}
 
               <Box className="description-section">
                 <Typography variant="h6" className="section-title">
@@ -450,7 +458,7 @@ const ProductDetail = () => {
           ? noProductView
           : mainContent}
       </Box>
-      <Footer />
+      {/* <Footer /> */}
     </Box>
   );
 };

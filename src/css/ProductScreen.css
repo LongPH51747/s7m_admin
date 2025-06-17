@@ -1,29 +1,22 @@
 .container-product {
   width: 100vw;
   min-height: 100vh;
-  background: #f9fafb;
+  background: white;
 }
 
 .body {
   display: flex;
-  margin-top: 32px;
+ 
 }
 
-.left-content {
-  width: 220px;
-  border-right: 1px solid #e5e7eb;
-  min-height: 80vh;
-  background: #fff;
-  padding: 2rem 1rem 2rem 2rem;
-}
+
 
 .right-content {
   flex: 1;
-  padding: 2.5rem 3rem 2rem 3rem;
+  /* padding: 2.5rem 3rem 2rem 3rem; */
   background: #fff;
-  border-radius: 18px;
-  margin: 2rem 2rem 2rem 0;
-  box-shadow: 0 2px 16px #0001;
+ 
+  margin: 1rem 1rem 1rem 1rem;
 }
 
 .product-title {
