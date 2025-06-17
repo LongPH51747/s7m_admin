@@ -4,13 +4,13 @@ import Header from '../components/Header';
 import Slider from '../components/Slider';
 import CategoryList from '../components/CategoryList';
 import HeaderTwo from '../components/HeaderTwo';
-
+import TopBar from '../components/TopBar';
 const CategoryAdmin = () => {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header chiếm toàn bộ chiều ngang */}
       <div className="w-full">
-        <HeaderTwo />
+        <TopBar />
       </div>
 
       {/* Phần nội dung chia thành sidebar + main content */}

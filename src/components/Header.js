@@ -1,5 +1,6 @@
 import React from 'react';
 import { FiSearch } from 'react-icons/fi';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   return (
@@ -9,10 +10,12 @@ const Header = () => {
 
       {/* Nav nằm giữa */}
       <nav className="flex gap-8 text-base mx-auto">
-        <a href="#">Home</a>
-        <a href="#">Contact</a>
-        <a href="#">About</a>
-        <a href="#" className="font-semibold">Sign Up</a>
+       
+        <Link to="/home" className="active">Home</Link>
+        <Link to="/contact">Contact</Link>
+        <Link to="/about">About</Link>
+        <Link to="/signup">Sign Up</Link>
+
       </nav>
 
       {/* Thanh tìm kiếm bên phải */}

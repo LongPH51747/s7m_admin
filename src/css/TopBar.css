@@ -6,8 +6,8 @@
   background-color: #fff;
   font-family: 'Inter', sans-serif;
   gap: 0;
+  border-bottom: lightgray solid 1px ;
 }
-
 .logo {
   font-size: 22px;
   font-weight: 800;

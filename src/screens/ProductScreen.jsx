@@ -5,7 +5,8 @@ import TabDraw from '../components/TabDraws'
 import ProductItem from '../components/ProductItem'
 import Footer from '../components/Footer'
 import "../css/ProductScreen.css";
-
+import HeaderTwo from '../components/HeaderTwo'
+import Sidebar from '../components/Sidebar'
 const ProductScreen = () => {
   const navigate = useNavigate();
 
@@ -18,9 +19,9 @@ const ProductScreen = () => {
     <TopBar/>
         <div className='container-product'>
             <div className='body'>
-                <div className='left-content'>
-                    <TabDraw/>    
-                </div>
+                
+                    <Sidebar/>    
+               
                 <div className='right-content'>
                     <h2 className='product-title'>Danh sách sản phẩm</h2>
                     <div className='button-add'>
@@ -35,7 +36,7 @@ const ProductScreen = () => {
                 </div>
             </div>
         </div>
-        <Footer/>
+        {/* <Footer/> */}
     </>
   )
 }
