@@ -1,0 +1,32 @@
+.tabdraw {
+    width: 200px;
+    background-color: #f7f7f7;
+    height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  
+  .tabdraw ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .tabdraw li {
+    margin: 20px 0;
+    cursor: pointer;
+  }
+  
+  .tabdraw li a {
+    text-decoration: none;
+    color: #222;
+    display: block;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: background 0.2s, color 0.2s;
+  }
+  
+  .tabdraw li a:hover {
+    background: rgba(0, 200, 83, 0.12);
+    color: #00994d;
+  }
+  

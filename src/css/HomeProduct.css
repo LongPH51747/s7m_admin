@@ -1,0 +1,143 @@
+/* ===========================
+   Layout tổng thể trang HomeProduct
+   =========================== */
+.home-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+/* ===========================
+   Khu vực nội dung chính (main content)
+   =========================== */
+.main-content {
+  display: flex;
+  flex: 1;
+  padding: 20px;
+  gap: 20px;
+  margin-top: 64px; /* Height of TopBar */
+}
+
+/* ===========================
+   Sidebar bên trái (TabDraw)
+   =========================== */
+.sidebar {
+  width: 250px;
+  position: fixed;
+  top: 64px; /* Height of TopBar */
+  left: 0;
+  bottom: 0;
+  background-color: white;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+/* ===========================
+   Thanh thống kê (top-stats)
+   =========================== */
+.top-stats {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+/* ===========================
+   Ô thống kê nhỏ (stat-box)
+   =========================== */
+.stat-box {
+  flex: 1;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  font-size: 16px;
+}
+
+.stat-box b {
+  display: block;
+  margin-top: 8px;
+  font-size: 24px;
+  color: #1976d2;
+}
+
+/* ===========================
+   Khu vực nội dung sản phẩm (ProductList)
+   =========================== */
+.product-content {
+  flex: 1;
+  margin-left: 270px; /* sidebar width + gap */
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* ===========================
+   Responsive cho màn hình nhỏ
+   =========================== */
+@media (max-width: 1024px) {
+  .main-content {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: static;
+    width: 100%;
+    margin-bottom: 20px;
+  }
+
+  .product-content {
+    margin-left: 0;
+  }
+
+  .top-stats {
+    flex-direction: column;
+  }
+}
+
+/* ===========================
+   Danh sách sản phẩm dạng ngang (scroll ngang)
+   =========================== */
+.product-list {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  /* Ẩn thanh cuộn ngang trên một số trình duyệt */
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f9fafb;
+}
+
+.product-list::-webkit-scrollbar {
+  height: 8px;
+}
+.product-list::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+}
+.product-list::-webkit-scrollbar-track {
+  background: #f9fafb;
+}
+
+.product-card {
+  min-width: 220px;
+  max-width: 220px;
+  flex: 0 0 220px;
+  /* Giữ nguyên style cũ */
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  text-align: left;
+  box-shadow: 0 2px 8px #0001;
+}
+
+/* Make sure footer stays at bottom */
+footer {
+  margin-top: auto;
+  background-color: white;
+  padding: 20px;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+}

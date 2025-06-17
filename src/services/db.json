@@ -1,0 +1,243 @@
+{
+  "products": [
+    {
+      "id": "1",
+      "categoryId": 1,
+      "imageCover": "image1.jpg",
+      "name": "Áo len cổ lọ phong cách châu Âu",
+      "createdAt": "2023-01-01",
+      "updatedAt": "2023-01-05",
+      "description": "Áo phông trơn nam logo thêu chất cotton, chuẩn form, trẻ trung, thanh lịch",
+      "sold": 100,
+      "rate": 4,
+      "price": 200000,
+      "colors": [
+        "Đỏ",
+        "Xanh",
+        "Đen"
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ]
+    },
+    {
+      "id": "3f33",
+      "name": "da",
+      "categoryId": "2",
+      "imageCover": "",
+      "description": "dasdas",
+      "price": "10000000",
+      "colors": [
+        "Xanh"
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "rate": 4,
+      "sold": 200,
+      "createdAt": "2025-06-05T17:06:52.376Z",
+      "updatedAt": "2025-06-05T17:06:52.376Z"
+    },
+    {
+      "id": "3c49",
+      "name": "quan",
+      "categoryId": "2",
+      "imageCover": "",
+      "description": "dadasd",
+      "price": "1000000",
+      "colors": [
+        "Đen"
+      ],
+      "sizes": [
+        "L",
+        "S",
+        "XS"
+      ],
+      "rate": 0,
+      "sold": 0,
+      "createdAt": "2025-06-05T17:09:23.199Z",
+      "updatedAt": "2025-06-05T17:09:23.199Z"
+    },
+    {
+      "id": "f759",
+      "name": "viet",
+      "categoryId": "2",
+      "imageCover": "",
+      "description": "dsad",
+      "price": "1000",
+      "colors": [
+        "Đỏ"
+      ],
+      "sizes": [
+        "L",
+        "S",
+        "XS"
+      ],
+      "rate": 0,
+      "sold": 0,
+      "createdAt": "2025-06-05T17:10:59.155Z",
+      "updatedAt": "2025-06-05T17:10:59.155Z"
+    },
+    {
+      "id": "7170",
+      "name": "việt",
+      "categoryId": "1",
+      "imageCover": "",
+      "description": "dasdsadas",
+      "price": "999999",
+      "colors": [
+        "Đỏ",
+        "Xanh"
+      ],
+      "sizes": [
+        "S",
+        "M",
+        "L",
+        "XL",
+        "XS"
+      ],
+      "rate": 0,
+      "sold": 0,
+      "createdAt": "2025-06-05T17:29:30.443Z",
+      "updatedAt": "2025-06-05T17:29:30.443Z"
+    },
+    {
+      "id": "5d75",
+      "name": "việt đẹp trai",
+      "categoryId": "1",
+      "imageCover": "",
+      "description": "đâsdasdas",
+      "price": "1003412",
+      "colors": [
+        "Xanh",
+        "Hồng"
+      ],
+      "sizes": [
+        "L",
+        "XL",
+        "XXL"
+      ],
+      "rate": 0,
+      "sold": 0,
+      "createdAt": "2025-06-06T08:43:28.886Z",
+      "updatedAt": "2025-06-06T08:43:28.886Z"
+    }
+  ],
+  "variants": [
+    {
+      "id": "1",
+      "productId": 1,
+      "color": "Đỏ",
+      "size": "S",
+      "price": 200000,
+      "amount": 10,
+      "image": "variant1.jpg"
+    },
+    {
+      "id": "2",
+      "productId": 1,
+      "color": "Đỏ",
+      "size": "M",
+      "price": 210000,
+      "amount": 20,
+      "image": "variant2.jpg"
+    },
+    {
+      "id": "3",
+      "productId": 1,
+      "color": "Xanh",
+      "size": "L",
+      "price": 220000,
+      "amount": 15,
+      "image": "variant3.jpg"
+    },
+    {
+      "id": "9526",
+      "productId": "3f33",
+      "color": "Xanh",
+      "size": "S",
+      "price": "10000000",
+      "amount": 0,
+      "image": ""
+    },
+    {
+      "id": "ce5e",
+      "productId": "3c49",
+      "color": "Đen",
+      "size": "S",
+      "price": "1000000",
+      "amount": "3",
+      "image": ""
+    },
+    {
+      "id": "bc15",
+      "productId": "f759",
+      "color": "Đỏ",
+      "size": "S",
+      "price": "1000",
+      "amount": "2",
+      "image": ""
+    },
+    {
+      "id": "5d94",
+      "productId": "7170",
+      "color": "Đỏ",
+      "size": "S",
+      "price": "23321000",
+      "amount": "11110",
+      "image": ""
+    },
+    {
+      "id": "039a",
+      "productId": "7170",
+      "color": "Xanh",
+      "size": "S",
+      "price": "1000000",
+      "amount": 0,
+      "image": ""
+    },
+    {
+      "id": "99c1",
+      "productId": "7170",
+      "color": "Xanh",
+      "size": "S",
+      "price": "999999",
+      "amount": 0,
+      "image": ""
+    },
+    {
+      "id": "cf71",
+      "productId": "5d75",
+      "color": "Xanh",
+      "size": "S",
+      "price": "1000",
+      "amount": "16543220",
+      "image": ""
+    },
+    {
+      "id": "be07",
+      "productId": "5d75",
+      "color": "Hồng",
+      "size": "S",
+      "price": "1003412",
+      "amount": 0,
+      "image": ""
+    }
+  ],
+  "categories": [
+    {
+      "id": "1",
+      "name": "Áo len"
+    },
+    {
+      "id": "2",
+      "name": "Áo thun"
+    }
+  ]
+}

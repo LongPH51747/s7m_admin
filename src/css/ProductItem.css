@@ -1,0 +1,217 @@
+/* Tổng thể trang sản phẩm */
+.product-page {
+  background-color: #ffffff;
+  min-height: 100vh;
+  padding: 24px 0;
+}
+
+/* Header của danh sách sản phẩm */
+.product-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 16px 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+.product-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.add-product-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.3);
+}
+
+.add-product-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+}
+
+/* Card sản phẩm */
+.product-card {
+  position: relative;
+  background: #ffffff;
+  border-radius: 16px !important;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05) !important;
+}
+
+.product-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Container ảnh sản phẩm */
+.product-image-container {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  overflow: hidden;
+}
+
+.product-image {
+  width: 100%;
+  height: 100% !important;
+  object-fit: cover;
+  background-color: #f9fafb;
+  transition: transform 0.4s ease;
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.1);
+}
+
+/* Các nút hành động trên ảnh */
+.product-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.product-image-container:hover .product-actions {
+  opacity: 1;
+}
+
+.action-button {
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.action-button:hover {
+  transform: scale(1.2);
+}
+
+.view-button {
+  color: #3b82f6 !important;
+}
+
+.edit-button {
+  color: #10b981 !important;
+}
+
+.delete-button {
+  color: #ef4444 !important;
+}
+
+/* Nội dung trong card */
+.product-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-description {
+  color: #6b7280;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.product-price {
+  color: #ef4444;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.product-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.MuiCardContent-root {
+  padding: 16px !important;
+}
+
+.loading-state {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  font-size: 1.2rem;
+  color: #6b7280;
+}
+
+/* Animation fade-in */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.MuiGrid-item {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .product-header {
+    margin: 0 16px 24px;
+  }
+}
+
+@media (max-width: 960px) {
+  .product-image-container {
+    height: 240px;
+  }
+}
+
+@media (max-width: 600px) {
+  .product-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+    margin: 0 16px 16px;
+    padding: 16px;
+  }
+
+  .product-image-container {
+    height: 200px;
+  }
+
+  .product-name {
+    font-size: 14px !important;
+  }
+
+  .product-description {
+    font-size: 12px !important;
+  }
+
+  .product-price {
+    font-size: 16px !important;
+  }
+}
