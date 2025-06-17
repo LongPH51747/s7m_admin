@@ -13,7 +13,7 @@ const TopBar = () => {
 
       {/* Navigation */}
       <div className="nav">
-        <Link to="/home" className="active">Home</Link>
+        <Link to="/home" >Home</Link>
         <Link to="/contact">Contact</Link>
         <Link to="/about">About</Link>
         <Link to="/signup">Sign Up</Link>
@@ -29,8 +29,6 @@ const TopBar = () => {
           />
           <FiSearch className="search-icon" />
         </div>
-        <Link to="/wishlist" className="icon-btn"><FiHeart /></Link>
-        <Link to="/cart" className="icon-btn"><FiShoppingCart /></Link>
         <Link to="/user" className="icon-btn"><FiUser /></Link>
       </div>
     </div>

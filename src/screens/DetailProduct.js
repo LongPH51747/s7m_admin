@@ -401,14 +401,7 @@ const ProductDetail = () => {
                 </Box>
               </Box>
 
-              <Button
-                variant="contained"
-                className="add-to-cart"
-                onClick={handleAddToCart}
-                fullWidth
-              >
-                THÊM VÀO GIỎ HÀNG
-              </Button>
+
 
               <Box className="description-section">
                 <Typography variant="h6" className="section-title">
