@@ -1,6 +1,6 @@
 import React from "react";
 import "../css/TopBar.css";
-import { FiSearch, FiHeart, FiShoppingCart, FiUser } from "react-icons/fi";
+import { FiSearch } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
 const TopBar = () => {

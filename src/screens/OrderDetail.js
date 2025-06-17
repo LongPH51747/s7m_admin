@@ -1,6 +1,5 @@
 import React from "react";
 import Sidebar from '../components/Sidebar.js';
-import HeaderTwo from "../components/HeaderTwo.js";
 import OrderDetailPage from "../components/OrderDetailPage.js";
 import TopBar from "../components/TopBar.js";
 const OrderDetail = () => {

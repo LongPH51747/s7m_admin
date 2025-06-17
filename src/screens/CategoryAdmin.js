@@ -1,9 +1,7 @@
 import React from 'react';
 import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
 import Slider from '../components/Slider';
 import CategoryList from '../components/CategoryList';
-import HeaderTwo from '../components/HeaderTwo';
 import TopBar from '../components/TopBar';
 const CategoryAdmin = () => {
   return (

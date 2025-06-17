@@ -1,7 +1,6 @@
 import React from 'react';
 import Sidebar from '../components/Sidebar.js';
 import CategoryListUser from '../components/ListUser.js';
-import HeaderTwo from '../components/HeaderTwo.js';
 import TopBar from '../components/TopBar.js';
 const Users = () => {
   return (

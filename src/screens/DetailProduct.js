@@ -13,7 +13,6 @@ import {
 } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import TopBar from "../components/TopBar";
-import Footer from "../components/Footer";
 import "../css/DetailProduct.css";
 import { ENDPOINTS } from "../config/api";
 
@@ -239,21 +238,21 @@ const ProductDetail = () => {
     ];
   }, [selectedColor, variants]);
 
-  const handleAddToCart = () => {
-    const selectedVariant = variants.find(
-      (v) =>
-        v.variant_color === selectedColor && v.variant_size === selectedSize
-    );
-    console.log({
-      productId: product._id, // Schema dùng _id
-      variantSku: selectedVariant ? selectedVariant.variant_sku : null,
-      color: selectedColor,
-      size: selectedSize,
-      quantity,
-      price: currentPrice,
-    });
-    // Thêm logic gọi API ở đây
-  };
+  // const handleAddToCart = () => {
+  //   const selectedVariant = variants.find(
+  //     (v) =>
+  //       v.variant_color === selectedColor && v.variant_size === selectedSize
+  //   );
+  //   console.log({
+  //     productId: product._id, // Schema dùng _id
+  //     variantSku: selectedVariant ? selectedVariant.variant_sku : null,
+  //     color: selectedColor,
+  //     size: selectedSize,
+  //     quantity,
+  //     price: currentPrice,
+  //   });
+  //   // Thêm logic gọi API ở đây
+  // };
 
   const mainContent = (
     <Container className="main-container">
