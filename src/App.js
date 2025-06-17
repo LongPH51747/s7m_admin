@@ -1,11 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
-import LoginPage from "./screens/LoginPage.jsx";
-import HomeProduct from "./screens/HomeProduct.jsx";
-import DetailProduct from "./screens/DetailProduct.jsx";
-import ProductScreen from "./screens/ProductScreen.jsx";
-import AddProduct from './screens/AddProduct';
-import UpdateProduct from './screens/UpdateProduct';
+import LoginPage from "./screens/LoginPage.js";
+import HomeProduct from "./screens/HomeProduct.js";
+import DetailProduct from "./screens/DetailProduct.js";
+import ProductScreen from "./screens/ProductScreen.js";
+import AddProduct from './screens/AddProduct.js';
+import UpdateProduct from './screens/UpdateProduct.js';
 import React from "react";
 
 function App() {
