@@ -19,7 +19,8 @@ const CategoryList = () => {
         const data = await getAllCategories();
         console.log("dataCate", data);
         
-        setCategories(data);
+        // setCategories(data);
+         setCategories(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Lỗi khi lấy danh mục:', error);
         setCategories([]);
