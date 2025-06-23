@@ -2,7 +2,6 @@ import React from "react";
 import { Button, Form, Input } from "antd";
 import "../css/LoginPage.css";
 import logo from "../image/logoStore-removebg-preview.png";
-import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
@@ -48,7 +47,6 @@ const LoginPage = () => {
           </div>
         </div>
       </div>
-      <Footer />
     </>
   );
 };

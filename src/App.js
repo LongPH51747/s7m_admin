@@ -5,10 +5,7 @@ import CategoryDetailScreen from './screens/CategoryDetailScreen';
 import Users from './screens/Users';
 import Orders from './screens/Orders';
 import OrderDetail from './screens/OrderDetail';
-// Component dùng context
 import CategoryDetailProduct from './components/OrderList';
-// import OrderDetailPage from './components/OrderDetailPage';
-// Context
 import { OrderProvider } from './contexts/OrderContext';
 import "./App.css";
 import LoginPage from "./screens/LoginPage.js";

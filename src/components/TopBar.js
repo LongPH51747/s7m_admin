@@ -29,10 +29,7 @@ const TopBar = () => {
           />
           <FiSearch className="search-icon" />
         </div>       
-       
-        
       </div>
-      
     </div>
     
   );
