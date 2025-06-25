@@ -1,14 +1,42 @@
-import React from "react";
-import { Button, Form, Input } from "antd";
+import React, { useState } from "react";
+import { Button, Form, Input, message } from "antd";
 import "../css/LoginPage.css";
 import logo from "../image/logoStore-removebg-preview.png";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import axiosInstance from '../config/axios';
+import { API_BASE } from '../config/api';
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const [loginError, setLoginError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    navigate("./home"); // Đường dẫn tới HomeProduct, chỉnh lại nếu route khác
+  const handleLogin = async (values) => {
+    setLoading(true);
+    setLoginError("");
+    try {
+      const response = await axiosInstance.post(
+        `${API_BASE}/api/auth/login-username`,
+        {
+          username: values.username,
+          password: values.password,
+        },
+        {
+          headers: {
+            'ngrok-skip-browser-warning': 'true',
+          },
+        }
+      );
+      // Đăng nhập thành công
+      console.log('Đăng nhập thành công với username:', values.username);
+      navigate("/home");
+    } catch (error) {
+      setLoginError("Sai tài khoản hoặc mật khẩu vui lòng nhập lại");
+      console.error('Lỗi đăng nhập:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -35,8 +63,11 @@ const LoginPage = () => {
               >
                 <Input.Password placeholder="Password" />
               </Form.Item>
+              {loginError && (
+                <div style={{ color: 'red', marginBottom: 12 }}>{loginError}</div>
+              )}
               <Form.Item>
-                <Button type="primary" htmlType="submit" className="login-button">
+                <Button type="primary" htmlType="submit" className="login-button" loading={loading}>
                   Log In
                 </Button>
               </Form.Item>
