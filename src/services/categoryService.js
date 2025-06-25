@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { API_BASE } from './LinkApi';
 
-const CATEGORY_API = `${API_BASE}/categories`;
+const CATEGORY_API = `${API_BASE}/api/categories`;
 
 export const getAllCategories = async () => {
  try {

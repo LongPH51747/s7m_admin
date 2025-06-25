@@ -5,18 +5,16 @@ import CategoryDetailScreen from './screens/CategoryDetailScreen';
 import Users from './screens/Users';
 import Orders from './screens/Orders';
 import OrderDetail from './screens/OrderDetail';
-// Component dùng context
 import CategoryDetailProduct from './components/OrderList';
-// import OrderDetailPage from './components/OrderDetailPage';
-// Context
 import { OrderProvider } from './contexts/OrderContext';
 import "./App.css";
-import LoginPage from "./screens/LoginPage.jsx";
-import HomeProduct from "./screens/HomeProduct.jsx";
-import DetailProduct from "./screens/DetailProduct.jsx";
-import ProductScreen from "./screens/ProductScreen.jsx";
-import AddProduct from './screens/AddProduct';
-import UpdateProduct from './screens/UpdateProduct';
+import LoginPage from "./screens/LoginPage.js";
+import HomeProduct from "./screens/HomeProduct.js";
+import DetailProduct from "./screens/DetailProduct.js";
+import ProductScreen from "./screens/ProductScreen.js";
+import AddProduct from './screens/AddProduct.js';
+import UpdateProduct from './screens/UpdateProduct.js';
+
 
 
 function App() {

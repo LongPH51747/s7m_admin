@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { API_BASE } from './LinkApi'; 
 
-const ORDER_API = `${API_BASE}/order`;
+const ORDER_API = `${API_BASE}/api/order`;
 
 export const getAllOrder = async () => {
   try {

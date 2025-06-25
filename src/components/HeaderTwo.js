@@ -8,10 +8,10 @@ const HeaderTwo = () => {
 
       {/* Nav nằm giữa */}
       <nav className="flex gap-8 text-base mx-auto">
-        <a href="#">Home</a>
+        {/* <a href="#">Home</a>
         <a href="#">Contact</a>
         <a href="#">About</a>
-        <a href="#" className="font-semibold">Sign Up</a>
+        <a href="#" className="font-semibold">Sign Up</a> */}
       </nav>
 
       {/* Phần div trống bên phải để giữ bố cục cân đối */}

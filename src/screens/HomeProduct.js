@@ -1,11 +1,8 @@
 import React from 'react';
-import TabBar from '../components/TopBar';
-import Footer from '../components/Footer';
-import TabDraw from '../components/TabDraws';
+
 import ProductItem from '../components/ProductItem';
 import '../css/HomeProduct.css'; // for layout
 import Sidebar from '../components/Sidebar';
-import Header from '../components/Header';
 import TopBar from '../components/TopBar';
 function HomeProduct() {
   return (

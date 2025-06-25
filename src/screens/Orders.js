@@ -1,8 +1,7 @@
 import React from "react";
 import Sidebar from '../components/Sidebar.js';
-import HeaderTwo from "../components/HeaderTwo.js";
 import CategoryDetailProduct from "../components/OrderList.js";
-import TopBar from "../components/TopBar.jsx";
+import TopBar from "../components/TopBar.js";
 const Orders = () => {
   return (
     <div className="min-h-screen flex flex-col">

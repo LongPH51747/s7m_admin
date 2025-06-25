@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   Box,
   Container,
@@ -12,43 +12,40 @@ import {
   Alert,
   IconButton,
   Paper,
-} from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
-import TopBar from '../components/TopBar';
-import { ENDPOINTS } from '../config/api';
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
+import TopBar from "../components/TopBar";
+import { ENDPOINTS } from "../config/api";
 
 const UpdateProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const [productData, setProductData] = useState({
-    product_name: '',
-    product_description: '',
-    product_price: '',
-    product_image: '',
-    product_variant: []
+    product_name: "",
+    product_description: "",
+    product_price: "",
+    product_image: "",
+    product_variant: [],
   });
 
-  // Fetch product data
+  // Lấy dữ liệu sản phẩm
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(
-          ENDPOINTS.GET_PRODUCT_BY_ID(id),
-          {
-            headers: {
-              'ngrok-skip-browser-warning': 'true'
-            }
-          }
-        );
+        const response = await axios.get(ENDPOINTS.GET_PRODUCT_BY_ID(id), {
+          headers: {
+            "ngrok-skip-browser-warning": "true",
+          },
+        });
         setProductData(response.data);
         setLoading(false);
       } catch (err) {
-        setError('Không thể tải thông tin sản phẩm. Vui lòng thử lại.');
+        setError("Không thể tải thông tin sản phẩm. Vui lòng thử lại.");
         setLoading(false);
       }
     };
@@ -56,51 +53,51 @@ const UpdateProduct = () => {
     fetchProduct();
   }, [id]);
 
-  // Handle form input changes
+  // Xử lý thay đổi input form
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setProductData(prev => ({
+    setProductData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-  // Handle variant changes
+  // Xử lý thay đổi biến thể
   const handleVariantChange = (index, field, value) => {
     const updatedVariants = [...productData.product_variant];
     updatedVariants[index] = {
       ...updatedVariants[index],
-      [field]: value
+      [field]: value,
     };
-    setProductData(prev => ({
+    setProductData((prev) => ({
       ...prev,
-      product_variant: updatedVariants
+      product_variant: updatedVariants,
     }));
   };
 
-  // Add new variant
+  // Thêm biến thể mới
   const addVariant = () => {
-    setProductData(prev => ({
+    setProductData((prev) => ({
       ...prev,
       product_variant: [
         ...prev.product_variant,
         {
-          variant_sku: '',
-          variant_color: '',
-          variant_size: '',
-          variant_price: '',
-          variant_quantity: '',
-          variant_image_url: ''
-        }
-      ]
+          variant_sku: "",
+          variant_color: "",
+          variant_size: "",
+          variant_price: "",
+          variant_quantity: "",
+          variant_image_url: "",
+        },
+      ],
     }));
   };
 
-  // Remove variant
+  // Xóa biến thể
   const removeVariant = (index) => {
-    setProductData(prev => ({
+    setProductData((prev) => ({
       ...prev,
-      product_variant: prev.product_variant.filter((_, i) => i !== index)
+      product_variant: prev.product_variant.filter((_, i) => i !== index),
     }));
   };
 
@@ -110,7 +107,7 @@ const UpdateProduct = () => {
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProductData(prev => ({ ...prev, product_image: reader.result }));
+        setProductData((prev) => ({ ...prev, product_image: reader.result }));
       };
       reader.readAsDataURL(file);
     }
@@ -124,8 +121,8 @@ const UpdateProduct = () => {
       reader.onloadend = () => {
         const dataUrl = reader.result;
         // Lấy phần base64 (sau dấu phẩy)
-        const base64 = dataUrl.split(',')[1];
-        setProductData(prev => {
+        const base64 = dataUrl.split(",")[1];
+        setProductData((prev) => {
           const updatedVariants = [...prev.product_variant];
           updatedVariants[index] = {
             ...updatedVariants[index],
@@ -141,11 +138,11 @@ const UpdateProduct = () => {
 
   // Khi load lại dữ liệu, nếu có base64 mà không có url, tự tạo url cho preview
   useEffect(() => {
-    setProductData(prev => {
-      const updatedVariants = (prev.product_variant || []).map(variant => {
+    setProductData((prev) => {
+      const updatedVariants = (prev.product_variant || []).map((variant) => {
         if (
           variant.variant_image_base64 &&
-          (!variant.variant_image_url || variant.variant_image_url === '')
+          (!variant.variant_image_url || variant.variant_image_url === "")
         ) {
           return {
             ...variant,
@@ -158,31 +155,27 @@ const UpdateProduct = () => {
     });
   }, [loading]);
 
-  // Handle form submission
+  // Xử lý gửi form
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
-      await axios.put(
-        ENDPOINTS.UPDATE_PRODUCT_BY_ID(id),
-        productData,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'ngrok-skip-browser-warning': 'true'
-          }
-        }
-      );
-      setSuccess('Cập nhật sản phẩm thành công!');
+      await axios.put(ENDPOINTS.UPDATE_PRODUCT_BY_ID(id), productData, {
+        headers: {
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
+      });
+      setSuccess("Cập nhật sản phẩm thành công!");
       setTimeout(() => {
-        navigate('/home');
+        navigate("/home");
       }, 2000);
     } catch (err) {
-      console.error('Error updating product:', err);
-      setError('Có lỗi xảy ra khi cập nhật sản phẩm. Vui lòng thử lại.');
+      console.error("Error updating product:", err);
+      setError("Có lỗi xảy ra khi cập nhật sản phẩm. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
@@ -190,7 +183,12 @@ const UpdateProduct = () => {
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="100vh">
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh"
+      >
         <CircularProgress />
       </Box>
     );
@@ -204,9 +202,17 @@ const UpdateProduct = () => {
           <Typography variant="h4" gutterBottom>
             Cập nhật sản phẩm
           </Typography>
-          
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          {success && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {success}
+            </Alert>
+          )}
 
           <form onSubmit={handleSubmit}>
             <Grid container spacing={3}>
@@ -247,20 +253,29 @@ const UpdateProduct = () => {
 
               <Grid item xs={12} sm={6}>
                 <Box>
-                  <Typography variant="subtitle2" sx={{ mb: 1 }}>Ảnh sản phẩm</Typography>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    Ảnh sản phẩm
+                  </Typography>
                   <input
                     accept="image/*"
                     type="file"
-                    style={{ display: 'block', marginBottom: 8 }}
+                    style={{ display: "block", marginBottom: 8 }}
                     onChange={handleMainImageChange}
                   />
-                  {productData.product_image && typeof productData.product_image === 'string' && productData.product_image.trim() !== '' && (
-                    <img
-                      src={productData.product_image}
-                      alt="Preview"
-                      style={{ maxWidth: 120, maxHeight: 120, borderRadius: 8, border: '1px solid #eee' }}
-                    />
-                  )}
+                  {productData.product_image &&
+                    typeof productData.product_image === "string" &&
+                    productData.product_image.trim() !== "" && (
+                      <img
+                        src={productData.product_image}
+                        alt="Preview"
+                        style={{
+                          maxWidth: 120,
+                          maxHeight: 120,
+                          borderRadius: 8,
+                          border: "1px solid #eee",
+                        }}
+                      />
+                    )}
                   <TextField
                     fullWidth
                     label="URL Hình ảnh (hoặc chọn file)"
@@ -273,7 +288,14 @@ const UpdateProduct = () => {
               </Grid>
 
               <Grid item xs={12}>
-                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Box
+                  sx={{
+                    mb: 2,
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
                   <Typography variant="h6">Biến thể sản phẩm</Typography>
                   <Button
                     startIcon={<AddIcon />}
@@ -289,9 +311,21 @@ const UpdateProduct = () => {
                   <Paper key={index} sx={{ p: 2, mb: 2 }} variant="outlined">
                     <Grid container spacing={2}>
                       <Grid item xs={12}>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                          <Typography variant="subtitle1">Biến thể #{index + 1}</Typography>
-                          <IconButton onClick={() => removeVariant(index)} color="error">
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            mb: 2,
+                          }}
+                        >
+                          <Typography variant="subtitle1">
+                            Biến thể #{index + 1}
+                          </Typography>
+                          <IconButton
+                            onClick={() => removeVariant(index)}
+                            color="error"
+                          >
                             <DeleteIcon />
                           </IconButton>
                         </Box>
@@ -301,8 +335,14 @@ const UpdateProduct = () => {
                         <TextField
                           fullWidth
                           label="SKU"
-                          value={variant.variant_sku || ''}
-                          onChange={(e) => handleVariantChange(index, 'variant_sku', e.target.value)}
+                          value={variant.variant_sku || ""}
+                          onChange={(e) =>
+                            handleVariantChange(
+                              index,
+                              "variant_sku",
+                              e.target.value
+                            )
+                          }
                           required
                         />
                       </Grid>
@@ -311,8 +351,14 @@ const UpdateProduct = () => {
                         <TextField
                           fullWidth
                           label="Màu sắc"
-                          value={variant.variant_color || ''}
-                          onChange={(e) => handleVariantChange(index, 'variant_color', e.target.value)}
+                          value={variant.variant_color || ""}
+                          onChange={(e) =>
+                            handleVariantChange(
+                              index,
+                              "variant_color",
+                              e.target.value
+                            )
+                          }
                           required
                         />
                       </Grid>
@@ -321,8 +367,14 @@ const UpdateProduct = () => {
                         <TextField
                           fullWidth
                           label="Kích thước"
-                          value={variant.variant_size || ''}
-                          onChange={(e) => handleVariantChange(index, 'variant_size', e.target.value)}
+                          value={variant.variant_size || ""}
+                          onChange={(e) =>
+                            handleVariantChange(
+                              index,
+                              "variant_size",
+                              e.target.value
+                            )
+                          }
                           required
                         />
                       </Grid>
@@ -332,8 +384,14 @@ const UpdateProduct = () => {
                           fullWidth
                           label="Giá biến thể"
                           type="number"
-                          value={variant.variant_price || ''}
-                          onChange={(e) => handleVariantChange(index, 'variant_price', e.target.value)}
+                          value={variant.variant_price || ""}
+                          onChange={(e) =>
+                            handleVariantChange(
+                              index,
+                              "variant_price",
+                              e.target.value
+                            )
+                          }
                           required
                         />
                       </Grid>
@@ -343,64 +401,108 @@ const UpdateProduct = () => {
                           fullWidth
                           label="Số lượng"
                           type="number"
-                          value={variant.variant_quantity || ''}
-                          onChange={(e) => handleVariantChange(index, 'variant_quantity', e.target.value)}
+                          value={variant.variant_quantity || ""}
+                          onChange={(e) =>
+                            handleVariantChange(
+                              index,
+                              "variant_quantity",
+                              e.target.value
+                            )
+                          }
                           required
                         />
                       </Grid>
 
                       <Grid item xs={12} sm={6}>
                         <Box>
-                          <Typography variant="subtitle2" sx={{ mb: 1 }}>Ảnh biến thể</Typography>
+                          <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                            Ảnh biến thể
+                          </Typography>
                           <input
                             accept="image/*"
                             type="file"
-                            style={{ display: 'block', marginBottom: 8 }}
-                            onChange={e => handleVariantImageChange(index, e)}
+                            style={{ display: "block", marginBottom: 8 }}
+                            onChange={(e) => handleVariantImageChange(index, e)}
                           />
                           {(() => {
                             // Ưu tiên variant_image_url
-                            if (variant.variant_image_url && typeof variant.variant_image_url === 'string' && variant.variant_image_url.trim() !== '') {
+                            if (
+                              variant.variant_image_url &&
+                              typeof variant.variant_image_url === "string" &&
+                              variant.variant_image_url.trim() !== ""
+                            ) {
                               return (
                                 <img
                                   src={variant.variant_image_url}
                                   alt={`Preview ${index + 1}`}
-                                  style={{ maxWidth: 100, maxHeight: 100, borderRadius: 8, border: '1px solid #eee' }}
+                                  style={{
+                                    maxWidth: 100,
+                                    maxHeight: 100,
+                                    borderRadius: 8,
+                                    border: "1px solid #eee",
+                                  }}
                                 />
                               );
                             }
                             // Nếu có variant_image_base64
                             if (variant.variant_image_base64) {
-                              let src = '';
-                              if (typeof variant.variant_image_base64 === 'string') {
-                                src = variant.variant_image_base64.startsWith('data:')
+                              let src = "";
+                              if (
+                                typeof variant.variant_image_base64 === "string"
+                              ) {
+                                src = variant.variant_image_base64.startsWith(
+                                  "data:"
+                                )
                                   ? variant.variant_image_base64
                                   : `data:image/jpeg;base64,${variant.variant_image_base64}`;
                               } else if (variant.variant_image_base64.data) {
                                 // Nếu là buffer
-                                const bytes = new Uint8Array(variant.variant_image_base64.data);
-                                let binary = '';
-                                bytes.forEach((byte) => (binary += String.fromCharCode(byte)));
+                                const bytes = new Uint8Array(
+                                  variant.variant_image_base64.data
+                                );
+                                let binary = "";
+                                bytes.forEach(
+                                  (byte) =>
+                                    (binary += String.fromCharCode(byte))
+                                );
                                 const base64String = window.btoa(binary);
                                 src = `data:image/jpeg;base64,${base64String}`;
                               }
-                              if (src && typeof src === 'string' && src.trim() !== '') {
+                              if (
+                                src &&
+                                typeof src === "string" &&
+                                src.trim() !== ""
+                              ) {
                                 return (
                                   <img
                                     src={src}
                                     alt={`Preview ${index + 1}`}
-                                    style={{ maxWidth: 100, maxHeight: 100, borderRadius: 8, border: '1px solid #eee' }}
+                                    style={{
+                                      maxWidth: 100,
+                                      maxHeight: 100,
+                                      borderRadius: 8,
+                                      border: "1px solid #eee",
+                                    }}
                                   />
                                 );
                               }
                             }
                             // Nếu có variant_image
-                            if (variant.variant_image && typeof variant.variant_image === 'string' && variant.variant_image.trim() !== '') {
+                            if (
+                              variant.variant_image &&
+                              typeof variant.variant_image === "string" &&
+                              variant.variant_image.trim() !== ""
+                            ) {
                               return (
                                 <img
                                   src={variant.variant_image}
                                   alt={`Preview ${index + 1}`}
-                                  style={{ maxWidth: 100, maxHeight: 100, borderRadius: 8, border: '1px solid #eee' }}
+                                  style={{
+                                    maxWidth: 100,
+                                    maxHeight: 100,
+                                    borderRadius: 8,
+                                    border: "1px solid #eee",
+                                  }}
                                 />
                               );
                             }
@@ -409,8 +511,14 @@ const UpdateProduct = () => {
                           <TextField
                             fullWidth
                             label="URL Hình ảnh biến thể (hoặc chọn file)"
-                            value={variant.variant_image_url || ''}
-                            onChange={e => handleVariantChange(index, 'variant_image_url', e.target.value)}
+                            value={variant.variant_image_url || ""}
+                            onChange={(e) =>
+                              handleVariantChange(
+                                index,
+                                "variant_image_url",
+                                e.target.value
+                              )
+                            }
                             sx={{ mt: 1 }}
                           />
                         </Box>
@@ -421,10 +529,12 @@ const UpdateProduct = () => {
               </Grid>
 
               <Grid item xs={12}>
-                <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+                <Box
+                  sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}
+                >
                   <Button
                     variant="outlined"
-                    onClick={() => navigate('/products')}
+                    onClick={() => navigate("/products")}
                   >
                     Hủy
                   </Button>
@@ -434,7 +544,11 @@ const UpdateProduct = () => {
                     color="primary"
                     disabled={loading}
                   >
-                    {loading ? <CircularProgress size={24} /> : 'Cập nhật sản phẩm'}
+                    {loading ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      "Cập nhật sản phẩm"
+                    )}
                   </Button>
                 </Box>
               </Grid>
@@ -446,4 +560,4 @@ const UpdateProduct = () => {
   );
 };
 
-export default UpdateProduct; 
+export default UpdateProduct;

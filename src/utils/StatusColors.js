@@ -1,4 +1,3 @@
-import React from "react";
 
 const statusColors = {
   'Chờ xác nhận': 'bg-gray-200 text-gray-800',

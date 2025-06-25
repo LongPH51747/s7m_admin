@@ -6,16 +6,20 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import '../css/ProductItem.css';
-import { ENDPOINTS } from '../config/api';
+import { ENDPOINTS, API_BASE } from '../config/api';
 
+// Component hiển thị danh sách sản phẩm
 const ProductItem = () => {
+  // Khai báo state lưu danh sách sản phẩm và trạng thái loading
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Gọi API lấy danh sách sản phẩm khi component được mount
   useEffect(() => {
     fetchProducts();
   }, []);
 
+  // Hàm lấy danh sách sản phẩm từ API
   const fetchProducts = async () => {
     try {
       const response = await axios.get(ENDPOINTS.GET_PRODUCTS, {
@@ -23,8 +27,16 @@ const ProductItem = () => {
           'ngrok-skip-browser-warning': 'true'
         }
       });
-      setProducts(response.data);
-      console.log("Response data:", response.data);
+      // Tính tổng số lượng variant cho mỗi sản phẩm và thêm thuộc tính variant_stock
+      const productsWithStock = response.data.map(product => {
+        let variant_stock = 0;
+        if (Array.isArray(product.product_variant)) {
+          variant_stock = product.product_variant.reduce((sum, v) => sum + (parseInt(v.variant_quantity) || 0), 0);
+        }
+        return { ...product, variant_stock };
+      });
+      setProducts(productsWithStock);
+      console.log("Response data:", productsWithStock);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -32,6 +44,7 @@ const ProductItem = () => {
     }
   };
 
+  // Hàm xử lý xóa sản phẩm
   const handleDelete = async (productId) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
       try {
@@ -57,6 +70,7 @@ const ProductItem = () => {
     }
   };
 
+  // Hiển thị trạng thái loading khi đang tải dữ liệu
   if (loading) {
     return (
       <div className="loading-state">
@@ -65,6 +79,7 @@ const ProductItem = () => {
     );
   }
 
+  // Hiển thị danh sách sản phẩm
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box className="product-header">
@@ -77,6 +92,7 @@ const ProductItem = () => {
       </Box>
       
       <Grid container spacing={3}>
+        {/* Duyệt qua từng sản phẩm để hiển thị */}
         {products.map((product) => (
           <Grid item xs={12} sm={6} md={3} key={product._id}>
             <Card className="product-card">
@@ -84,7 +100,13 @@ const ProductItem = () => {
                 <CardMedia
                   component="img"
                   height="280"
-                  image={product.product_image || 'https://via.placeholder.com/280'}
+                  image={
+                    product.product_image
+                      ? product.product_image.startsWith('http')
+                        ? product.product_image
+                        : `${API_BASE}${product.product_image}`
+                      : 'https://via.placeholder.com/280'
+                  }
                   alt={product.product_name}
                   className="product-image"
                 />
@@ -126,11 +148,16 @@ const ProductItem = () => {
                   <Typography variant="h6" className="product-price">
                     {product.product_price?.toLocaleString('vi-VN')}VNĐ
                   </Typography>
-                  {Array.isArray(product.product_variant) && (
-                    <Typography variant="body2" className="product-quantity" sx={{ color: '#1976d2', fontWeight: 500, mt: 1 }}>
-                      Số lượng: {product.product_variant.reduce((sum, v) => sum + (parseInt(v.variant_quantity) || 0), 0)}
+                  {Array.isArray(product.product_variant) && product.product_variant.map((variant, idx) => (
+                    <Typography
+                      key={idx}
+                      variant="body2"
+                      className="product-quantity"
+                      sx={{ color: '#1976d2', fontWeight: 500, mt: 1 }}
+                    >
+                      {variant.variant_color} - {variant.variant_size}: {variant.variant_stock}
                     </Typography>
-                  )}
+                  ))}
                 </Link>
               </CardContent>
             </Card>
