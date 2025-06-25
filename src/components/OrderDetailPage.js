@@ -93,6 +93,7 @@ alert("✅ Cập nhật trạng thái thành công!");
         value={newStatus}
         onChange={(e) => setNewStatus(e.target.value)}
       >
+         <option value="Chờ xác nhận">Chờ xác nhận</option>
         <option value="Đã xác nhận">Đã xác nhận</option>
         <option value="Đang giao">Đang giao</option>
         <option value="Giao thành công">Giao thành công</option>

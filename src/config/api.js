@@ -5,7 +5,7 @@
 const CORS_PROXY = 'https://corsproxy.io/?';
 
 // URL cơ sở API - sử dụng đường dẫn tương đối khi proxy được cấu hình
-const API_BASE = 'https://ca2d-2405-4803-fdc0-2b00-c07f-6315-e4c5-1d56.ngrok-free.app/api';
+const API_BASE = 'https://bd1a-2405-4803-fdc0-2b00-b8e4-4104-e32c-27d4.ngrok-free.app/api';
 
 // Các điểm cuối
 const ENDPOINTS = {
