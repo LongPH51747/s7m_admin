@@ -64,6 +64,7 @@ export const SocketProvider = ({ children }) => {
             isSocketReady,
             isConnectingCurrent: isConnecting.current
         });
+        console.log('>>> Full accessToken value:', accessToken);
         console.log('====================================================');
 
         if (isAuthenticated && accessToken && user?._id && !socketRef.current && !isConnecting.current) {
@@ -72,6 +73,9 @@ export const SocketProvider = ({ children }) => {
             console.log('Socket: Attempting to initialize and connect new Socket.IO instance...');
 
             const newSocket = io(process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000', {
+                auth: {
+                    token: accessToken
+                },
                 transports: ['websocket', 'polling'],
                 reconnection: true,
                 reconnectionAttempts: 5,
@@ -116,7 +120,7 @@ export const SocketProvider = ({ children }) => {
             });
 
             newSocket.on('connect_error', (error) => {
-                console.error('Socket: Connection error:', error.message);
+                console.error('Socket: Full Connection error object:', error);
                 setIsSocketReady(false);
                 isConnecting.current = false;
             });
@@ -189,11 +193,12 @@ export const SocketProvider = ({ children }) => {
         };
 
         const handleReceiveMessage = (message) => {
-            console.log('SocketContext (Chat Logic): Received new message:', message);
+             console.log('FE ADMIN: Đã nhận được receive_message:', message);
             if (message.chatRoomId === latestSelectedRoomId.current) { 
                 setMessages((prevMessages) => {
                     const isMessageAlreadyExist = prevMessages.some(msg => msg._id === message._id);
                     if (isMessageAlreadyExist) return prevMessages;
+                    console.log('FE ADMIN: Thêm message vào mảng:', message);
                     return [...prevMessages, message];
                 });
             }
@@ -238,12 +243,21 @@ export const SocketProvider = ({ children }) => {
             console.log('SocketContext (Chat Logic): Received online users:', onlineUsersList);
         };
 
-        const handleChatHistory = (history) => {
-            console.log('SocketContext (Chat History): >>> handleChatHistory triggered. Received data:', history);
-            setMessages(history);
-            setIsLoadingMessages(false);
-            setMessagesError(null);
-        };
+        const handleChatHistory = (data) => { // Đổi tên biến 'history' thành 'data' cho rõ ràng
+    console.log('SocketContext (Chat History): >>> handleChatHistory triggered. Received data:', data);
+    
+    // KIỂM TRA và LẤY ĐÚNG MẢNG `messages` từ trong object data
+    if (data && Array.isArray(data.messages)) {
+        setMessages(data.messages);
+    } else {
+        // Nếu dữ liệu không hợp lệ, log lỗi và set về mảng rỗng để tránh crash
+        console.error("Dữ liệu nhận được từ 'chat_history' không hợp lệ hoặc không chứa mảng messages:", data);
+        setMessages([]);
+    }
+
+    setIsLoadingMessages(false);
+    setMessagesError(null);
+};
 
         console.log('Socket: Registering chat_room_list listener...');
         socket.on('chat_room_list', handleChatRoomList);
@@ -344,7 +358,6 @@ export const SocketProvider = ({ children }) => {
     const contextValue = {
         socket: socketRef.current, 
         isSocketReady, 
-
         chatRooms,
         selectedRoomId,
         messages,
@@ -353,7 +366,6 @@ export const SocketProvider = ({ children }) => {
         isLoadingMessages,
         messagesError,
         onlineUsers,
-
         selectAdminChatRoom,
         sendAdminMessage,
         currentUserId 

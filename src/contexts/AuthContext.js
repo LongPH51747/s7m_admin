@@ -39,6 +39,7 @@ export const AuthProvider = ({children}) => {
 
     // Bọc hàm login trong useCallback, không cần navigate trong dependency vì nó stable
     const login = useCallback((userData, receivedAccessToken, refreshToken) => {
+        console.log("AuthContext: Login function called. Token received:", receivedAccessToken ? "Exists" : "Missing");
         localStorage.setItem('accessToken', receivedAccessToken);
         localStorage.setItem('refreshToken', refreshToken);
         localStorage.setItem('userId', userData._id);
@@ -47,6 +48,7 @@ export const AuthProvider = ({children}) => {
         localStorage.setItem('fullName', userData.fullName);
 
         setAccessToken(receivedAccessToken);
+        console.log("AuthContext: accessToken state updated.");
         setUser(userData);
         setIsAuthenticated(true);
 

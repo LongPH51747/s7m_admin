@@ -99,85 +99,86 @@ const MessageBox = ({
     }
 
     return (
-         <div className="chat-main">
-            <div className="chat-header">
-                <h3>{otherUsername}</h3>
-                {otherUserId && (
-                    isOtherUserOnline ? <span className="online-indicator">Online</span> : <span className="offline-indicator">Offline</span>
-                )}
-            </div>
-            <div className="chat-messages">
-                {messages.length === 0 ? (
-                    <p className="no-messages">Chưa có tin nhắn nào trong cuộc trò chuyện này.</p>
-                ) : (
-                    messages.map((msg, index) => {
-                        const senderIdFromMsg = msg.sender && msg.sender._id;
-                        const isSenderAdmin = String(senderIdFromMsg).trim() === String(currentUserId).trim();
-                        return (
-                            <div
-                                key={msg._id || index}
-                                className={`message-bubble ${isSenderAdmin ? 'admin-message' : 'user-message'}`}
-                            >
-                                <p className="message-content">{msg.content}</p>
-                                <span className="message-time">{moment(msg.createdAt).format('HH:mm')}</span>
-                            </div>
-                        );
-                    })
-                )}
-                <div ref={messagesEndRef} />
-            </div>
-
-            {/* THÊM VÙNG HIỂN THỊ PREVIEW ẢNH NÀY */}
-            {imagePreviewUrl && (
-                <div className="image-preview-container">
-                    <img src={imagePreviewUrl} alt="Image Preview" className="image-preview" />
-                    <button
-                        className="remove-image-btn"
-                        onClick={() => {
-                            setSelectedImage(null); // Xóa file đã chọn
-                            setImagePreviewUrl(null); // Xóa URL preview
-                            if (fileInputRef.current) {
-                                fileInputRef.current.value = ''; // Quan trọng: reset input file để có thể chọn lại cùng một file
-                            }
-                        }}
-                    >
-                        &times; {/* Dấu 'X' để đóng/hủy chọn ảnh */}
-                    </button>
+           <div className="chat-main">
+                <div className="chat-header">
+                    <h3>{otherUsername}</h3>
+                    {otherUserId && (
+                        isOtherUserOnline ? <span className="online-indicator">Online</span> : <span className="offline-indicator">Offline</span>
+                    )}
                 </div>
-            )}
+                <div className="chat-messages">
+                    {messages.length === 0 ? (
+                        <p className="no-messages">Chưa có tin nhắn nào trong cuộc trò chuyện này.</p>
+                    ) : (
+                        messages.map((msg, index) => {
+                             console.log("Render bubble:", msg); 
+                            const senderIdFromMsg = msg.sender && msg.sender._id;
+                            const isSenderAdmin = String(senderIdFromMsg).trim() === String(currentUserId).trim();
+                            return (
+                                <div
+                                    key={msg._id || index}
+                                    className={`message-bubble ${isSenderAdmin ? 'admin-message' : 'user-message'}`}
+                                >
+                                    <p className="message-content">{msg.content}</p>
+                                    <span className="message-time">{moment(msg.createdAt).format('HH:mm')}</span>
+                                </div>
+                            );
+                        })
+                    )}
+                    <div ref={messagesEndRef} />
+                </div>
 
-            <form className="message-input-form" onSubmit={handleSendMessage}>
+                {/* THÊM VÙNG HIỂN THỊ PREVIEW ẢNH NÀY */}
+                {imagePreviewUrl && (
+                    <div className="image-preview-container">
+                        <img src={imagePreviewUrl} alt="Image Preview" className="image-preview" />
+                        <button
+                            className="remove-image-btn"
+                            onClick={() => {
+                                setSelectedImage(null); // Xóa file đã chọn
+                                setImagePreviewUrl(null); // Xóa URL preview
+                                if (fileInputRef.current) {
+                                    fileInputRef.current.value = ''; // Quan trọng: reset input file để có thể chọn lại cùng một file
+                                }
+                            }}
+                        >
+                            &times; {/* Dấu 'X' để đóng/hủy chọn ảnh */}
+                        </button>
+                    </div>
+                )}
 
-                <input
-                    type='file'
-                    id='imageUploadInput'
-                    accept='image/*'
-                    style={{ display: 'none' }}
-                    onChange={handleSelectFile} 
-                    ref={fileInputRef}
-                />
+                <form className="message-input-form" onSubmit={handleSendMessage}>
 
-                <label htmlFor="imageUploadInput" className="upload-icon-label">
-                    <Image size={24} name='camera' />
-                </label>
-                <InputEmoji
-                    value={newMessage}
-                    onChange={setNewMessage}
-                    cleanOnEnter={true}
-                    onEnter={handleSendMessageFromInput}
-                    placeholder="Type your message..."
-                    height={50}
-                    fontSize={16}
-                    disabled={!isSocketReady || isLoadingMessages}
-                />
-                <button
-                    type="submit"
-                    disabled={!isSocketReady || !newMessage.trim() || isLoadingMessages}
-                >
-                    Send
-                </button>
-            </form>
-        </div>
+                    <input
+                        type='file'
+                        id='imageUploadInput'
+                        accept='image/*'
+                        style={{ display: 'none' }}
+                        onChange={handleSelectFile}
+                        ref={fileInputRef}
+                    />
+
+                    <label htmlFor="imageUploadInput" className="upload-icon-label">
+                        <Image size={24} name='camera' />
+                    </label>
+                    <InputEmoji
+                        value={newMessage}
+                        onChange={setNewMessage}
+                        cleanOnEnter={true}
+                        onEnter={handleSendMessageFromInput}
+                        placeholder="Type your message..."
+                        height={50}
+                        fontSize={16}
+                        disabled={!isSocketReady || isLoadingMessages}
+                    />
+                    <button
+                        type="submit"
+                        disabled={!isSocketReady || !newMessage.trim() || isLoadingMessages}
+                    >
+                        Send
+                    </button>
+                </form>
+            </div>
     );
 };
 
