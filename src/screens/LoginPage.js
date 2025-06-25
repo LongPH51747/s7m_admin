@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { Button, Form, Input, message } from "antd";
+import { Button, Form, Input } from "antd";
 import "../css/LoginPage.css";
 import logo from "../image/logoStore-removebg-preview.png";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import axiosInstance from '../config/axios';
 import { API_BASE } from '../config/api';
 
@@ -16,7 +15,7 @@ const LoginPage = () => {
     setLoading(true);
     setLoginError("");
     try {
-      const response = await axiosInstance.post(
+      await axiosInstance.post(
         `${API_BASE}/api/auth/login-username`,
         {
           username: values.username,
