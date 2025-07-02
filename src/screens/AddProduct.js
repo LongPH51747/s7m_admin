@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   TextField,
@@ -12,80 +12,54 @@ import {
   TableRow,
   Paper,
   IconButton,
-  // Select,
-  // MenuItem,
-  // FormControl,
-  // InputLabel,
-} from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
-import axiosInstance from "../config/axios";
-import { ENDPOINTS, API_BASE } from "../config/api";
-import "../css/AddProduct.css";
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Select,
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../config/axios';
+import { ENDPOINTS } from '../config/api';
+import '../css/AddProduct.css';
 
-// Component chính để thêm sản phẩm mới
 const AddProduct = () => {
-  // Khai báo các state cho form sản phẩm
-  const [productName, setProductName] = useState("");
-  const [category, setCategory] = useState("");
-  const [newCategory, setNewCategory] = useState("");
-  // const [price, setPrice] = useState('');
-  const [description, setDescription] = useState("");
-  const [color, setColor] = useState("");
-  const [size, setSize] = useState("");
+  const navigate = useNavigate();
+  const [productName, setProductName] = useState('');
+  const [category, setCategory] = useState('');
+  const [newCategory, setNewCategory] = useState('');
+  const [description, setDescription] = useState('');
+  const [color, setColor] = useState('');
+  const [size, setSize] = useState('');
   const [variants, setVariants] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [productImage, setProductImage] = useState("");
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
+  const [message, setMessage] = useState('');
+  const [messageType, setMessageType] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [variantImageFiles, setVariantImageFiles] = useState([]);
 
-  // Lấy danh sách danh mục khi component mount
+  // Fetch categories when component mounts
   useEffect(() => {
     const fetchCategories = async () => {
       setLoading(true);
       setError(null);
       try {
-        console.log("Fetching categories...");
-        const response = await axiosInstance.get(ENDPOINTS.GET_ALL_CATEGORIES, {
-          headers: {
-            "ngrok-skip-browser-warning": "true",
-          },
-        });
-
-        console.log("Response status:", response.status);
-        console.log("Response data:", response.data);
-
+        const response = await axiosInstance.get(ENDPOINTS.GET_ALL_CATEGORIES);
         if (response.data) {
-          const categoriesList = Array.isArray(response.data)
-            ? response.data
-            : response.data.categories;
-
+          const categoriesList = Array.isArray(response.data) ? response.data : response.data.categories || response.data.data;
           if (Array.isArray(categoriesList)) {
-            console.log("Categories list:", categoriesList);
             setCategories(categoriesList);
           } else {
-            console.error("Categories data is not an array:", categoriesList);
-            setError("Định dạng dữ liệu danh mục không hợp lệ");
+            setError('Định dạng dữ liệu danh mục không hợp lệ');
           }
-        } else {
-          console.error("No data in response");
-          setError("Không nhận được dữ liệu từ server");
         }
       } catch (error) {
-        console.error("Error fetching categories:", error);
-        let errorMessage = "Không thể tải danh mục sản phẩm";
-
-        if (error.response) {
-          errorMessage += `: ${
-            error.response.data?.message || error.response.statusText
-          }`;
-        } else if (error.request) {
-          errorMessage +=
-            ": Không thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.";
-        } else {
-          errorMessage += `: ${error.message}`;
-        }
-
-        setError(errorMessage);
+        console.error('Error fetching categories:', error);
+        setError('Không thể tải danh mục sản phẩm');
       } finally {
         setLoading(false);
       }
@@ -97,340 +71,286 @@ const AddProduct = () => {
   // Hàm thêm danh mục mới
   const handleAddCategory = async () => {
     if (!newCategory.trim()) {
-      alert("Vui lòng nhập tên danh mục!");
+      alert('Vui lòng nhập tên danh mục!');
       return;
     }
 
     setLoading(true);
     try {
-      console.log("Creating new category:", newCategory.trim());
-      const response = await fetch(ENDPOINTS.CREATE_CATEGORY, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          category_name: newCategory.trim(),
-        }),
+      const response = await axiosInstance.post(ENDPOINTS.CREATE_CATEGORY, {
+        category_name: newCategory.trim()
       });
 
-      // Log response details for debugging
-      console.log("Response status:", response.status);
-      console.log("Response headers:", response.headers);
-
-      // Check if response is ok
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // Try to parse response as JSON
-      let data;
-      const textData = await response.text();
-      try {
-        data = JSON.parse(textData);
-      } catch (parseError) {
-        console.error("Failed to parse response as JSON:", textData);
-        throw new Error("Invalid JSON response from server");
-      }
-
-      console.log("Create category response:", data);
-
-      if (data) {
-        // Refresh categories list after adding new category
-        const refreshResponse = await fetch(ENDPOINTS.GET_ALL_CATEGORIES, {
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!refreshResponse.ok) {
-          throw new Error(`HTTP error! status: ${refreshResponse.status}`);
-        }
-
-        const refreshText = await refreshResponse.text();
-        let refreshData;
-        try {
-          refreshData = JSON.parse(refreshText);
-        } catch (parseError) {
-          console.error(
-            "Failed to parse refresh response as JSON:",
-            refreshText
-          );
-          throw new Error("Invalid JSON response from server during refresh");
-        }
-
-        const updatedCategories = Array.isArray(refreshData)
-          ? refreshData
-          : refreshData.categories;
+      if (response.data) {
+        // Refresh categories list
+        const refreshResponse = await axiosInstance.get(ENDPOINTS.GET_ALL_CATEGORIES);
+        const updatedCategories = Array.isArray(refreshResponse.data) ? 
+          refreshResponse.data : refreshResponse.data.categories || refreshResponse.data.data;
 
         if (Array.isArray(updatedCategories)) {
           setCategories(updatedCategories);
-          // Find the newly created category and select it
-          const newCat = updatedCategories.find(
-            (cat) => cat.category_name === newCategory.trim()
-          );
+          const newCat = updatedCategories.find(cat => cat.category_name === newCategory.trim());
           if (newCat) {
-            setCategory(newCat._id || newCat.category_name);
+            setCategory(newCat._id);
           }
         }
-
-        setNewCategory("");
-        alert("Thêm danh mục thành công!");
+        
+        setNewCategory('');
+        alert('Thêm danh mục thành công!');
       }
     } catch (error) {
-      console.error("Error adding category:", error);
-      alert("Có lỗi xảy ra khi thêm danh mục: " + error.message);
+      console.error('Error adding category:', error);
+      alert('Có lỗi xảy ra khi thêm danh mục: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Hàm xử lý thêm biến thể sản phẩm
+  // Hàm xử lý thêm variant
   const handleAddVariant = () => {
     if (!color || !size) {
-      alert("Vui lòng nhập đầy đủ màu và size!");
+      alert('Vui lòng nhập đầy đủ màu và size!');
       return;
     }
 
-    // Kiểm tra trùng lặp variant
     const existingVariant = variants.find(
-      (v) =>
-        v.variant_color.toLowerCase() === color.toLowerCase() &&
-        v.variant_size.toLowerCase() === size.toLowerCase()
+      v => v.variant_color.toLowerCase() === color.toLowerCase() && 
+           v.variant_size.toLowerCase() === size.toLowerCase()
     );
 
     if (existingVariant) {
-      alert("Biến thể này đã tồn tại!");
+      alert('Biến thể này đã tồn tại!');
       return;
     }
 
     const newVariant = {
       variant_color: color,
       variant_size: size,
-      variant_price: "",
+      variant_price: '',
       variant_stock: 0,
-      variant_image_url: "",
-      variant_sku: "",
+      variant_image_preview: ''
     };
 
     setVariants([...variants, newVariant]);
-    setColor("");
-    setSize("");
+    setColor('');
+    setSize('');
   };
 
-  // Hàm xử lý xóa biến thể sản phẩm
+  // Hàm xử lý xóa variant
   const handleDeleteVariant = (index) => {
     const newVariants = variants.filter((_, i) => i !== index);
     setVariants(newVariants);
+    const newFiles = variantImageFiles.filter((_, i) => i !== index);
+    setVariantImageFiles(newFiles);
   };
 
-  // Hàm xử lý cập nhật thông tin biến thể
-  const handleVariantChange = async (index, field, value) => {
+  // Hàm xử lý cập nhật thông tin variant
+  const handleVariantChange = (index, field, value) => {
     const newVariants = [...variants];
-    if (field === "variant_image_url" && value) {
-      // Chỉ lưu nguyên URL string, không chuyển đổi base64
-      newVariants[index] = {
-        ...newVariants[index],
-        variant_image_url: value,
-        [field]: value,
-      };
-    } else {
-      // Xử lý các trường số
-      if (field === "variant_price" || field === "variant_stock") {
-        value = value.replace(/[^0-9]/g, ""); // Chỉ giữ lại số
-        if (value === "") value = "0";
-      }
-
-      newVariants[index] = {
-        ...newVariants[index],
-        [field]: value,
-      };
+    if (field === 'variant_price' || field === 'variant_stock') {
+      value = value.replace(/[^0-9]/g, '');
+      if (value === '') value = '0';
     }
+    
+    newVariants[index] = {
+      ...newVariants[index],
+      [field]: value
+    };
     setVariants(newVariants);
-
-    // Log để debug
-    console.log("Updated variant:", newVariants[index]);
   };
 
-  // Hàm xử lý upload ảnh cho biến thể
-  const handleImageUpload = async (index, file) => {
-    try {
-      if (!file) return;
-      // Kiểm tra kích thước file
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Kích thước ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 5MB.");
-        return;
-      }
-      // Giả lập upload file và trả về đường dẫn ảnh dạng string
-      const fakeUploadPath = `/uploads_product/variant-${index}-${Date.now()}.jpg`;
+  // Xử lý upload ảnh từ máy cho sản phẩm chính
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setImageFile(file);
+    setMessage(`✅ Đã chọn ảnh: ${file.name}`);
+    setMessageType("success");
+    
+    const reader = new FileReader();
+    reader.onload = (e) => setImagePreview(e.target.result);
+    reader.readAsDataURL(file);
+  };
+
+  // Xử lý upload ảnh cho từng variant
+  const handleVariantImageUpload = (e, index) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (ev) => {
       const newVariants = [...variants];
-      newVariants[index] = {
-        ...newVariants[index],
-        variant_image_url: fakeUploadPath,
-      };
+      newVariants[index].variant_image_preview = ev.target.result;
       setVariants(newVariants);
-      console.log("Uploaded image for variant:", {
-        index,
-        imageUrl: fakeUploadPath,
-      });
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      alert("Có lỗi xảy ra khi tải ảnh. Vui lòng thử lại.");
-    }
+    };
+    reader.readAsDataURL(file);
+    
+    const newFiles = [...variantImageFiles];
+    newFiles[index] = file;
+    setVariantImageFiles(newFiles);
   };
 
-  // Hàm xử lý upload ảnh chính cho sản phẩm (nếu có)
-  const handleProductImageUpload = async (file) => {
-    try {
-      if (!file) return;
-      if (file.size > 5 * 1024 * 1024) {
-        alert("Kích thước ảnh quá lớn. Vui lòng chọn ảnh nhỏ hơn 5MB.");
-        return;
-      }
-      // Giả lập upload file và trả về đường dẫn ảnh dạng string
-      const fakeUploadPath = `/uploads_product/product-${Date.now()}.jpg`;
-      setProductImage(fakeUploadPath);
-      console.log("Uploaded product image:", fakeUploadPath);
-    } catch (error) {
-      console.error("Error uploading product image:", error);
-      alert("Có lỗi xảy ra khi tải ảnh sản phẩm. Vui lòng thử lại.");
-    }
-  };
-
-  // Hàm xử lý submit form thêm sản phẩm
+  // Hàm xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (variants.length === 0) {
-      alert("Vui lòng thêm ít nhất một variant!");
-      return;
-    }
-
-    // Kiểm tra dữ liệu bắt buộc
-    if (!productName.trim()) {
-      alert("Vui lòng nhập tên sản phẩm!");
-      return;
-    }
-
-    if (!description.trim()) {
-      alert("Vui lòng nhập mô tả sản phẩm!");
-      return;
-    }
-
-    if (!category) {
-      alert("Vui lòng chọn danh mục sản phẩm!");
-      return;
-    }
-
-    // Kiểm tra variants
-    for (const variant of variants) {
-      if (!variant.variant_color || !variant.variant_size) {
-        alert("Vui lòng nhập đầy đủ màu sắc và size cho tất cả các biến thể!");
-        return;
-      }
-      if (!variant.variant_price || variant.variant_price <= 0) {
-        alert("Vui lòng nhập giá hợp lệ cho tất cả các biến thể!");
-        return;
-      }
-      if (!variant.variant_stock || variant.variant_stock < 0) {
-        alert("Vui lòng nhập số lượng hợp lệ cho tất cả các biến thể!");
-        return;
-      }
-    }
-
-    // Tạo variant đầu tiên từ thông tin sản phẩm chính
-    const mainVariant = {
-      variant_sku: variants[0]?.variant_sku || "",
-      variant_color: variants[0]?.variant_color || "",
-      variant_size: variants[0]?.variant_size || "",
-      variant_price: parseFloat(variants[0]?.variant_price) || 0,
-      variant_stock: parseInt(variants[0]?.variant_stock) || 0,
-      variant_image_url: productImage || variants[0]?.variant_image_url || "",
-    };
-
-    // Các variant còn lại (bỏ variant đầu tiên)
-    const otherVariants = variants.slice(1).map((variant) => ({
-      variant_sku: variant.variant_sku || "",
-      variant_color: variant.variant_color.trim(),
-      variant_size: variant.variant_size.trim(),
-      variant_price: parseFloat(variant.variant_price) || 0,
-      variant_stock: parseInt(variant.variant_stock) || 0,
-      variant_image_url: variant.variant_image_url || "",
-    }));
-
-    // Chuẩn bị dữ liệu sản phẩm
-    const productData = {
-      product_name: productName.trim(),
-      product_image: productImage || mainVariant.variant_image_url || "",
-      product_price: mainVariant.variant_price || 0,
-      product_description: description.trim(),
-      product_status: true,
-      product_variant: [mainVariant, ...otherVariants],
-      product_category: [category],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    setIsSubmitting(true);
+    setMessage("");
 
     try {
+      // Validation
+      if (!productName.trim()) {
+        throw new Error('Vui lòng nhập tên sản phẩm!');
+      }
+      if (!description.trim()) {
+        throw new Error('Vui lòng nhập mô tả sản phẩm!');
+      }
+      if (!category) {
+        throw new Error('Vui lòng chọn danh mục sản phẩm!');
+      }
+      if (!imageFile) {
+        throw new Error('Vui lòng chọn ảnh đại diện sản phẩm!');
+      }
+      if (variants.length === 0) {
+        throw new Error('Vui lòng thêm ít nhất một variant!');
+      }
+
+      // Kiểm tra variants
+      for (const variant of variants) {
+        if (!variant.variant_color || !variant.variant_size) {
+          throw new Error('Vui lòng nhập đầy đủ màu sắc và size cho tất cả các biến thể!');
+        }
+        if (!variant.variant_price || variant.variant_price <= 0) {
+          throw new Error('Vui lòng nhập giá hợp lệ cho tất cả các biến thể!');
+        }
+        if (variant.variant_stock < 0) {
+          throw new Error('Vui lòng nhập số lượng hợp lệ cho tất cả các biến thể!');
+        }
+      }
+
+      // Chuẩn bị dữ liệu sản phẩm
+      const productData = {
+        product_name: productName.trim(),
+        product_price: parseFloat(variants[0].variant_price) || 0,
+        product_description: description.trim(),
+        product_status: true,
+        product_variant: variants.map((variant) => ({
+          variant_color: variant.variant_color.trim(),
+          variant_size: variant.variant_size.trim(),
+          variant_price: parseFloat(variant.variant_price) || 0,
+          variant_stock: parseInt(variant.variant_stock) || 0,
+        })),
+        product_category: [category],
+      };
+
+      // Tạo FormData
+      const formData = new FormData();
+      formData.append('data', JSON.stringify(productData));
+      formData.append('product_image', imageFile);
+      
+      // Append variant images
+      variantImageFiles.forEach((file, idx) => {
+        if (file) {
+          formData.append('product_variant', file);
+        }
+      });
+
+      // Log FormData để debug
+      console.log('FormData contents:');
+      for (let pair of formData.entries()) {
+        console.log(pair[0], typeof pair[1] === 'object' ? 'File object' : pair[1]);
+      }
+
+      // Gửi request
       const response = await axiosInstance.post(
         ENDPOINTS.CREATE_PRODUCT,
-        productData
+        formData,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
       );
-      console.log("Server Response:", response.data);
-      alert("Thêm sản phẩm thành công!");
 
+      // Xử lý phản hồi và log thông tin
+      console.log('=== THÊM SẢN PHẨM THÀNH CÔNG ===');
+      console.log('Full Response:', response.data);
+      
+      const productResult = response.data;
+      
+      // Log link ảnh đại diện
+      if (productResult.product_image) {
+        console.log('🖼️ Link ảnh đại diện:', productResult.product_image);
+      }
+      
+      // Log link ảnh biến thể
+      if (productResult.product_variant && Array.isArray(productResult.product_variant)) {
+        productResult.product_variant.forEach((variant, idx) => {
+          if (variant.variant_image_url) {
+            console.log(`🎨 Link ảnh biến thể ${idx + 1} (${variant.variant_color} - ${variant.variant_size}):`, variant.variant_image_url);
+          }
+        });
+      }
+      
+      // Log link sản phẩm
+      if (productResult._id) {
+        const productLink = `/products/${productResult._id}`;
+        console.log('🔗 Link sản phẩm vừa thêm:', productLink);
+        console.log('📱 Product ID:', productResult._id);
+      }
+
+      setMessage("✅ Thêm sản phẩm thành công!");
+      setMessageType("success");
+      
       // Reset form
       setProductName("");
       setCategory("");
       setNewCategory("");
       setDescription("");
       setVariants([]);
-      setColor("");
-      setSize("");
-      setProductImage("");
+      setColor('');
+      setSize('');
+      setImagePreview("");
+      setImageFile(null);
+      setVariantImageFiles([]);
+      
+      setTimeout(() => {
+        setMessage("");
+        setMessageType("");
+      }, 5000);
+      
     } catch (error) {
-      let errorMessage = "Có lỗi xảy ra khi thêm sản phẩm!";
-
-      if (error.response) {
-        const responseData = error.response.data;
-        errorMessage += `\nMã lỗi: ${error.response.status}`;
-        errorMessage += `\nLỗi: ${
-          responseData?.message || responseData || error.response.statusText
-        }`;
-
-        if (responseData?.errors) {
-          console.log("Validation Errors:", responseData.errors);
-          errorMessage += "\nChi tiết lỗi:";
-          responseData.errors.forEach((err) => {
-            errorMessage += `\n- ${err.message || err}`;
-          });
-        }
-      } else if (error.request) {
-        errorMessage +=
-          "\nKhông thể kết nối đến server. Vui lòng kiểm tra kết nối mạng.";
+      console.error('=== LỖI KHI THÊM SẢN PHẨM ===');
+      console.error('Error:', error);
+      
+      let errorMessage = "Thêm sản phẩm thất bại!";
+      
+      if (error.response?.status === 500) {
+        errorMessage = "Lỗi server (500): " + (error.response?.data?.message || "Vui lòng kiểm tra dữ liệu và thử lại");
+      } else if (error.response?.status === 400) {
+        errorMessage = "Dữ liệu không hợp lệ (400): " + (error.response?.data?.message || "Vui lòng kiểm tra thông tin nhập vào");
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.message) {
+        errorMessage = error.message;
       }
-
-      alert(errorMessage);
+      
+      setMessage(errorMessage);
+      setMessageType("error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // Hiển thị thông báo lỗi nếu có lỗi
   if (error) {
     return (
-      <div className="error-message" style={{ color: "red", padding: "20px" }}>
+      <div className="error-message" style={{ color: 'red', padding: '20px' }}>
         <h3>Lỗi tải danh mục</h3>
         <p>{error}</p>
-        <button
+        <button 
           onClick={() => window.location.reload()}
           style={{
-            padding: "8px 16px",
-            backgroundColor: "#f44336",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: "pointer",
+            padding: '8px 16px',
+            backgroundColor: '#f44336',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
           }}
         >
           Tải lại trang
@@ -441,77 +361,139 @@ const AddProduct = () => {
 
   return (
     <div className="add-product-container">
-      {/* Form thêm sản phẩm */}
-      <h1>Thêm sản phẩm</h1>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+        <Typography variant="h4" gutterBottom>
+          Thêm sản phẩm mới
+        </Typography>
+        <Button
+          variant="outlined"
+          onClick={() => navigate('/home')}
+          sx={{
+            padding: '8px 20px',
+            borderColor: '#1976d2',
+            color: '#1976d2',
+            '&:hover': {
+              borderColor: '#1565c0',
+              backgroundColor: '#e3f2fd'
+            }
+          }}
+        >
+          Quay về trang chủ
+        </Button>
+      </Box>
+      
+      {message && (
+        <Box 
+          sx={{
+            padding: 2,
+            borderRadius: 1,
+            marginBottom: 3,
+            backgroundColor: messageType === 'success' ? '#d4edda' : '#f8d7da',
+            border: messageType === 'success' ? '1px solid #c3e6cb' : '1px solid #f5c6cb',
+            color: messageType === 'success' ? '#155724' : '#721c24'
+          }}
+        >
+          {message}
+        </Box>
+      )}
+
       <form onSubmit={handleSubmit}>
-        {/* Nhập tên sản phẩm */}
-        <div className="form-group">
-          <label>Tên sản phẩm *</label>
-          <input
-            type="text"
+        {/* Tên sản phẩm */}
+        <Box sx={{ marginBottom: 2 }}>
+          <TextField
+            fullWidth
+            label="Tên sản phẩm *"
             value={productName}
             onChange={(e) => setProductName(e.target.value)}
             required
           />
-        </div>
+        </Box>
 
-        {/* Chọn hoặc thêm mới danh mục */}
-        <div className="form-group">
-          <label>Danh mục *</label>
-          <div className="category-input-group">
-            <select
+        {/* Danh mục */}
+        <Box sx={{ marginBottom: 2 }}>
+          <FormControl fullWidth>
+            <InputLabel>Danh mục *</InputLabel>
+            <Select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              disabled={loading}
               required
             >
-              <option value="">Chọn danh mục</option>
               {categories.map((cat) => (
-                <option
-                  key={cat._id || cat.category_name}
-                  value={cat._id || cat.category_name}
-                >
-                  {cat.category_name}
-                </option>
+                <MenuItem key={cat._id} value={cat._id}>
+                  {cat.category_name || cat.name}
+                </MenuItem>
               ))}
-            </select>
-            <div className="new-category-input">
-              <input
-                type="text"
-                value={newCategory}
-                onChange={(e) => setNewCategory(e.target.value)}
-                placeholder="Thêm danh mục mới"
-                disabled={loading}
-              />
-              <button
-                type="button"
-                onClick={handleAddCategory}
-                disabled={!newCategory.trim() || loading}
-                className="add-category-btn"
-              >
-                {loading ? "Đang xử lý..." : "Thêm mới"}
-              </button>
-            </div>
-            {loading && <div className="loading-indicator">Đang tải...</div>}
-          </div>
-        </div>
+            </Select>
+          </FormControl>
+          
+          {/* Thêm danh mục mới */}
+          <Box sx={{ display: 'flex', gap: 1, marginTop: 1 }}>
+            <TextField
+              size="small"
+              placeholder="Thêm danh mục mới"
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              disabled={loading}
+            />
+            <Button
+              variant="outlined"
+              onClick={handleAddCategory}
+              disabled={!newCategory.trim() || loading}
+            >
+              {loading ? 'Đang xử lý...' : 'Thêm mới'}
+            </Button>
+          </Box>
+        </Box>
 
-        {/* Nhập mô tả sản phẩm */}
-        <div className="form-group">
-          <label>Mô tả *</label>
-          <textarea
+        {/* Mô tả */}
+        <Box sx={{ marginBottom: 2 }}>
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            label="Mô tả sản phẩm *"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
           />
-        </div>
+        </Box>
 
-        {/* Thêm biến thể sản phẩm */}
-        <div className="variant-section">
-          <Typography variant="h6" className="add-product-title">
-            Thêm biến thể
+        {/* Ảnh sản phẩm */}
+        <Box sx={{ marginBottom: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Ảnh đại diện sản phẩm *
           </Typography>
-          <Box className="variant-inputs">
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+            <input
+              accept="image/*"
+              type="file"
+              onChange={handleImageUpload}
+              style={{ display: 'none' }}
+              id="product-image-upload"
+            />
+            <label htmlFor="product-image-upload">
+              <Button variant="contained" component="span">
+                Chọn ảnh từ máy
+              </Button>
+            </label>
+            {imagePreview && (
+              <Box sx={{ width: 120, height: 120, border: '1px solid #ddd', borderRadius: 1, overflow: 'hidden' }}>
+                <img
+                  src={imagePreview}
+                  alt="Preview"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </Box>
+            )}
+          </Box>
+        </Box>
+
+        {/* Thêm biến thể */}
+        <Box sx={{ marginBottom: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Thêm biến thể sản phẩm
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 2, marginBottom: 2 }}>
             <TextField
               label="Màu sắc"
               value={color}
@@ -526,20 +508,20 @@ const AddProduct = () => {
               Thêm biến thể
             </Button>
           </Box>
-        </div>
+        </Box>
 
-        {/* Bảng hiển thị các biến thể đã thêm */}
+        {/* Bảng biến thể */}
         {variants.length > 0 && (
-          <TableContainer component={Paper} className="variant-table">
+          <TableContainer component={Paper} sx={{ marginBottom: 3 }}>
             <Table>
               <TableHead>
                 <TableRow>
                   <TableCell>Màu</TableCell>
                   <TableCell>Size</TableCell>
-                  <TableCell>Số lượng</TableCell>
                   <TableCell>Giá (VND)</TableCell>
+                  <TableCell>Số lượng</TableCell>
                   <TableCell>Hình ảnh</TableCell>
-                  <TableCell>Action</TableCell>
+                  <TableCell>Thao tác</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -550,76 +532,42 @@ const AddProduct = () => {
                     <TableCell>
                       <TextField
                         type="number"
-                        value={variant.variant_stock}
-                        onChange={(e) =>
-                          handleVariantChange(
-                            index,
-                            "variant_stock",
-                            e.target.value
-                          )
-                        }
+                        value={variant.variant_price}
+                        onChange={(e) => handleVariantChange(index, 'variant_price', e.target.value)}
                         size="small"
+                        inputProps={{ min: 0 }}
                       />
                     </TableCell>
                     <TableCell>
                       <TextField
                         type="number"
-                        value={variant.variant_price}
-                        onChange={(e) =>
-                          handleVariantChange(
-                            index,
-                            "variant_price",
-                            e.target.value
-                          )
-                        }
+                        value={variant.variant_stock}
+                        onChange={(e) => handleVariantChange(index, 'variant_stock', e.target.value)}
                         size="small"
+                        inputProps={{ min: 0 }}
                       />
                     </TableCell>
                     <TableCell>
-                      <Box className="image-upload-section">
-                        <TextField
-                          size="small"
-                          placeholder="URL hình ảnh"
-                          value={variant.variant_image_url || ""}
-                          onChange={(e) =>
-                            handleVariantChange(
-                              index,
-                              "variant_image_url",
-                              e.target.value
-                            )
-                          }
-                        />
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                         <input
                           accept="image/*"
                           type="file"
-                          onChange={(e) =>
-                            handleImageUpload(index, e.target.files[0])
-                          }
-                          className="hidden-input"
-                          id={`image-upload-${index}`}
+                          onChange={(e) => handleVariantImageUpload(e, index)}
+                          style={{ display: 'none' }}
+                          id={`variant-image-upload-${index}`}
                         />
-                        <label htmlFor={`image-upload-${index}`}>
-                          <Button
-                            variant="contained"
-                            component="span"
-                            size="small"
-                          >
-                            Upload
+                        <label htmlFor={`variant-image-upload-${index}`}>
+                          <Button variant="outlined" component="span" size="small">
+                            Upload ảnh
                           </Button>
                         </label>
-                        {variant.variant_image_url &&
-                          typeof variant.variant_image_url === "string" &&
-                          variant.variant_image_url.trim() !== "" && (
-                            <img
-                              src={
-                                variant.variant_image_url.startsWith('http')
-                                  ? variant.variant_image_url
-                                  : `${API_BASE}${variant.variant_image_url}`
-                              }
-                              alt="Preview"
-                              className="preview-image"
-                            />
-                          )}
+                        {variant.variant_image_preview && (
+                          <img
+                            src={variant.variant_image_preview}
+                            alt="Preview"
+                            style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 4 }}
+                          />
+                        )}
                       </Box>
                     </TableCell>
                     <TableCell>
@@ -637,36 +585,16 @@ const AddProduct = () => {
           </TableContainer>
         )}
 
-        {/* Upload ảnh sản phẩm chính */}
-        <div className="form-group">
-          <label>Ảnh sản phẩm chính</label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => handleProductImageUpload(e.target.files[0])}
-          />
-          {productImage && (
-            <img
-              src={
-                productImage.startsWith('http')
-                  ? productImage
-                  : `${API_BASE}${productImage}`
-              }
-              alt="Ảnh sản phẩm"
-              style={{ maxWidth: 200, marginTop: 8 }}
-            />
-          )}
-        </div>
-
-        {/* Nút submit thêm sản phẩm */}
+        {/* Nút submit */}
         <Button
           type="submit"
           variant="contained"
           color="primary"
           size="large"
-          disabled={variants.length === 0}
+          disabled={variants.length === 0 || isSubmitting || !imageFile}
+          sx={{ minWidth: 200 }}
         >
-          Thêm sản phẩm
+          {isSubmitting ? 'Đang thêm sản phẩm...' : 'Thêm sản phẩm'}
         </Button>
       </form>
     </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from '../config/axios';
 import {
   Box,
   Container,
@@ -32,17 +32,42 @@ const UpdateProduct = () => {
     product_image: "",
     product_variant: [],
   });
+  
+  // State for file uploads
+  const [mainImageFile, setMainImageFile] = useState(null);
+  const [mainImagePreview, setMainImagePreview] = useState("");
+  const [variantImageFiles, setVariantImageFiles] = useState([]);
+  const [variantImagePreviews, setVariantImagePreviews] = useState([]);
 
   // Lấy dữ liệu sản phẩm
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axios.get(ENDPOINTS.GET_PRODUCT_BY_ID(id), {
-          headers: {
-            "ngrok-skip-browser-warning": "true",
-          },
-        });
+        const response = await axiosInstance.get(ENDPOINTS.GET_PRODUCT_BY_ID(id));
         setProductData(response.data);
+        
+        // Set initial preview for main image
+        if (response.data.product_image) {
+          const imageUrl = response.data.product_image.startsWith('/') 
+            ? `http://192.168.1.7:3000${response.data.product_image}`
+            : response.data.product_image;
+          setMainImagePreview(imageUrl);
+        }
+        
+        // Set initial previews for variant images
+        if (response.data.product_variant) {
+          const previews = response.data.product_variant.map(variant => {
+            if (variant.variant_image_url) {
+              return variant.variant_image_url.startsWith('/') 
+                ? `http://192.168.1.7:3000${variant.variant_image_url}`
+                : variant.variant_image_url;
+            }
+            return null;
+          });
+          setVariantImagePreviews(previews);
+          setVariantImageFiles(new Array(response.data.product_variant.length).fill(null));
+        }
+        
         setLoading(false);
       } catch (err) {
         setError("Không thể tải thông tin sản phẩm. Vui lòng thử lại.");
@@ -88,9 +113,14 @@ const UpdateProduct = () => {
           variant_price: "",
           variant_quantity: "",
           variant_image_url: "",
+          variant_stock: 0,
         },
       ],
     }));
+    
+    // Add empty slots for new variant
+    setVariantImageFiles(prev => [...prev, null]);
+    setVariantImagePreviews(prev => [...prev, null]);
   };
 
   // Xóa biến thể
@@ -99,15 +129,22 @@ const UpdateProduct = () => {
       ...prev,
       product_variant: prev.product_variant.filter((_, i) => i !== index),
     }));
+    
+    // Remove corresponding files and previews
+    setVariantImageFiles(prev => prev.filter((_, i) => i !== index));
+    setVariantImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   // Xử lý chọn file ảnh chính
   const handleMainImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setMainImageFile(file);
+      
+      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProductData((prev) => ({ ...prev, product_image: reader.result }));
+        setMainImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -117,43 +154,23 @@ const UpdateProduct = () => {
   const handleVariantImageChange = (index, e) => {
     const file = e.target.files[0];
     if (file) {
+      // Update file array
+      const newFiles = [...variantImageFiles];
+      newFiles[index] = file;
+      setVariantImageFiles(newFiles);
+      
+      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
-        const dataUrl = reader.result;
-        // Lấy phần base64 (sau dấu phẩy)
-        const base64 = dataUrl.split(",")[1];
-        setProductData((prev) => {
-          const updatedVariants = [...prev.product_variant];
-          updatedVariants[index] = {
-            ...updatedVariants[index],
-            variant_image_url: dataUrl,
-            variant_image_base64: base64,
-          };
-          return { ...prev, product_variant: updatedVariants };
-        });
+        const newPreviews = [...variantImagePreviews];
+        newPreviews[index] = reader.result;
+        setVariantImagePreviews(newPreviews);
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Khi load lại dữ liệu, nếu có base64 mà không có url, tự tạo url cho preview
-  useEffect(() => {
-    setProductData((prev) => {
-      const updatedVariants = (prev.product_variant || []).map((variant) => {
-        if (
-          variant.variant_image_base64 &&
-          (!variant.variant_image_url || variant.variant_image_url === "")
-        ) {
-          return {
-            ...variant,
-            variant_image_url: `data:image/jpeg;base64,${variant.variant_image_base64}`,
-          };
-        }
-        return variant;
-      });
-      return { ...prev, product_variant: updatedVariants };
-    });
-  }, [loading]);
+
 
   // Xử lý gửi form
   const handleSubmit = async (e) => {
@@ -163,19 +180,100 @@ const UpdateProduct = () => {
     setSuccess("");
 
     try {
-      await axios.put(ENDPOINTS.UPDATE_PRODUCT_BY_ID(id), productData, {
-        headers: {
-          "Content-Type": "application/json",
-          "ngrok-skip-browser-warning": "true",
-        },
+      // Validation trước khi gửi
+      if (!productData.product_name.trim()) {
+        throw new Error('Vui lòng nhập tên sản phẩm!');
+      }
+      if (!productData.product_description.trim()) {
+        throw new Error('Vui lòng nhập mô tả sản phẩm!');
+      }
+
+      // Tạo FormData cho multipart/form-data upload
+      const formData = new FormData();
+      
+      // Chuẩn bị data object (loại bỏ các field ảnh)
+      const dataToSend = {
+        product_name: productData.product_name.trim(),
+        product_description: productData.product_description.trim(),
+        product_price: parseFloat(productData.product_price) || 0,
+        product_status: productData.product_status !== false, // ensure boolean
+        product_variant: productData.product_variant.map(variant => ({
+          variant_sku: variant.variant_sku || "",
+          variant_color: variant.variant_color || "",
+          variant_size: variant.variant_size || "",
+          variant_price: parseFloat(variant.variant_price) || 0,
+          variant_stock: parseInt(variant.variant_stock || variant.variant_quantity || 0),
+          _id: variant._id
+        })),
+        product_category: Array.isArray(productData.product_category) ? productData.product_category : []
+      };
+      
+      formData.append('data', JSON.stringify(dataToSend));
+      
+      // Append main image file if selected
+      if (mainImageFile) {
+        formData.append('product_image', mainImageFile);
+      }
+      
+      // Append variant image files if selected
+      variantImageFiles.forEach((file, idx) => {
+        if (file) {
+          formData.append('product_variant', file);
+        }
       });
-      setSuccess("Cập nhật sản phẩm thành công!");
+
+      // Log FormData để debug
+      console.log('=== UPDATE PRODUCT FormData ===');
+      console.log('Product Data:', JSON.stringify(dataToSend, null, 2));
+      console.log('Main Image File:', mainImageFile ? mainImageFile.name : 'No new image');
+      console.log('Variant Image Files:', variantImageFiles.map((file, idx) => file ? `${idx}: ${file.name}` : `${idx}: No file`));
+      
+      // Validate data trước khi gửi
+      if (!dataToSend.product_name) {
+        throw new Error('Tên sản phẩm không được để trống');
+      }
+      if (!dataToSend.product_description) {
+        throw new Error('Mô tả sản phẩm không được để trống');
+      }
+      if (dataToSend.product_variant.length === 0) {
+        throw new Error('Phải có ít nhất một biến thể');
+      }
+      
+      for (let pair of formData.entries()) {
+        console.log(pair[0], typeof pair[1] === 'object' ? `File: ${pair[1].name}` : pair[1]);
+      }
+
+      const response = await axiosInstance.put(ENDPOINTS.UPDATE_PRODUCT_BY_ID(id), formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      // Log thông tin response
+      console.log('=== UPDATE PRODUCT THÀNH CÔNG ===');
+      console.log('Response:', response.data);
+      
+      setSuccess("✅ Cập nhật sản phẩm thành công!");
       setTimeout(() => {
         navigate("/home");
       }, 2000);
     } catch (err) {
-      console.error("Error updating product:", err);
-      setError("Có lỗi xảy ra khi cập nhật sản phẩm. Vui lòng thử lại.");
+      console.error("=== LỖI KHI UPDATE PRODUCT ===");
+      console.error("Error:", err);
+      console.error("Error response:", err.response?.data);
+      console.error("Error status:", err.response?.status);
+      
+      let errorMessage = "Có lỗi xảy ra khi cập nhật sản phẩm. Vui lòng thử lại.";
+      
+      if (err.response?.status === 500) {
+        errorMessage = "Lỗi server (500): " + (err.response?.data?.message || "Vui lòng kiểm tra dữ liệu và thử lại");
+      } else if (err.response?.status === 400) {
+        errorMessage = "Dữ liệu không hợp lệ (400): " + (err.response?.data?.message || "Vui lòng kiểm tra thông tin nhập vào");
+      } else if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -199,9 +297,26 @@ const UpdateProduct = () => {
       <TopBar />
       <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h4" gutterBottom>
-            Cập nhật sản phẩm
-          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+            <Typography variant="h4" gutterBottom>
+              Cập nhật sản phẩm
+            </Typography>
+            <Button
+              variant="outlined"
+              onClick={() => navigate('/home')}
+              sx={{
+                padding: '8px 20px',
+                borderColor: '#1976d2',
+                color: '#1976d2',
+                '&:hover': {
+                  borderColor: '#1565c0',
+                  backgroundColor: '#e3f2fd'
+                }
+              }}
+            >
+              Quay về trang chủ
+            </Button>
+          </Box>
 
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -262,28 +377,25 @@ const UpdateProduct = () => {
                     style={{ display: "block", marginBottom: 8 }}
                     onChange={handleMainImageChange}
                   />
-                  {productData.product_image &&
-                    typeof productData.product_image === "string" &&
-                    productData.product_image.trim() !== "" && (
-                      <img
-                        src={productData.product_image}
-                        alt="Preview"
-                        style={{
-                          maxWidth: 120,
-                          maxHeight: 120,
-                          borderRadius: 8,
-                          border: "1px solid #eee",
-                        }}
-                      />
-                    )}
-                  <TextField
-                    fullWidth
-                    label="URL Hình ảnh (hoặc chọn file)"
-                    name="product_image"
-                    value={productData.product_image}
-                    onChange={handleInputChange}
-                    sx={{ mt: 1 }}
-                  />
+                  {mainImagePreview && (
+                    <img
+                      src={mainImagePreview}
+                      alt="Preview"
+                      style={{
+                        maxWidth: 120,
+                        maxHeight: 120,
+                        borderRadius: 8,
+                        border: "1px solid #eee",
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        console.log('Error loading image:', mainImagePreview);
+                      }}
+                    />
+                  )}
+                  <Typography variant="caption" color="textSecondary">
+                    {mainImageFile ? `Đã chọn: ${mainImageFile.name}` : 'Chưa chọn file mới'}
+                  </Typography>
                 </Box>
               </Grid>
 
@@ -401,11 +513,11 @@ const UpdateProduct = () => {
                           fullWidth
                           label="Số lượng"
                           type="number"
-                          value={variant.variant_quantity || ""}
+                          value={variant.variant_stock || variant.variant_quantity || ""}
                           onChange={(e) =>
                             handleVariantChange(
                               index,
-                              "variant_quantity",
+                              "variant_stock",
                               e.target.value
                             )
                           }
@@ -424,103 +536,25 @@ const UpdateProduct = () => {
                             style={{ display: "block", marginBottom: 8 }}
                             onChange={(e) => handleVariantImageChange(index, e)}
                           />
-                          {(() => {
-                            // Ưu tiên variant_image_url
-                            if (
-                              variant.variant_image_url &&
-                              typeof variant.variant_image_url === "string" &&
-                              variant.variant_image_url.trim() !== ""
-                            ) {
-                              return (
-                                <img
-                                  src={variant.variant_image_url}
-                                  alt={`Preview ${index + 1}`}
-                                  style={{
-                                    maxWidth: 100,
-                                    maxHeight: 100,
-                                    borderRadius: 8,
-                                    border: "1px solid #eee",
-                                  }}
-                                />
-                              );
-                            }
-                            // Nếu có variant_image_base64
-                            if (variant.variant_image_base64) {
-                              let src = "";
-                              if (
-                                typeof variant.variant_image_base64 === "string"
-                              ) {
-                                src = variant.variant_image_base64.startsWith(
-                                  "data:"
-                                )
-                                  ? variant.variant_image_base64
-                                  : `data:image/jpeg;base64,${variant.variant_image_base64}`;
-                              } else if (variant.variant_image_base64.data) {
-                                // Nếu là buffer
-                                const bytes = new Uint8Array(
-                                  variant.variant_image_base64.data
-                                );
-                                let binary = "";
-                                bytes.forEach(
-                                  (byte) =>
-                                    (binary += String.fromCharCode(byte))
-                                );
-                                const base64String = window.btoa(binary);
-                                src = `data:image/jpeg;base64,${base64String}`;
-                              }
-                              if (
-                                src &&
-                                typeof src === "string" &&
-                                src.trim() !== ""
-                              ) {
-                                return (
-                                  <img
-                                    src={src}
-                                    alt={`Preview ${index + 1}`}
-                                    style={{
-                                      maxWidth: 100,
-                                      maxHeight: 100,
-                                      borderRadius: 8,
-                                      border: "1px solid #eee",
-                                    }}
-                                  />
-                                );
-                              }
-                            }
-                            // Nếu có variant_image
-                            if (
-                              variant.variant_image &&
-                              typeof variant.variant_image === "string" &&
-                              variant.variant_image.trim() !== ""
-                            ) {
-                              return (
-                                <img
-                                  src={variant.variant_image}
-                                  alt={`Preview ${index + 1}`}
-                                  style={{
-                                    maxWidth: 100,
-                                    maxHeight: 100,
-                                    borderRadius: 8,
-                                    border: "1px solid #eee",
-                                  }}
-                                />
-                              );
-                            }
-                            return null;
-                          })()}
-                          <TextField
-                            fullWidth
-                            label="URL Hình ảnh biến thể (hoặc chọn file)"
-                            value={variant.variant_image_url || ""}
-                            onChange={(e) =>
-                              handleVariantChange(
-                                index,
-                                "variant_image_url",
-                                e.target.value
-                              )
-                            }
-                            sx={{ mt: 1 }}
-                          />
+                          {variantImagePreviews[index] && (
+                            <img
+                              src={variantImagePreviews[index]}
+                              alt={`Preview ${index + 1}`}
+                              style={{
+                                maxWidth: 100,
+                                maxHeight: 100,
+                                borderRadius: 8,
+                                border: "1px solid #eee",
+                              }}
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                console.log('Error loading variant image:', variantImagePreviews[index]);
+                              }}
+                            />
+                          )}
+                          <Typography variant="caption" color="textSecondary">
+                            {variantImageFiles[index] ? `Đã chọn: ${variantImageFiles[index].name}` : 'Chưa chọn file'}
+                          </Typography>
                         </Box>
                       </Grid>
                     </Grid>

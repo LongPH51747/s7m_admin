@@ -1,7 +1,9 @@
 import axios from 'axios';
-import { getFullUrl } from './api';
+import { API_BASE } from './api';
+
 // Tạo một instance axios với các cấu hình mặc định
 const axiosInstance = axios.create({
+  baseURL: API_BASE, // Sử dụng ngrok URL làm base URL
   headers: {
     'Content-Type': 'application/json',// Định dạng nội dung là JSON
     'Accept': 'application/json',// Chấp nhận định dạng JSON
@@ -13,14 +15,10 @@ const axiosInstance = axios.create({
 // Thêm interceptor cho yêu cầu
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Sử dụng URL proxy CORS
-    if (config.url && !config.url.startsWith('http')) {
-      config.url = getFullUrl(config.url); // Lấy URL đầy đủ với proxy
-    }
-    
     // Ghi log dữ liệu yêu cầu để gỡ lỗi
     console.log('Request:', {
       url: config.url,
+      baseURL: config.baseURL,
       method: config.method,
       headers: config.headers,
       data: config.data ? 'Data present' : 'No data'

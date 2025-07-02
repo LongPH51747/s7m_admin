@@ -191,127 +191,221 @@ const variantStock = selectedVariant ? parseInt(selectedVariant.variant_stock) |
   const mainContent = (
     <Container className="main-container">
       {product && (
-        <Grid container spacing={4}>
+        <Grid container spacing={4} alignItems="center" justifyContent="center">
+          {/* Ảnh sản phẩm - 50% bên trái */}
           <Grid item xs={12} md={6}>
-            <Box className="product-images">
-              <Box className="main-image-section">
-                {productImages.length > 1 && (
-                  <IconButton
-                    className="nav-button prev"
-                    onClick={() =>
-                      setCurrentImageIndex((prev) =>
-                        prev > 0 ? prev - 1 : productImages.length - 1
-                      )
-                    }
-                  >
-                    <ArrowBackIos />
-                  </IconButton>
-                )}
+            <Box
+              className="product-image-box animated-fadein"
+              sx={{
+                width: { xs: '90vw', md: 500 },
+                height: { xs: 350, md: 600 },
+                border: '3px solid #2196f3',
+                borderRadius: 6,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative',
+                margin: '0 auto',
+                background: 'linear-gradient(135deg, #e3f2fd 0%, #fff 100%)',
+                boxShadow: '0 8px 32px 0 rgba(33,150,243,0.15)',
+                overflow: 'hidden',
+                transition: 'box-shadow 0.3s',
+                '&:hover': { boxShadow: '0 16px 48px 0 rgba(33,150,243,0.25)' }
+              }}
+            >
+              {/* Nút điều hướng trái */}
+              {productImages.length > 1 && (
+                <IconButton
+                  className="nav-button prev animated-bounce ripple-btn"
+                  onClick={() =>
+                    setCurrentImageIndex((prev) =>
+                      prev > 0 ? prev - 1 : productImages.length - 1
+                    )
+                  }
+                  sx={{
+                    position: 'absolute',
+                    left: 8,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(255,255,255,0.85)',
+                    border: '2px solid #2196f3',
+                    boxShadow: '0 2px 8px #90caf9',
+                    zIndex: 2,
+                    transition: 'background 0.2s',
+                    '&:hover': { background: 'linear-gradient(135deg, #2196f3 0%, #21cbf3 100%)', color: '#fff' }
+                  }}
+                >
+                  <ArrowBackIos />
+                </IconButton>
+              )}
 
-                <Box className="main-image-container">
-                  <img
-                    src={
-                      productImages[currentImageIndex] ||
-                      "https://placehold.co/600x400?text=No+Image"
-                    }
-                    alt={`Product ${currentImageIndex + 1}`}
-                    className="main-image"
-                  />
-                </Box>
-
-                {productImages.length > 1 && (
-                  <IconButton
-                    className="nav-button next"
-                    onClick={() =>
-                      setCurrentImageIndex((prev) =>
-                        prev < productImages.length - 1 ? prev + 1 : 0
-                      )
-                    }
-                  >
-                    <ArrowForwardIos />
-                  </IconButton>
-                )}
+              {/* Ảnh sản phẩm */}
+              <Box
+                className="main-image-anim"
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  overflow: 'hidden',
+                  position: 'relative',
+                }}
+              >
+                <img
+                  src={productImages[currentImageIndex] || "https://placehold.co/500x600?text=No+Image"}
+                  alt={`Product ${currentImageIndex + 1}`}
+                  className={`main-image animated-zoom animated-fade-img`}
+                  style={{
+                    maxWidth: '90%',
+                    maxHeight: '90%',
+                    objectFit: 'contain',
+                    borderRadius: 12,
+                    boxShadow: '0 4px 24px 0 rgba(33,150,243,0.10)',
+                    transition: 'transform 0.4s cubic-bezier(.4,2,.6,1), opacity 0.5s',
+                    opacity: 1,
+                  }}
+                  onLoad={e => e.target.classList.add('img-loaded')}
+                  onError={e => e.target.classList.remove('img-loaded')}
+                />
+                {/* Loader khi ảnh chưa tải xong */}
+                <span className="img-loader"></span>
               </Box>
 
-              <Box className="thumbnail-container">
-                {productImages.map((image, index) => (
-                  <img
-                    key={index}
-                    src={image}
-                    alt={`Thumbnail ${index + 1}`}
-                    className={`thumbnail ${
-                      index === currentImageIndex ? "active" : ""
-                    }`}
-                    onClick={() => setCurrentImageIndex(index)}
+              {/* Nút điều hướng phải */}
+              {productImages.length > 1 && (
+                <IconButton
+                  className="nav-button next animated-bounce ripple-btn"
+                  onClick={() =>
+                    setCurrentImageIndex((prev) =>
+                      prev < productImages.length - 1 ? prev + 1 : 0
+                    )
+                  }
+                  sx={{
+                    position: 'absolute',
+                    right: 8,
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(255,255,255,0.85)',
+                    border: '2px solid #2196f3',
+                    boxShadow: '0 2px 8px #90caf9',
+                    zIndex: 2,
+                    transition: 'background 0.2s',
+                    '&:hover': { background: 'linear-gradient(135deg, #2196f3 0%, #21cbf3 100%)', color: '#fff' }
+                  }}
+                >
+                  <ArrowForwardIos />
+                </IconButton>
+              )}
+
+              {/* Chấm tròn chuyển ảnh */}
+              <Box
+                sx={{
+                  position: 'absolute',
+                  bottom: 18,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  display: 'flex',
+                  gap: 1,
+                  zIndex: 2,
+                }}
+              >
+                {productImages.map((_, idx) => (
+                  <span
+                    key={idx}
+                    className={idx === currentImageIndex ? 'dot active-dot pulse-dot' : 'dot'}
+                    style={{
+                      display: 'inline-block',
+                      width: 14,
+                      height: 14,
+                      borderRadius: '50%',
+                      background: idx === currentImageIndex ? 'linear-gradient(135deg, #2196f3 0%, #21cbf3 100%)' : '#ccc',
+                      margin: '0 4px',
+                      cursor: 'pointer',
+                      border: '2px solid #fff',
+                      transform: idx === currentImageIndex ? 'scale(1.2)' : 'scale(1)',
+                      boxShadow: idx === currentImageIndex ? '0 0 8px #2196f3' : 'none',
+                      transition: 'all 0.3s',
+                    }}
+                    onClick={() => setCurrentImageIndex(idx)}
                   />
                 ))}
               </Box>
             </Box>
           </Grid>
 
+          {/* Thông tin sản phẩm - 50% bên phải */}
           <Grid item xs={12} md={6}>
-            <Box className="product-info">
-              <Typography variant="h1" className="product-name">
+            <Box className="product-info animated-slidein" style={{ display: 'flex', flexDirection: 'column', gap: 20, background: 'rgba(255,255,255,0.95)', borderRadius: 12, boxShadow: '0 4px 24px 0 rgba(33,150,243,0.10)', padding: 32 }}>
+              <Typography variant="h4" className="product-name glow-on-hover" style={{ fontWeight: 700, color: '#1976d2', letterSpacing: 1, marginBottom: 8, textShadow: '0 2px 8px #e3f2fd' }}>
                 {product.product_name}
               </Typography>
-
-              <Box className="price-section">
-                <Typography variant="h4" className="price">
-                  {currentPrice?.toLocaleString("vi-VN")} VND
-                </Typography>
-              </Box>
-
-              <Box className="variant-section">
-                <Typography variant="subtitle1" className="section-title">
+              <Typography variant="h5" className="price info-block" style={{ color: '#388e3c', fontWeight: 600, marginBottom: 12 }}>
+                {currentPrice?.toLocaleString("vi-VN")} VND
+              </Typography>
+              <Box className="variant-section info-block" style={{ marginBottom: 12 }}>
+                <Typography variant="subtitle1" className="section-title" style={{ fontWeight: 600 }}>
                   Màu sắc
                 </Typography>
-                <Box className="color-options">
+                <Box className="color-options" style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
                   {availableColors.map((color) => (
                     <Button
                       key={color}
-                      className={`variant-button ${
-                        selectedColor === color ? "selected" : ""
-                      }`}
+                      className={`variant-button ${selectedColor === color ? "selected" : ""}`}
                       onClick={() => setSelectedColor(color)}
+                      sx={{
+                        borderRadius: 6,
+                        border: selectedColor === color ? '2px solid #1976d2' : '1px solid #ccc',
+                        background: selectedColor === color ? 'linear-gradient(135deg, #2196f3 0%, #21cbf3 100%)' : '#fff',
+                        color: selectedColor === color ? '#fff' : '#1976d2',
+                        fontWeight: 600,
+                        boxShadow: selectedColor === color ? '0 2px 8px #90caf9' : 'none',
+                        transition: 'all 0.2s',
+                        '&:hover': { background: 'linear-gradient(135deg, #2196f3 0%, #21cbf3 100%)', color: '#fff' }
+                      }}
                     >
                       {color}
                     </Button>
                   ))}
                 </Box>
-
-                <Typography variant="subtitle1" className="section-title">
+                <Typography variant="subtitle1" className="section-title" style={{ fontWeight: 600 }}>
                   Size
                 </Typography>
-                <Box className="size-options">
+                <Box className="size-options" style={{ display: 'flex', gap: 8 }}>
                   {availableSizes.map((size) => (
                     <Button
                       key={size}
-                      className={`variant-button ${
-                        selectedSize === size ? "selected" : ""
-                      }`}
+                      className={`variant-button ${selectedSize === size ? "selected" : ""}`}
                       onClick={() => setSelectedSize(size)}
+                      sx={{
+                        borderRadius: 6,
+                        border: selectedSize === size ? '2px solid #1976d2' : '1px solid #ccc',
+                        background: selectedSize === size ? 'linear-gradient(135deg, #2196f3 0%, #21cbf3 100%)' : '#fff',
+                        color: selectedSize === size ? '#fff' : '#1976d2',
+                        fontWeight: 600,
+                        boxShadow: selectedSize === size ? '0 2px 8px #90caf9' : 'none',
+                        transition: 'all 0.2s',
+                        '&:hover': { background: 'linear-gradient(135deg, #2196f3 0%, #21cbf3 100%)', color: '#fff' }
+                      }}
                     >
                       {size}
                     </Button>
                   ))}
                 </Box>
               </Box>
-
-              {/* Hiển thị số lượng tồn kho của biến thể hiện tại */}
-              <Box className="quantity-section">
-                <Typography variant="subtitle1" className="section-title">
+              <Box className="quantity-section info-block" style={{ marginBottom: 12 }}>
+                <Typography variant="subtitle1" className="section-title" style={{ fontWeight: 600 }}>
                   Số lượng tồn kho của biến thể này
                 </Typography>
-                <Typography variant="h6" color="primary" sx={{ mt: 1 }}>
+                <Typography variant="h6" color="primary" sx={{ mt: 1, fontWeight: 700 }}>
                   {variantStock}
                 </Typography>
               </Box>
-
-              <Box className="description-section">
-                <Typography variant="h6" className="section-title">
+              <Box className="description-section info-block">
+                <Typography variant="h6" className="section-title" style={{ fontWeight: 700, marginBottom: 6 }}>
                   Mô tả sản phẩm
                 </Typography>
-                <Typography variant="body1" className="description">
+                <Typography variant="body1" className="description" style={{ whiteSpace: 'pre-line', fontSize: 16, color: '#333', background: '#f5fafd', borderRadius: 8, padding: 16, boxShadow: '0 2px 8px #e3f2fd' }}>
                   {product.product_description}
                 </Typography>
               </Box>

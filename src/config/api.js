@@ -1,11 +1,5 @@
-// URL Proxy CORS - bạn có thể sử dụng bất kỳ dịch vụ nào trong số này:
-// - https://cors-anywhere.herokuapp.com/
-// - https://api.allorigins.win/raw?url=
-// - https://corsproxy.io/?
-const CORS_PROXY = 'https://corsproxy.io/?';
-
-// URL cơ sở API - sử dụng đường dẫn tương đối khi proxy được cấu hình
-const API_BASE = 'https://bd1a-2405-4803-fdc0-2b00-b8e4-4104-e32c-27d4.ngrok-free.app';
+// URL cơ sở API - ngrok URL
+const API_BASE = 'http://192.168.1.7:3000';
 
 // Các điểm cuối
 const ENDPOINTS = {
@@ -14,21 +8,25 @@ const ENDPOINTS = {
   GET_PRODUCTS: `${API_BASE}/api/products/get-all-products`, // Lấy tất cả sản phẩm
   GET_PRODUCT_BY_ID: (id) => `${API_BASE}/api/products/get-products-by-id/id/${id}`, // Lấy sản phẩm theo ID
   UPDATE_PRODUCT_BY_ID: (id) => `${API_BASE}/api/products/update-product-by-id/id/${id}`, // Cập nhật sản phẩm theo ID
-  DELETE_PRODUCT_BY_ID: (id) => `${API_BASE}/api/products/delete-product-by-id/id/${id}`, // Xóa sản phẩm theo ID
+  DELETE_PRODUCT_BY_ID: (id) => `${API_BASE}/api/products/delete/${id}`, // Xóa sản phẩm theo ID
   
   // Danh mục
   GET_ALL_CATEGORIES: `${API_BASE}/api/categories/get-all-categories`, // Lấy tất cả danh mục
   CREATE_CATEGORY: `${API_BASE}/api/categories/create-category` // Tạo danh mục
 };
 
-// Hàm trợ giúp để lấy URL đầy đủ với proxy CORS
+// Hàm trợ giúp để lấy URL đầy đủ - trực tiếp sử dụng ngrok URL
 const getFullUrl = (endpoint) => {
-  const url = `${API_BASE}${endpoint}`;
-  // Chỉ sử dụng proxy CORS trong môi trường phát triển
-  if (process.env.NODE_ENV === 'development') {
-    return `${CORS_PROXY}${encodeURIComponent(url)}`;
+  // Nếu endpoint đã có http/https thì return as is
+  if (endpoint.startsWith('http')) {
+    return endpoint;
   }
-  return url;
+  // Nếu endpoint bắt đầu với / thì thêm API_BASE
+  if (endpoint.startsWith('/')) {
+    return `${API_BASE}${endpoint}`;
+  }
+  // Ngược lại thì thêm API_BASE + /
+  return `${API_BASE}/${endpoint}`;
 };
 
 export {
