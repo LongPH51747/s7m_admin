@@ -95,8 +95,8 @@ const CategoryListUser = () => {
             <th className="p-3 border">Tên người dùng</th>
             <th className="p-3 border">Email</th>
             <th className="p-3 border">SĐT</th>
-            <th className="p-3 border text-center">Thao tác</th>
-            <th className="p-3 border text-center">Trạng thái</th>
+            <th className="p-3 border text-center">Trạng thái </th>
+            {/* <th className="p-3 border text-center">Trạng thái</th> */}
           </tr>
         </thead>
         <tbody>
@@ -110,29 +110,30 @@ const CategoryListUser = () => {
                 <td className="p-3 border">{user.fullname}</td>
                 <td className="p-3 border">{user.email}</td>
                 <td className="p-3 border">{user.telephone}</td>
-                <td className="p-3 border text-center flex justify-center gap-2">
-                  <button
-                    onClick={() => handleBlockToggle(user._id, true)}
-                    disabled={isBlocked}
-                    className={`${isBlocked ? 'opacity-30 cursor-not-allowed' : 'opacity-100'}`}
-                  >
-                    <Lock className="text-red-500" />
-                  </button>
-                  <button
-                    onClick={() => handleBlockToggle(user._id, false)}
-                    disabled={!isBlocked}
-                    className={`${!isBlocked ? 'opacity-70 cursor-not-allowed' : 'opacity-100'}`}
-                  >
-                    <Unlock className="text-green-500" strokeWidth={2.5} />
-                  </button>
-                </td>
                 <td className="p-3 border text-center">
+                  {isBlocked ? (
+                    <button
+                      onClick={() => handleBlockToggle(user._id, false)}
+                      className="opacity-100"
+                    >
+                      <Lock className="text-red-500" strokeWidth={2.5} />
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleBlockToggle(user._id, true)}
+                      className="opacity-100"
+                    >
+                      <Unlock className="text-green-500" strokeWidth={2.5} />
+                    </button>
+                  )}
+                </td>
+                {/* <td className="p-3 border text-center">
                   {isBlocked ? (
                     <span className="text-red-500 font-semibold">Bị chặn</span>
                   ) : (
                     <span className="text-green-500 font-semibold">Hoạt động</span>
                   )}
-                </td>
+                </td> */}
               </tr>
             );
           })}
