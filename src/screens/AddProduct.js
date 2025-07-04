@@ -25,6 +25,8 @@ import '../css/AddProduct.css';
 
 const AddProduct = () => {
   const navigate = useNavigate();
+  
+  // State management
   const [productName, setProductName] = useState('');
   const [category, setCategory] = useState('');
   const [newCategory, setNewCategory] = useState('');
@@ -58,7 +60,7 @@ const AddProduct = () => {
           }
         }
       } catch (error) {
-        console.error('Error fetching categories:', error);
+        console.error('❌ Error fetching categories:', error.message);
         setError('Không thể tải danh mục sản phẩm');
       } finally {
         setLoading(false);
@@ -68,7 +70,7 @@ const AddProduct = () => {
     fetchCategories();
   }, []);
 
-  // Hàm thêm danh mục mới
+  // Add new category
   const handleAddCategory = async () => {
     if (!newCategory.trim()) {
       alert('Vui lòng nhập tên danh mục!');
@@ -99,14 +101,14 @@ const AddProduct = () => {
         alert('Thêm danh mục thành công!');
       }
     } catch (error) {
-      console.error('Error adding category:', error);
+      console.error('❌ Error adding category:', error.message);
       alert('Có lỗi xảy ra khi thêm danh mục: ' + error.message);
     } finally {
       setLoading(false);
     }
   };
 
-  // Hàm xử lý thêm variant
+  // Add variant
   const handleAddVariant = () => {
     if (!color || !size) {
       alert('Vui lòng nhập đầy đủ màu và size!');
@@ -136,7 +138,7 @@ const AddProduct = () => {
     setSize('');
   };
 
-  // Hàm xử lý xóa variant
+  // Delete variant
   const handleDeleteVariant = (index) => {
     const newVariants = variants.filter((_, i) => i !== index);
     setVariants(newVariants);
@@ -144,7 +146,7 @@ const AddProduct = () => {
     setVariantImageFiles(newFiles);
   };
 
-  // Hàm xử lý cập nhật thông tin variant
+  // Update variant information
   const handleVariantChange = (index, field, value) => {
     const newVariants = [...variants];
     if (field === 'variant_price' || field === 'variant_stock') {
@@ -159,10 +161,11 @@ const AddProduct = () => {
     setVariants(newVariants);
   };
 
-  // Xử lý upload ảnh từ máy cho sản phẩm chính
+  // Handle main product image upload
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    
     setImageFile(file);
     setMessage(`✅ Đã chọn ảnh: ${file.name}`);
     setMessageType("success");
@@ -172,7 +175,7 @@ const AddProduct = () => {
     reader.readAsDataURL(file);
   };
 
-  // Xử lý upload ảnh cho từng variant
+  // Handle variant image upload
   const handleVariantImageUpload = (e, index) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -190,7 +193,7 @@ const AddProduct = () => {
     setVariantImageFiles(newFiles);
   };
 
-  // Hàm xử lý submit form
+  // Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -198,23 +201,13 @@ const AddProduct = () => {
 
     try {
       // Validation
-      if (!productName.trim()) {
-        throw new Error('Vui lòng nhập tên sản phẩm!');
-      }
-      if (!description.trim()) {
-        throw new Error('Vui lòng nhập mô tả sản phẩm!');
-      }
-      if (!category) {
-        throw new Error('Vui lòng chọn danh mục sản phẩm!');
-      }
-      if (!imageFile) {
-        throw new Error('Vui lòng chọn ảnh đại diện sản phẩm!');
-      }
-      if (variants.length === 0) {
-        throw new Error('Vui lòng thêm ít nhất một variant!');
-      }
+      if (!productName.trim()) throw new Error('Vui lòng nhập tên sản phẩm!');
+      if (!description.trim()) throw new Error('Vui lòng nhập mô tả sản phẩm!');
+      if (!category) throw new Error('Vui lòng chọn danh mục sản phẩm!');
+      if (!imageFile) throw new Error('Vui lòng chọn ảnh đại diện sản phẩm!');
+      if (variants.length === 0) throw new Error('Vui lòng thêm ít nhất một variant!');
 
-      // Kiểm tra variants
+      // Validate variants
       for (const variant of variants) {
         if (!variant.variant_color || !variant.variant_size) {
           throw new Error('Vui lòng nhập đầy đủ màu sắc và size cho tất cả các biến thể!');
@@ -227,7 +220,7 @@ const AddProduct = () => {
         }
       }
 
-      // Chuẩn bị dữ liệu sản phẩm
+      // Prepare product data
       const productData = {
         product_name: productName.trim(),
         product_price: parseFloat(variants[0].variant_price) || 0,
@@ -242,7 +235,7 @@ const AddProduct = () => {
         product_category: [category],
       };
 
-      // Tạo FormData
+      // Create FormData
       const formData = new FormData();
       formData.append('data', JSON.stringify(productData));
       formData.append('product_image', imageFile);
@@ -254,43 +247,31 @@ const AddProduct = () => {
         }
       });
 
-      // Log FormData để debug
-      console.log('FormData contents:');
-      for (let pair of formData.entries()) {
-        console.log(pair[0], typeof pair[1] === 'object' ? 'File object' : pair[1]);
-      }
-
-      // Gửi request
+      // Send request
       const response = await axiosInstance.post(
         ENDPOINTS.CREATE_PRODUCT,
         formData,
         { headers: { 'Content-Type': 'multipart/form-data' } }
       );
 
-      // Xử lý phản hồi và log thông tin
-      console.log('=== THÊM SẢN PHẨM THÀNH CÔNG ===');
-      console.log('Full Response:', response.data);
+      console.log('✅ Product created successfully:', response.data);
       
       const productResult = response.data;
       
-      // Log link ảnh đại diện
+      // Log important information
       if (productResult.product_image) {
-        console.log('🖼️ Link ảnh đại diện:', productResult.product_image);
+        console.log('🖼️ Product image:', productResult.product_image);
       }
       
-      // Log link ảnh biến thể
       if (productResult.product_variant && Array.isArray(productResult.product_variant)) {
         productResult.product_variant.forEach((variant, idx) => {
           if (variant.variant_image_url) {
-            console.log(`🎨 Link ảnh biến thể ${idx + 1} (${variant.variant_color} - ${variant.variant_size}):`, variant.variant_image_url);
+            console.log(`🎨 Variant ${idx + 1} image (${variant.variant_color}-${variant.variant_size}):`, variant.variant_image_url);
           }
         });
       }
       
-      // Log link sản phẩm
       if (productResult._id) {
-        const productLink = `/products/${productResult._id}`;
-        console.log('🔗 Link sản phẩm vừa thêm:', productLink);
         console.log('📱 Product ID:', productResult._id);
       }
 
@@ -315,8 +296,7 @@ const AddProduct = () => {
       }, 5000);
       
     } catch (error) {
-      console.error('=== LỖI KHI THÊM SẢN PHẨM ===');
-      console.error('Error:', error);
+      console.error('❌ Product creation error:', error.response?.data || error.message);
       
       let errorMessage = "Thêm sản phẩm thất bại!";
       
@@ -398,7 +378,7 @@ const AddProduct = () => {
       )}
 
       <form onSubmit={handleSubmit}>
-        {/* Tên sản phẩm */}
+        {/* Product Name */}
         <Box sx={{ marginBottom: 2 }}>
           <TextField
             fullWidth
@@ -409,7 +389,7 @@ const AddProduct = () => {
           />
         </Box>
 
-        {/* Danh mục */}
+        {/* Category */}
         <Box sx={{ marginBottom: 2 }}>
           <FormControl fullWidth>
             <InputLabel>Danh mục *</InputLabel>
@@ -426,7 +406,7 @@ const AddProduct = () => {
             </Select>
           </FormControl>
           
-          {/* Thêm danh mục mới */}
+          {/* Add new category */}
           <Box sx={{ display: 'flex', gap: 1, marginTop: 1 }}>
             <TextField
               size="small"
@@ -445,7 +425,7 @@ const AddProduct = () => {
           </Box>
         </Box>
 
-        {/* Mô tả */}
+        {/* Description */}
         <Box sx={{ marginBottom: 2 }}>
           <TextField
             fullWidth
@@ -458,7 +438,7 @@ const AddProduct = () => {
           />
         </Box>
 
-        {/* Ảnh sản phẩm */}
+        {/* Product Image */}
         <Box sx={{ marginBottom: 3 }}>
           <Typography variant="h6" gutterBottom>
             Ảnh đại diện sản phẩm *
@@ -488,7 +468,7 @@ const AddProduct = () => {
           </Box>
         </Box>
 
-        {/* Thêm biến thể */}
+        {/* Add Variants */}
         <Box sx={{ marginBottom: 3 }}>
           <Typography variant="h6" gutterBottom>
             Thêm biến thể sản phẩm
@@ -510,7 +490,7 @@ const AddProduct = () => {
           </Box>
         </Box>
 
-        {/* Bảng biến thể */}
+        {/* Variants Table */}
         {variants.length > 0 && (
           <TableContainer component={Paper} sx={{ marginBottom: 3 }}>
             <Table>
@@ -585,7 +565,7 @@ const AddProduct = () => {
           </TableContainer>
         )}
 
-        {/* Nút submit */}
+        {/* Submit Button */}
         <Button
           type="submit"
           variant="contained"

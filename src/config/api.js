@@ -1,5 +1,5 @@
 // URL cơ sở API - ngrok URL
-const API_BASE = 'http://192.168.1.7:3000';
+const API_BASE = 'https://a123-2405-4802-4b8-c8d0-5452-1784-74c1-ad55.ngrok-free.app';
 
 // Các điểm cuối
 const ENDPOINTS = {
@@ -8,6 +8,7 @@ const ENDPOINTS = {
   GET_PRODUCTS: `${API_BASE}/api/products/get-all-products`, // Lấy tất cả sản phẩm
   GET_PRODUCT_BY_ID: (id) => `${API_BASE}/api/products/get-products-by-id/id/${id}`, // Lấy sản phẩm theo ID
   UPDATE_PRODUCT_BY_ID: (id) => `${API_BASE}/api/products/update-product-by-id/id/${id}`, // Cập nhật sản phẩm theo ID
+  UPDATE_VARIANT_BY_PRODUCT_ID: (id) => `${API_BASE}/api/products/updata-variant-by-id-product/id_product/${id}`, // Cập nhật variant theo product ID
   DELETE_PRODUCT_BY_ID: (id) => `${API_BASE}/api/products/delete/${id}`, // Xóa sản phẩm theo ID
   
   // Danh mục

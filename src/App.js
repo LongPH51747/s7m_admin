@@ -14,15 +14,13 @@ import DetailProduct from "./screens/DetailProduct.js";
 import ProductScreen from "./screens/ProductScreen.js";
 import AddProduct from './screens/AddProduct.js';
 import UpdateProduct from './screens/UpdateProduct.js';
-
-
+import UpdateVariant from './screens/UpdateVariant.js';
 
 function App() {
   return (
     <OrderProvider>
       <Router basename="/LongPH51747/s7m_admin">
         <Routes>
-          {/* <Route path="/" element={<CategoryAdmin />} /> */}
           <Route path="/" element={<LoginPage />} />
           <Route path="/categories" element={<CategoryAdmin />} />
           <Route path="/category/:categorySlug" element={<CategoryDetailScreen />} />
@@ -35,6 +33,8 @@ function App() {
           <Route path="/products" element={<ProductScreen />} />
           <Route path="/add-product" element={<AddProduct />} />
           <Route path="/products/edit/:id" element={<UpdateProduct />} />
+          <Route path="/update-product/:id" element={<UpdateProduct />} />
+          <Route path="/update-variant/:id" element={<UpdateVariant />} />
         </Routes>
       </Router>
     </OrderProvider>

@@ -11,7 +11,8 @@ import {
   IconButton,
   Container,
 } from "@mui/material"; // Component UI từ Material UI
-import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material"; // Icon điều hướng hình ảnh
+import { ArrowBackIos, ArrowForwardIos, Edit, Settings } from "@mui/icons-material"; // Icon điều hướng hình ảnh
+import { useNavigate } from "react-router-dom"; // Điều hướng
 import TopBar from "../components/TopBar"; // Thanh topbar của trang
 import "../css/DetailProduct.css"; // CSS riêng cho trang này
 import { ENDPOINTS, API_BASE } from "../config/api"; // Các URL API định nghĩa sẵn
@@ -42,8 +43,9 @@ const formatImageData = (variant) => {
 
 // Khởi tạo component chính
 const ProductDetail = () => {
-  // Lấy ID từ URL
+  // Lấy ID từ URL và navigate
   const { id } = useParams();
+  const navigate = useNavigate();
 
   // Khởi tạo các state cần thiết để quản lý dữ liệu
   const [product, setProduct] = useState(null); // Thông tin sản phẩm
@@ -337,9 +339,46 @@ const variantStock = selectedVariant ? parseInt(selectedVariant.variant_stock) |
           {/* Thông tin sản phẩm - 50% bên phải */}
           <Grid item xs={12} md={6}>
             <Box className="product-info animated-slidein" style={{ display: 'flex', flexDirection: 'column', gap: 20, background: 'rgba(255,255,255,0.95)', borderRadius: 12, boxShadow: '0 4px 24px 0 rgba(33,150,243,0.10)', padding: 32 }}>
-              <Typography variant="h4" className="product-name glow-on-hover" style={{ fontWeight: 700, color: '#1976d2', letterSpacing: 1, marginBottom: 8, textShadow: '0 2px 8px #e3f2fd' }}>
-                {product.product_name}
-              </Typography>
+              {/* Header với tên sản phẩm và nút quản lý */}
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                <Typography variant="h4" className="product-name glow-on-hover" style={{ fontWeight: 700, color: '#1976d2', letterSpacing: 1, textShadow: '0 2px 8px #e3f2fd' }}>
+                  {product.product_name}
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<Edit />}
+                    onClick={() => navigate(`/update-product/${id}`)}
+                    sx={{
+                      borderColor: '#1976d2',
+                      color: '#1976d2',
+                      '&:hover': {
+                        borderColor: '#1565c0',
+                        backgroundColor: '#e3f2fd'
+                      }
+                    }}
+                  >
+                    Sửa SP
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<Settings />}
+                    onClick={() => navigate(`/update-variant/${id}`)}
+                    sx={{
+                      borderColor: '#ff9800',
+                      color: '#ff9800',
+                      '&:hover': {
+                        borderColor: '#f57c00',
+                        backgroundColor: '#fff3e0'
+                      }
+                    }}
+                  >
+                    Sửa Variants
+                  </Button>
+                </Box>
+              </Box>
               <Typography variant="h5" className="price info-block" style={{ color: '#388e3c', fontWeight: 600, marginBottom: 12 }}>
                 {currentPrice?.toLocaleString("vi-VN")} VND
               </Typography>
