@@ -490,12 +490,12 @@
   height: 100%;
 }
 
-/* Footer */
+/* Footer
 .footer {
   margin-top: auto;
   position: relative;
   z-index: 1000;
-}
+} */
 
 .product-images {
   display: flex;

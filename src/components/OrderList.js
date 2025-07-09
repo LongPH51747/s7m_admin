@@ -55,7 +55,7 @@ const CategoryDetailProduct = () => {
     .filter(order =>
       (`SMT${order._id}`).toLowerCase().includes(search.toLowerCase()) &&
       (!statusFilter || order.status === statusFilter)
-    );
+    ).reverse();
 
   const getUserNameById = (userId) => {
     const user = users.find(u => u._id === userId);
