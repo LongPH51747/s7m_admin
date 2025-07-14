@@ -3,31 +3,32 @@ import { API_BASE } from './LinkApi';
 
 const PRODUCTS_API = `${API_BASE}/api/products`;
 
-export const getAllProducts = async () => {
- try {
-    console.log("đã nhảy vào getAllProductProduct");
-    
-    const response = await axios.get(`${PRODUCTS_API}/getProductByCate`, {  headers: {
-        // Thêm header này để bỏ qua trang cảnh báo của Ngrok
-        'ngrok-skip-browser-warning': 'true' 
-      }})
-  console.log("đã chạy responseProducts");
-  
-  console.log("responseProducts", response.data);
-  
-  const products = Array.isArray(response.data)
-  ? response.data
-  : Array.isArray(response.data?.data)
-  ? response.data.data
-  : [];
-  
-  if (!Array.isArray(products)) {
-    throw new Error("❌ Dữ liệu trả về không phải là mảng.");
+export const getProductsByCategoryId = async (cateId) => {
+  if (!cateId || cateId.length !== 24) {
+    console.error("❌ cateId không hợp lệ:", cateId);
+    return [];
   }
-  
-  return products;
-} catch (error) {
-  console.log("eror: ", error);
-    
-}
+
+  try {
+    console.log("👉 Đang lấy sản phẩm cho cateId:", cateId);
+
+    const response = await axios.get(`${PRODUCTS_API}/getProductByCate`, {
+      params: { cateId },
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+      },
+    });
+
+    console.log("📦 Response raw:", response.data);
+
+    if (response.data?.data && Array.isArray(response.data.data)) {
+      return response.data.data;
+    }
+
+    console.warn("⚠️ Không tìm thấy mảng sản phẩm trong response:", response.data);
+    return [];
+  } catch (error) {
+    console.error("❌ Lỗi khi gọi API:", error);
+    return [];
+  }
 };

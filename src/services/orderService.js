@@ -70,3 +70,22 @@ console.log("responseOrderById", response.data);
     throw error;
   }
 };
+
+export const getOrdersByUserId = async (id) => {
+  try {
+     console.log("đã nhảy vào getOrderById");
+    const response = await axios.get(`${ORDER_API}/getByUserId/${id}`, {
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+      },
+    });
+     console.log("đã chạy responseOrderById");
+
+console.log("responseOrderByUserId", response.data);
+
+    return response.data; // giả định API trả về chi tiết đơn hàng
+  } catch (error) {
+    console.error(`❌ Lỗi khi lấy đơn hàng với ID ${id}:`, error);
+    throw error;
+  }
+};

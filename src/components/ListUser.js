@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getAllUsers, updateUserPermission } from '../services/userServices';
 import { Lock, Unlock } from 'lucide-react';
 
 const CategoryListUser = () => {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState(null); // trạng thái lọc
+  const [statusFilter, setStatusFilter] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -48,6 +50,10 @@ const CategoryListUser = () => {
       console.error('Lỗi khi cập nhật trạng thái chặn:', err);
       alert('Không thể cập nhật trạng thái chặn. Vui lòng thử lại.');
     }
+  };
+
+  const handleViewOrders = (id) => {
+    navigate(`/users/${id}/orders`);
   };
 
   const filteredUsers = users.filter(user => {
@@ -95,8 +101,7 @@ const CategoryListUser = () => {
             <th className="p-3 border">Tên người dùng</th>
             <th className="p-3 border">Email</th>
             <th className="p-3 border">SĐT</th>
-            <th className="p-3 border text-center">Trạng thái </th>
-            {/* <th className="p-3 border text-center">Trạng thái</th> */}
+            <th className="p-3 border text-center">Trạng thái</th>
           </tr>
         </thead>
         <tbody>
@@ -107,7 +112,12 @@ const CategoryListUser = () => {
                 key={user._id}
                 className={`border-b ${isBlocked ? 'opacity-50' : 'opacity-100'}`}
               >
-                <td className="p-3 border">{user.fullname}</td>
+                <td
+                  className="p-3 border cursor-pointer text-blue-600 hover:underline"
+                  onClick={() => handleViewOrders(user._id)}
+                >
+                  {user.fullname}
+                </td>
                 <td className="p-3 border">{user.email}</td>
                 <td className="p-3 border">{user.telephone}</td>
                 <td className="p-3 border text-center">
@@ -127,13 +137,6 @@ const CategoryListUser = () => {
                     </button>
                   )}
                 </td>
-                {/* <td className="p-3 border text-center">
-                  {isBlocked ? (
-                    <span className="text-red-500 font-semibold">Bị chặn</span>
-                  ) : (
-                    <span className="text-green-500 font-semibold">Hoạt động</span>
-                  )}
-                </td> */}
               </tr>
             );
           })}
