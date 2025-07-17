@@ -1,5 +1,5 @@
 // URL cơ sở API - ngrok URL
-const API_BASE = 'https://a123-2405-4802-4b8-c8d0-5452-1784-74c1-ad55.ngrok-free.app';
+const API_BASE = 'https://ad06e3f5d75f.ngrok-free.app';
 
 // Các điểm cuối
 const ENDPOINTS = {
