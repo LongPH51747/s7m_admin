@@ -13,7 +13,16 @@ const ENDPOINTS = {
   
   // Danh mục
   GET_ALL_CATEGORIES: `${API_BASE}/api/categories/get-all-categories`, // Lấy tất cả danh mục
-  CREATE_CATEGORY: `${API_BASE}/api/categories/create-category` // Tạo danh mục
+  CREATE_CATEGORY: `${API_BASE}/api/categories/create-category`,// Tạo danh mục
+
+  //Comment
+  GET_COMMENT_BY_PRODUCT_ID: (id) => `${API_BASE}/api/review/get-review-by-id/id_product/${id}`, // Lấy comment theo product ID
+  CREATE_COMMENT: (id) => `${API_BASE}/api/review/create-review`, // Tạo comment
+  DELETE_COMMENT_BY_ID: (id) => `${API_BASE}/api/review/delete-review-id/id_review/${id}`, // Xóa comment theo ID
+  UPDATE_COMMENT_BY_ID: (id) => `${API_BASE}/api/comments/update-comment-by-id/id/${id}`, // Cập nhật comment theo ID
+
+  //User
+  GET_ALL_USERS: `${API_BASE}/api/users/get-all-users`, // Lấy tất cả user
 };
 
 // Hàm trợ giúp để lấy URL đầy đủ - trực tiếp sử dụng ngrok URL
