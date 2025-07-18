@@ -15,7 +15,7 @@ const LoginPage = () => {
     setLoading(true);
     setLoginError("");
     try {
-      await axiosInstance.post(
+      const response = await axiosInstance.post(
         `${API_BASE}/api/auth/login-username`,
         {
           username: values.username,
@@ -27,6 +27,26 @@ const LoginPage = () => {
           },
         }
       );
+      
+      // Lấy token và user info từ response (tương tự React Native app)
+      const token = response.data?.user?.access_token;
+      const user = response.data?.user?.user;
+      
+      if (token) {
+        // Lưu token vào localStorage để sử dụng cho comment
+        localStorage.setItem('token', token);
+        localStorage.setItem('adminId', user?._id || 'admin');
+        localStorage.setItem('currentUser', JSON.stringify(user));
+        
+        // Log token để kiểm tra
+        console.log('🎉 Đăng nhập thành công!');
+        console.log('📱 Access Token:', token);
+        console.log('👤 User Info:', user);
+        console.log('💾 Token đã được lưu vào localStorage');
+      } else {
+        console.warn('⚠️ Không tìm thấy access_token trong response');
+      }
+      
       // Đăng nhập thành công
       console.log('Đăng nhập thành công với username:', values.username);
       navigate("/home");
