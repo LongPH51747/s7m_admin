@@ -1,5 +1,5 @@
 // URL cơ sở API - ngrok URL
-const API_BASE = 'https://76a8db5a2fee.ngrok-free.app';
+const API_BASE = 'https://9ebdf0408572.ngrok-free.app';
 
 // Các điểm cuối
 const ENDPOINTS = {
@@ -19,7 +19,7 @@ const ENDPOINTS = {
   GET_COMMENT_BY_PRODUCT_ID: (id) => `${API_BASE}/api/review/get-review-by-id/id_product/${id}`, // Lấy comment theo product ID
   CREATE_COMMENT: () => `${API_BASE}/api/review/create-review`, // Tạo comment user
   CREATE_ADMIN_REPLY: (id) => `${API_BASE}/api/review/createReviewAdmin/id_review/${id}`, // Admin trả lời comment
-  DELETE_COMMENT_BY_ID: (id) => `${API_BASE}/api/review/delete-review-id/id_review/${id}`, // Xóa comment theo ID
+  DELETE_COMMENT_BY_ADMIN: (id) => `${API_BASE}/api/review/deleteReviewByAdmin/id_review/${id}`, // Admin xóa comment theo ID
   UPDATE_COMMENT_BY_ID: (id) => `${API_BASE}/api/comments/update-comment-by-id/id/${id}`, // Cập nhật comment theo ID
 
   //User
