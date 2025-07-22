@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getOrdersByUserId } from '../services/orderService';
-
+import { API_BASE } from '../services/LinkApi';
 const UserOrderHistory = () => {
   const { id } = useParams();
   const [orders, setOrders] = useState([]);
@@ -67,10 +67,12 @@ const UserOrderHistory = () => {
                 </thead>
                 <tbody>
                   {order.orderItems.map(item => (
+                    console.log("image", item.image),
+                    
                     <tr key={item.id_product + item.id_variant} className="border-b">
                       <td className="p-2 border">
                         <img
-                          src={item.image}
+                          src={`${API_BASE}${item.image}`}
                           alt={item.name_product}
                           className="w-16 h-16 object-cover rounded"
                         />

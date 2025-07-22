@@ -20,6 +20,7 @@ import LoginPage from './screens/LoginPage';
 import AdminChat from './screens/AdminChat'; // Import AdminChat component
 import { useAuth } from './contexts/AuthContext';
 import UserOrderHistory from './screens/UserOrderHistory.js';
+import UserStatistics from './screens/UserStatistic.js';
 
 // ProtectedRoute component đã được cung cấp
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -66,7 +67,7 @@ function App() {
 
             {/* Thêm route cho Admin Chat */}
             <Route path="/chat" element={<ProtectedRoute allowedRoles={['admin']}><AdminChat /></ProtectedRoute>} />
-
+            <Route path="/statistics" element={<ProtectedRoute allowedRoles={['admin']}><UserStatistics/></ProtectedRoute>}/>
             {/* Fallback route - Chuyển hướng đến /login nếu không khớp route nào */}
             <Route path="*" element={<Navigate to="/login" replace />} />
             <Route path="/update-product/:id" element={<UpdateProduct />} />

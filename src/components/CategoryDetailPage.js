@@ -3,8 +3,16 @@ import { useParams } from "react-router-dom";
 import { getProductsByCategoryId } from "../services/productsService";
 import { getAllCategories } from "../services/categoryService";
 
+const normalize = (str) =>
+  String(str || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "-")
+    .toLowerCase()
+    .trim();
+
 const CategoryDetailPage = () => {
-  const { categorySlug } = useParams(); // 👈 Đúng tên param ở route
+  const { categorySlug } = useParams();
 
   const [products, setProducts] = useState([]);
   const [categoryName, setCategoryName] = useState("");
@@ -14,6 +22,8 @@ const CategoryDetailPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log("👉 categorySlug trên URL:", categorySlug);
+
         setLoading(true);
         setError("");
 
@@ -22,24 +32,34 @@ const CategoryDetailPage = () => {
         }
 
         const categories = await getAllCategories();
+        console.log("📦 Danh sách categories lấy từ API:", categories);
 
         if (!Array.isArray(categories) || categories.length === 0) {
           throw new Error("❌ Không có danh mục nào.");
         }
 
+        categories.forEach((c) => {
+          console.log(
+            `📝 category: category_name=${c.category_name}, normalize(category_name)=${normalize(
+              c.category_name
+            )}`
+          );
+        });
+
         const category = categories.find(
-          (c) =>
-            typeof c.slug === "string" &&
-            c.slug.toLowerCase() === categorySlug.toLowerCase()
+          (c) => normalize(c.category_name) === normalize(categorySlug)
         );
+
+        console.log("🔍 Kết quả tìm category:", category);
 
         if (!category || !category._id) {
           throw new Error("❌ Không tìm thấy danh mục hoặc thiếu _id.");
         }
 
-        setCategoryName(category.name);
+        setCategoryName(category.category_name);
 
         const productList = await getProductsByCategoryId(category._id);
+        console.log("📦 Danh sách sản phẩm:", productList);
 
         if (!Array.isArray(productList)) {
           throw new Error("❌ Dữ liệu sản phẩm không hợp lệ.");
@@ -47,7 +67,7 @@ const CategoryDetailPage = () => {
 
         setProducts(productList);
       } catch (err) {
-        console.error(err);
+        console.error("💥 Lỗi xảy ra:", err);
         setError(err.message || "❌ Đã xảy ra lỗi.");
       } finally {
         setLoading(false);
@@ -62,7 +82,7 @@ const CategoryDetailPage = () => {
   if (error) {
     return (
       <p className="text-red-500 flex items-center gap-2">
-        ❌ {error}
+        ❌❌❌ {error}
       </p>
     );
   }
@@ -79,21 +99,22 @@ const CategoryDetailPage = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {products.map((p) => (
             <div
-              key={p._id}
-              className="border p-2 rounded shadow text-center"
-            >
-              <img
-                src={p.image || "https://via.placeholder.com/150"}
-                alt={p.name || "Sản phẩm"}
-                className="w-full h-40 object-cover mb-2"
-              />
-              <h3 className="font-medium">{p.name || "Tên sản phẩm"}</h3>
-              <p className="text-gray-500">
-                {p.price
-                  ? `${Number(p.price).toLocaleString()} đ`
-                  : "Chưa có giá"}
-              </p>
-            </div>
+  key={p._id}
+  className="border p-2 rounded shadow text-center"
+>
+  <img
+    src={p.product_image || "https://via.placeholder.com/150"}
+    alt={p.product_name || "Sản phẩm"}
+    className="w-full h-40 object-cover mb-2"
+  />
+  <h3 className="font-medium">{p.product_name || "Tên sản phẩm"}</h3>
+  <p className="text-gray-500">
+    {p.price
+      ? `${Number(p.price).toLocaleString()} đ`
+      : "Chưa có giá"}
+  </p>
+</div>
+
           ))}
         </div>
       )}
