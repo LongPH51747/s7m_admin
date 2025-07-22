@@ -4,8 +4,8 @@ import { getTopSpenders, getTopBuyersByQuantity } from "../services/statisticUse
 
 const UserStatistics = () => {
   const [stats, setStats] = useState([]);
-  const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("totalSpent");
+  const [limit, setLimit] = useState(0); // 👈 0 = tất cả
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,7 +36,6 @@ const UserStatistics = () => {
   }, []);
 
   const filteredStats = stats
-    .filter(user => user.fullname?.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
       if (sortBy === "totalSpent") {
         return b.totalSpent - a.totalSpent;
@@ -44,7 +43,8 @@ const UserStatistics = () => {
         return b.totalProducts - a.totalProducts;
       }
       return 0;
-    });
+    })
+    .slice(0, limit > 0 ? limit : stats.length);
 
   return (
     <div className="p-6">
@@ -66,15 +66,17 @@ const UserStatistics = () => {
           </button>
         </div>
 
-        <div className="relative">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Tìm kiếm theo họ tên"
-            className="border rounded px-3 py-2 pr-10"
-          />
-          <span className="absolute right-3 top-2.5">🔍</span>
+        <div>
+          <label className="mr-2">Giới hạn: </label>
+          <select
+            value={limit}
+            onChange={(e) => setLimit(Number(e.target.value))}
+            className="border rounded px-3 py-2"
+          >
+            <option value={0}>Tất cả</option>
+            <option value={10}>Top 10</option>
+            <option value={20}>Top 20</option>
+          </select>
         </div>
       </div>
 
