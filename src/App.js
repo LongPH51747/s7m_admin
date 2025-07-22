@@ -9,6 +9,7 @@ import OrderDetail from './screens/OrderDetail';
 import CategoryDetailProduct from './components/CategoryDetailProduct';
 import LoginPage from './screens/LoginPage';
 import AdminChat from './screens/AdminChat'; // Import AdminChat component
+import MainScreen from './screens/MainScreen';
 import { useAuth } from './contexts/AuthContext';
 
 // ProtectedRoute component đã được cung cấp
@@ -27,7 +28,7 @@ function App() {
     return (
         // AuthProvider, SocketProvider, OrderProvider đã được đặt ở index.js
         <Routes>
-            <Route path="/login" element={<LoginPage />} />
+            <Route path="/login" element={<LoginPage/>} />
             
             {/* Protected Routes for Admin */}
             {/* Mặc định chuyển đến /categories nếu là admin và đã đăng nhập */}
@@ -38,6 +39,7 @@ function App() {
             <Route path="/orders" element={<ProtectedRoute allowedRoles={['admin']}><Orders /></ProtectedRoute>} />
             <Route path="/orders/:orderCode" element={<ProtectedRoute allowedRoles={['admin']}><OrderDetail /></ProtectedRoute>} />
             <Route path="/order-list" element={<ProtectedRoute allowedRoles={['admin']}><CategoryDetailProduct /></ProtectedRoute>} />
+             <Route path="/thongke" element={<ProtectedRoute allowedRoles={['admin']}><MainScreen /></ProtectedRoute>} />
             
             {/* Thêm route cho Admin Chat */}
             <Route path="/chat" element={<ProtectedRoute allowedRoles={['admin']}><AdminChat /></ProtectedRoute>} />

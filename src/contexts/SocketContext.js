@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext'; // Import useAuth để lấy thông tin xác thực
-
+import { API_BASE, API_BASE2 } from '../services/LinkApi';
 const SocketContext = createContext(null);
 
 export const useSocket = () => {
@@ -72,7 +72,7 @@ export const SocketProvider = ({ children }) => {
             console.log('Socket: SET isConnecting.current = true');
             console.log('Socket: Attempting to initialize and connect new Socket.IO instance...');
 
-            const newSocket = io(process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000', {
+            const newSocket = io(API_BASE2, {
                 auth: {
                     token: accessToken
                 },

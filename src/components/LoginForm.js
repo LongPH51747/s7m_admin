@@ -3,12 +3,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // <--- Cần import useNavigate
 import '../css/LoginForm.css';
 import { useAuth } from '../contexts/AuthContext';
+import { API_BASE } from '../services/LinkApi';
+import axios from 'axios';
 
 // KHÔNG CÒN IMPORT LOGO Ở ĐÂY NỮA (như bạn đã ghi chú)
 
 const LoginForm = () => {
-    // Đổi 'identifier' thành 'username' cho rõ ràng
-    const [username, setUsername] = useState('admin'); // Mặc định là 'admin'
+   
+    const [username, setUsername] = useState(''); // Mặc định là 'admin'
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -20,32 +22,57 @@ const LoginForm = () => {
         setError('');
         setLoading(true);
 
-        const loginEndpoint = 'http://localhost:5000/api/auth/admin-login'; // Endpoint admin
-        // Payload chỉ chứa username và password
-        const payload = { username, password };
+        const loginEndPoint = `${API_BASE}/auth/login-username`;
 
         try {
-            const response = await fetch(loginEndpoint, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload),
+            const response = await axios.post(loginEndPoint, {
+                username,
+                password,
             });
 
-            const data = await response.json();
+            const data = response.data;
+            console.log('Đăng nhập thành công (Raw Data):', data);
+            console.log("Data.user: ", data.user);
+            console.log("Data.user.user: ", data.user.user)
 
-            if (response.ok) {
-                console.log('Admin Login successful:', data);
-                login(data.user, data.access_token, data.refresh_token);
-               alert('Admin Login Successful!');
-            } else {
-                setError(data.message || 'Thông tin đăng nhập không hợp lệ.');
-                console.error('Admin login failed:', data.message || 'Unknown error');
+            // === CHỖ SỬA ĐÂY ===
+            // Lấy token từ cấp ngoài của đối tượng 'user'
+            const accessToken = data.user.access_token;
+            const refreshToken = data.user.refresh_token; // Lấy refresh_token nếu có
+
+            // Lấy thông tin user chi tiết từ cấp con 'user'
+            const detailedUser = data.user.user; // <--- SỬA TỪ 'data.user' THÀNH 'data.user.user'
+
+            // Kiểm tra xem dữ liệu có đầy đủ không trước khi sử dụng
+            if (!detailedUser || !detailedUser._id || !accessToken) {
+                throw new Error('Dữ liệu phản hồi API không đầy đủ hoặc không đúng định dạng.');
             }
-        } catch (err) {
-            setError('Đã xảy ra lỗi. Vui lòng thử lại sau.');
-            console.error('Error during admin login fetch:', err);
+
+            // Chuẩn bị userData để truyền vào AuthContext's login function
+            const userDataForContext = {
+                _id: detailedUser._id, // <--- Đảm bảo trùng khớp với tên trường của API (_id)
+                username: detailedUser.username,
+                fullName: detailedUser.fullName,
+                role: detailedUser.role,
+                email: detailedUser.email, // Có thể thêm email nếu bạn cần
+            };
+
+            // Gọi hàm login từ AuthContext
+            login(userDataForContext, accessToken, refreshToken);
+
+            alert('Đăng nhập thành công!'); // Hoặc bỏ nếu muốn điều hướng liền mạch
+
+        } catch (error) {
+            if (error.response) {
+                setError(error.response.data.message || 'Thông tin đăng nhập không hợp lệ.');
+                console.error('Admin login failed:', error.response.data || error.response.statusText);
+            } else if (error.request) {
+                setError('Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.');
+                console.error('Error during admin login: No response received from server', error.request);
+            } else {
+                setError('Đã xảy ra lỗi. Vui lòng thử lại sau.');
+                console.error('Error setting up login request:', error.message);
+            }
         } finally {
             setLoading(false);
         }
@@ -67,7 +94,7 @@ const LoginForm = () => {
                             value={username} // Sử dụng state 'username'
                             onChange={(e) => setUsername(e.target.value)} // Cập nhật state 'username'
                             required
-                            disabled // Mặc định disable để username luôn là 'admin'
+                            // disabled // Mặc định disable để username luôn là 'admin'
                         />
                     </div>
                     <div className="input-group">

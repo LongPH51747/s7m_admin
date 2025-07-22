@@ -15,7 +15,8 @@ const MessageBox = ({
     messagesError,
     onlineUsers,
     currentUserId,
-    chatRooms
+    chatRooms,
+    socket,
 }) => {
     const messagesEndRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -96,6 +97,31 @@ const MessageBox = ({
             alert('Vui lòng chọn một tệp ảnh hợp lệ.');
         }
        }
+    };
+
+    const uploadImageToCloudinary = async(file) => {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const response = await fetch('/api/upload/image', {
+                method: 'POST',
+                body: formData,
+            });
+
+            const data = await response.json();
+            if(response.ok){
+                return data.url;
+            }else{
+                console.error('Lỗi api upload: ', data.message || 'Lỗi ko xác định khi upload ảnh');
+                alert('Lỗi tải ảnh lên, sự cố sẽ được khắc phục sớm');
+                return null;
+            }
+        } catch (error) {
+            console.error('Lỗi mạng hoặc server khi upload: ', error);
+            alert('Không thể kết nối đến máy chử khi tải ảnh lên!');
+            return null;
+        }
     }
 
     return (

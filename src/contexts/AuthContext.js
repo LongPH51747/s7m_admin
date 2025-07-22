@@ -24,8 +24,9 @@ export const AuthProvider = ({children}) => {
             setUser ({
                 _id: storedUserId,
                 username: storedUser,
+                fullName: storedFullName,
                 role: storedRole,
-                fullName: storedFullName
+               
             });
             setIsAuthenticated(true);
         }else{
