@@ -45,6 +45,26 @@ export const SocketProvider = ({ children }) => {
         latestCurrentUserId.current = currentUserId;
     }, [currentUserId]);
 
+    // Hàm tạo nội dung xem trước tin nhắn một cách nhất quán
+    const getMessagePreview = (message, roomUser, currentUserId, fallbackContent) => {
+        if (message) {
+            // Ưu tiên kiểm tra mediaUrl để xác định tin nhắn ảnh
+            if (message.mediaUrl) {
+                if (message.sender && String(message.sender._id) === String(currentUserId)) {
+                    return 'Bạn đã gửi một ảnh';
+                } else {
+                    const senderName = roomUser || 'Người dùng';
+                    return `User đã gửi một ảnh`;
+                }
+            }
+            // Nếu không có ảnh, hiển thị nội dung text
+            return message.content || '...';
+        }
+        
+        // Phương án dự phòng cuối cùng nếu không có object 'message'
+        return fallbackContent || 'No messages yet.';
+    };
+
 
     // Hàm sắp xếp danh sách chat theo thời gian tin nhắn mới nhất (sử dụng useCallback để ổn định)
     const sortChatsByLatestMessage = useCallback((chats) => {
@@ -184,7 +204,12 @@ export const SocketProvider = ({ children }) => {
 
         const handleChatRoomList = (rooms) => {
             console.log('SocketContext (Chat Logic): Received chat room list:', rooms);
-            setChatRooms(sortChatsByLatestMessage(rooms));
+            // Áp dụng logic tạo preview cho danh sách ban đầu
+            const processedRooms = rooms.map(room => ({
+                ...room,
+                lastMessageContent: getMessagePreview(room.lastMessage, room.user, latestCurrentUserId.current, room.lastMessageContent)
+            }));
+            setChatRooms(sortChatsByLatestMessage(processedRooms));
             setIsLoadingChatRooms(false); 
             setChatRoomsError(null);
             if (rooms.length > 0 && !latestSelectedRoomId.current) { 
@@ -208,8 +233,10 @@ export const SocketProvider = ({ children }) => {
                     if (room._id === message.chatRoomId) {
                         return {
                             ...room,
-                            lastMessageContent: message.content,
+                            lastMessage: message, // Cập nhật toàn bộ object tin nhắn cuối
                             lastMessageTimestamp: message.createdAt,
+                            // Luôn dùng hàm getMessagePreview để có sự nhất quán
+                            lastMessageContent: getMessagePreview(message, room.user, latestCurrentUserId.current, message.content),
                             unreadCountAdmin: (message.sender && message.sender._id !== latestCurrentUserId.current && message.chatRoomId !== latestSelectedRoomId.current) 
                                 ? (room.unreadCountAdmin || 0) + 1
                                 : room.unreadCountAdmin
@@ -224,9 +251,19 @@ export const SocketProvider = ({ children }) => {
         const handleChatRoomUpdate = (roomOverview) => { 
             console.log('SocketContext (Chat Logic): Received chatRoomUpdatedByClient:', roomOverview);
             setChatRooms(prevRooms => {
-                const updatedRooms = prevRooms.map(room => 
-                    room._id === roomOverview._id ? { ...room, ...roomOverview } : room
-                );
+                const updatedRooms = prevRooms.map(room => {
+                    if (room._id === roomOverview._id) {
+                        // Hợp nhất dữ liệu mới
+                        const mergedRoom = { ...room, ...roomOverview };
+                        // Tạo lại preview từ dữ liệu đã hợp nhất để đảm bảo tính đúng đắn
+                        const finalPreview = getMessagePreview(mergedRoom.lastMessage, mergedRoom.user, latestCurrentUserId.current, mergedRoom.lastMessageContent);
+                        return {
+                            ...mergedRoom,
+                            lastMessageContent: finalPreview
+                        };
+                    }
+                    return room;
+                });
                 return sortChatsByLatestMessage(updatedRooms);
             });
         };
@@ -321,38 +358,56 @@ export const SocketProvider = ({ children }) => {
         setMessagesError(null); 
     }, []);
 
-    const sendAdminMessage = useCallback((messageText) => {
-        if (!messageText.trim() || !selectedRoomId || !socketRef.current || !isSocketReady || !currentUserId) {
-            console.warn('Cannot send message: Missing message text, selected room, socket, or authentication.');
-            alert('Không thể gửi tin nhắn. Vui lòng kiểm tra kết nối và chọn phòng chat.');
+    const sendAdminMessage = useCallback((messageObject) => {
+        if(!selectedRoomId || !socketRef.current || !isSocketReady || !currentUserId){
+            console.warn('Không thể gửi tin nhắn: Thiếu phòng chat đc chọn, socket, hoặc thiếu thông tin xác thực người dùng.');
             return;
         }
 
         const socket = socketRef.current;
-        if (!socket.connected) { // Check if socket is actually connected before emitting
-            console.warn('SocketContext (Chat Logic): Socket not connected when trying to emit "send_message".');
+        if(!socket.connected){
+            console.warn('SocketContext (Logic Chat): Socket chưa kết nối khi cố gắng gửi sự kiện "send_message".');
             alert('Kết nối Socket.IO chưa sẵn sàng. Vui lòng thử lại sau giây lát.');
             return;
         }
 
-        const currentChatRoom = chatRooms.find(room => room._id === selectedRoomId);
+        if(messageObject.messageType === 'text' && (!messageObject.content || !messageObject.content.trim())){
+            console.warn('Không thể gửi tin nhắn văn bản: Nội dung trống.');
+            return;
+        }
 
-        if (!currentChatRoom || !currentChatRoom.userId) {
-            console.error('SocketContext (Chat Logic): Could not find target user ID for selected room. Chat room data:', currentChatRoom);
+        if (messageObject.messageType === 'image' && !messageObject.mediaUrl) {
+            console.warn('Không thể gửi tin nhắn ảnh: mediaUrl bị thiếu.');
+            alert('Không thể gửi ảnh: URL ảnh bị thiếu.');
+            return;
+        }
+
+        if (!messageObject.content && !messageObject.mediaUrl) {
+            console.warn('Không thể gửi tin nhắn: Không có nội dung (văn bản hoặc media) được cung cấp.');
+            return;
+        }
+
+        const currentChatRoom = chatRooms.find(room => room._id === selectedRoomId);
+        if(!currentChatRoom || !currentChatRoom.userId){
+            console.error('SocketContext (Logic Chat): Không thể tìm thấy ID người dùng mục tiêu cho phòng chat đã chọn. Dữ liệu phòng chat:', currentChatRoom);
             alert('Không thể gửi tin nhắn: Không tìm thấy thông tin người nhận.');
             return;
         }
 
+        const targetUserId = currentChatRoom.userId; // id của người dùng mà admin đang chat cùng
+
         const messageData = {
             chatRoomId: selectedRoomId,
-            targetUserId: currentChatRoom.userId, 
-            content: messageText.trim(),
-            messageType: 'text'
+            targetUserId: targetUserId,
+            content: messageObject.content ? messageObject.content.trim() : '',
+            messageType: messageObject.messageType,
+            mediaUrl: messageObject.mediaUrl,
         };
-        console.log('SocketContext (Chat Logic): Emitting "send_message":', messageData);
+
+        console.log('SocketContext (Logic Chat): Đang gửi sự kiện "send_message":', messageData);
         socket.emit('send_message', messageData);
         
-    }, [selectedRoomId, isSocketReady, chatRooms, currentUserId]); 
+    }, [selectedRoomId, isSocketReady, chatRooms, currentUserId, socketRef]); 
 
 
     const contextValue = {

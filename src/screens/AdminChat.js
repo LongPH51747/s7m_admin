@@ -15,27 +15,27 @@ const AdminChat = () => {
         isLoadingMessages,
         messagesError,
         selectAdminChatRoom,
-        sendAdminMessage,
+        sendAdminMessage, // <-- GIỮ LẠI HÀM NÀY TỪ useSocket
         onlineUsers,
         currentUserId 
     } = useSocket();
 
     const [newMessageInput, setNewMessageInput] = useState('');
 
-    // ✅ Gửi khi submit form (bấm nút)
-    const handleSendMessageSubmit = (e) => {
-        e?.preventDefault();
-        if (!newMessageInput.trim()) return;
-        sendAdminMessage(newMessageInput);
-        setNewMessageInput('');
-    };
+    // XÓA BỎ HOẶC BÌNH LUẬN (COMMENT OUT) HAI HÀM NÀY
+    // Lý do: Logic gửi tin nhắn (bao gồm ảnh) sẽ được xử lý TRỰC TIẾP trong MessageBox
+    // const handleSendMessageSubmit = (e) => {
+    //     e?.preventDefault();
+    //     if (!newMessageInput.trim()) return;
+    //     sendAdminMessage(newMessageInput);
+    //     setNewMessageInput('');
+    // };
 
-    // ✅ Gửi khi Enter trong InputEmoji
-    const handleSendMessageFromInputEmoji = (msg) => {
-        if (!msg?.trim()) return;
-        sendAdminMessage(msg);
-        setNewMessageInput('');
-    };
+    // const handleSendMessageFromInputEmoji = (msg) => {
+    //     if (!msg?.trim()) return;
+    //     sendAdminMessage(msg);
+    //     setNewMessageInput('');
+    // };
 
     if (isLoadingChatRooms) {
         return <div className="admin-chat-container"><p>Đang tải danh sách phòng chat...</p></div>;
@@ -64,8 +64,10 @@ const AdminChat = () => {
                 messages={messages}
                 newMessage={newMessageInput}
                 setNewMessage={setNewMessageInput}
-                handleSendMessage={handleSendMessageSubmit}
-                handleSendMessageFromInput={handleSendMessageFromInputEmoji}
+                // XÓA DÒNG NÀY: handleSendMessage={handleSendMessageSubmit}
+                // XÓA DÒNG NÀY: handleSendMessageFromInput={handleSendMessageFromInputEmoji}
+                // THAY VÀO ĐÓ, TRUYỀN TRỰC TIẾP sendAdminMessage TỪ useSocket
+                sendAdminMessage={sendAdminMessage} // <-- ĐÂY LÀ ĐIỀU QUAN TRỌNG NHẤT!
                 isSocketReady={isSocketReady}
                 selectedRoomId={selectedRoomId}
                 isLoadingMessages={isLoadingMessages} 
@@ -73,6 +75,7 @@ const AdminChat = () => {
                 onlineUsers={onlineUsers} 
                 currentUserId={currentUserId} 
                 chatRooms={chatRooms || []} 
+                // Không cần truyền socket trực tiếp nếu chỉ dùng sendAdminMessage
             />
         </div>
     );

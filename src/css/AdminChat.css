@@ -432,3 +432,23 @@ body {
 .remove-image-btn:hover {
     background-color: rgba(255, 0, 0, 1); /* Đậm hơn khi hover */
 }
+
+/* Styles for images within chat messages */
+.chat-image-display {
+    display: block;
+    max-width: 280px;
+    max-height: 400px;
+    width: auto;
+    height: auto;
+    border-radius: 1rem;
+    cursor: pointer;
+    object-fit: cover; /* Ensures the image covers the area nicely */
+}
+
+/* Styles for the text caption accompanying an image */
+.image-caption {
+    padding-top: 8px; /* Add some space above the caption */
+    font-size: 0.9em;
+    word-break: break-word; /* Ensure long captions wrap correctly */
+    /* Color is inherited from .admin-message or .user-message */
+}
