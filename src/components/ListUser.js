@@ -57,7 +57,7 @@ const CategoryListUser = () => {
   };
 
   const handleViewStatistics = () => {
-    navigate('/statistics');
+    navigate('/userstatistics');
   };
 
   const filteredUsers = users.filter(user => {
