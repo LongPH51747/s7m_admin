@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { API_BASE } from './LinkApi';
+import { API_BASE2 } from './LinkApi';
 
-const STATISTICS_API = `${API_BASE}/api/statistics`;
+const STATISTICS_API = `${API_BASE2}/api/statistics`;
 
 export const getTopSpenders = async (limit) => {
   const { data } = await axios.get(`${STATISTICS_API}/getTopSpenders`, {

@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { API_BASE } from './LinkApi';
+import { API_BASE2 } from './LinkApi';
 
-const BANNER_API = `${API_BASE}/api/banner`;
+const BANNER_API = `${API_BASE2}/api/banner`;
 
 export const getAllBanners = async () => {
   try {
