@@ -18,6 +18,7 @@ import UpdateVariant from './screens/UpdateVariant.js'
 // import CategoryDetailProduct from './components/CategoryDetailProduct';
 import LoginPage from './screens/LoginPage';
 import AdminChat from './screens/AdminChat'; // Import AdminChat component
+import MainScreen from './screens/MainScreen';
 import { useAuth } from './contexts/AuthContext';
 import UserOrderHistory from './screens/UserOrderHistory.js';
 import UserStatistics from './screens/UserStatistic.js';
@@ -65,6 +66,8 @@ function App() {
             <Route path="/orders/:orderCode" element={<ProtectedRoute allowedRoles={['admin']}><OrderDetail /></ProtectedRoute>} />
             <Route path="/order-list" element={<ProtectedRoute allowedRoles={['admin']}><CategoryDetailProduct /></ProtectedRoute>} />
 
+             <Route path="/thongke" element={<ProtectedRoute allowedRoles={['admin']}><MainScreen /></ProtectedRoute>} />
+            
             {/* Thêm route cho Admin Chat */}
             <Route path="/chat" element={<ProtectedRoute allowedRoles={['admin']}><AdminChat /></ProtectedRoute>} />
             <Route path="/userstatistics" element={<ProtectedRoute allowedRoles={['admin']}><UserStatistics/></ProtectedRoute>}/>
