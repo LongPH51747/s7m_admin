@@ -8,7 +8,7 @@ import { ENDPOINTS } from '../config/api';
 import { getAllOrder } from '../services/orderService';
 
 function HomeProduct() {
-  // State để lưu thống kê
+  // State để lưu thống kê sản phẩm
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalOrders: 0,
