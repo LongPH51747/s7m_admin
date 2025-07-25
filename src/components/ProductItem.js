@@ -155,7 +155,7 @@ const ProductItem = () => {
                       className="product-quantity"
                       sx={{ color: '#1976d2', fontWeight: 500, mt: 1 }}
                     >
-                      {variant.variant_color} - {variant.variant_size}: {variant.variant_stock}
+                       {variant.variant_stock}
                     </Typography>
                   ))}
                 </Link>
