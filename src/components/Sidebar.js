@@ -28,7 +28,7 @@ const Sidebar = () => (
         <Inbox size={20} />
         Đơn hàng
       </Link>
-      <Link to="/statistics" className="flex items-center gap-3 hover:text-blue-600">
+      <Link to="/thongke" className="flex items-center gap-3 hover:text-blue-600">
         <BarChart2 size={20} />
         Thống kê
       </Link>
