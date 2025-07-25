@@ -4,11 +4,12 @@ import ThongKeDoanhThu from "./ThongKeDoanhThu";
 // import "../StyleTabBar.csc";
 import Sidebar from "../components/Sidebar";
 import HeaderTwo from "../components/HeaderTwo";
+import TopBar from "../components/TopBar";
 const MainScreen = () => {
   return (
     <div className="h-screen flex flex-col">
       <div className="w-full">
-        <HeaderTwo/>
+        <TopBar/>
       </div>
 
       <div className="flex flex-1 overflow-hidden">

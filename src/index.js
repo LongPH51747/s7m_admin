@@ -15,14 +15,6 @@ import { OrderProvider } from './contexts/OrderContext'; // Giữ nguyên nếu 
 // Sử dụng createRoot thay vì render
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-<<<<<<< HEAD
-  <React.StrictMode>
-      <App />
-  </React.StrictMode>
-);
-
-reportWebVitals();
-=======
     // <React.StrictMode> {/* Bạn đã chọn tắt StrictMode, giữ nguyên */}
         <BrowserRouter basename="/LongPH51747/s7m_admin"> {/* Đảm bảo basename đúng */}
             <AuthProvider>
@@ -38,4 +30,3 @@ reportWebVitals();
 );
 
 reportWebVitals();
->>>>>>> Origin/Bao
