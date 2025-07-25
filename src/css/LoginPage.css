@@ -1,125 +1,63 @@
-.login-wrapper {
-    max-width: 1200px;
-    margin: 0 auto;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    background: #fff;
-    box-sizing: border-box;
-}
-
-.top-bar {
-    width: 100vw;
-    height: 60px;
-    background: #F4EFEF;
-    margin-bottom: 0;
+/* src/pages/LoginPage.css */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
     padding: 0;
-    border-radius: 0 0 12px 12px;
+    background-color: #f0f0f0; /* Light background for the page */
 }
 
-.login-container {
-    display: flex;
-    flex: 1;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
-    padding: 0 0 40px 0;
-    box-sizing: border-box;
-    min-height: 600px;
-}
-
-.login-left {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-width: 350px;
-}
-
-.logo-image {
-    max-width: 350px;
-    width: 100%;
-    height: auto;
-    border-radius: 100%;
-    object-fit: contain;
-    background: #ffffff;
-     /* filter: brightness(0) invert(1); */
-    box-shadow: 0 2px 16px rgba(0,0,0,0.04);
-}
-
-.login-right {
-    flex: 1;
+.login-page {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    padding: 0 40px;
-    min-width: 350px;
-    max-width: 400px;
-    margin-left: 20px;
-    margin-right: 100px;
+    min-height: 100vh; /* Đảm bảo trang chiếm toàn bộ chiều cao màn hình */
 }
 
-.login-right h2 {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    color: #111;
+.login-wrapper { /* <-- CONTAINER MỚI BAO QUANH LOGO VÀ FORM */
+    flex: 1; /* Cho phép container này mở rộng, đẩy footer xuống dưới */
+    display: flex; /* Dùng Flexbox */
+    justify-content: center; /* Căn giữa theo chiều ngang */
+    align-items: center; /* Căn giữa theo chiều dọc */
+    padding: 20px;
+    gap: 50px; /* Khoảng cách giữa logo và form */
+    max-width: 1000px; /* Giới hạn chiều rộng tổng thể của khối login */
+    margin: auto; /* Căn giữa khối login trên trang */
 }
 
-.login-desc {
-    color: #222;
-    font-size: 15px;
-    margin-bottom: 28px;
+/* Các phần tử bên trong login-wrapper */
+.login-logo-section { /* <-- Đây sẽ là phần chứa logo */
+    flex-shrink: 0; /* Không cho phép co lại */
+    text-align: center;
 }
 
-.login-input {
-    padding: 12px 16px;
-    margin-bottom: 18px;
-    border: none;
-    border-bottom: 1px solid #ccc;
-    border-radius: 0;
-    font-size: 15px;
-    width: 100%;
-    background: transparent;
-    outline: none;
-    transition: border 0.2s;
-}
-.login-input:focus {
-    border-bottom: 1.5px solid #db4444;
+.login-logo-section img {
+    max-width: 500px; /* Điều chỉnh kích thước logo */
+    height: 500px;
 }
 
-.login-actions {
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    gap: 32px;
-    margin-top: 10px;
+.login-form-container-wrapper { /* <-- Đây sẽ là phần bao quanh form đăng nhập */
+    flex-grow: 1; /* Cho phép form mở rộng */
+    max-width: 450px; /* Giới hạn chiều rộng của form (tương tự LoginForm.css) */
 }
 
-.login-button {
-    background-color: #db4444;
-    color: #fff;
-    padding: 10px 38px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 15px;
-    transition: background 0.2s;
-}
-.login-button:hover {
-    background: #b83232;
+
+/* Responsive adjustments */
+@media (max-width: 992px) { /* Khi màn hình nhỏ hơn, chuyển sang bố cục cột */
+    .login-wrapper {
+        flex-direction: column; /* Đặt logo và form thành cột */
+        gap: 30px; /* Giảm khoảng cách */
+    }
+
+    .login-logo-section img {
+        max-width: 200px; /* Logo nhỏ hơn trên mobile */
+    }
+
+    .login-form-container-wrapper {
+        max-width: 400px; /* Điều chỉnh lại chiều rộng form */
+    }
 }
 
-.forgot-link {
-    color: #db4444;
-    text-decoration: none;
-    font-size: 13px;
-    margin-left: 10px;
-    transition: text-decoration 0.2s;
-}
-.forgot-link:hover {
-    text-decoration: underline;
+@media (max-width: 768px) {
+    .login-wrapper {
+        padding: 15px;
+    }
 }
