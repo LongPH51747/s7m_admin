@@ -148,16 +148,13 @@ const ProductItem = () => {
                   <Typography variant="h6" className="product-price">
                     {product.product_price?.toLocaleString('vi-VN')}VNĐ
                   </Typography>
-                  {Array.isArray(product.product_variant) && product.product_variant.map((variant, idx) => (
-                    <Typography
-                      key={idx}
-                      variant="body2"
-                      className="product-quantity"
-                      sx={{ color: '#1976d2', fontWeight: 500, mt: 1 }}
-                    >
-                       {variant.variant_stock}
-                    </Typography>
-                  ))}
+                  <Typography
+                    variant="body2"
+                    className="product-quantity"
+                    sx={{ color: '#1976d2', fontWeight: 500, mt: 1 }}
+                  >
+                    Tổng kho: {product.variant_stock}
+                  </Typography>
                 </Link>
               </CardContent>
             </Card>
