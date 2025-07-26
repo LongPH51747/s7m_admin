@@ -1,4 +1,11 @@
 // URL cơ sở API - ngrok URL
+// URL Proxy CORS - bạn có thể sử dụng bất kỳ dịch vụ nào trong số này:
+// - https://cors-anywhere.herokuapp.com/
+// - https://api.allorigins.win/raw?url=
+// - https://corsproxy.io/?
+const CORS_PROXY = 'https://corsproxy.io/?';
+
+// URL cơ sở API - sử dụng đường dẫn tương đối khi proxy được cấu hình
 const API_BASE = 'https://9ebdf0408572.ngrok-free.app';
 
 // Các điểm cuối

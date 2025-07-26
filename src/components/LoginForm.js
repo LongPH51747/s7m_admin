@@ -22,7 +22,7 @@ const LoginForm = () => {
         setError('');
         setLoading(true);
 
-        const loginEndPoint = `${API_BASE}/auth/login-username`;
+        const loginEndPoint = `${API_BASE}/api/auth/login-username`;
 
         try {
             const response = await axios.post(loginEndPoint, {

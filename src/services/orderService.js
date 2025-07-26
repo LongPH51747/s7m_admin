@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { API_BASE } from './LinkApi'; 
 
-const ORDER_API = `${API_BASE}/order`;
+const ORDER_API = `${API_BASE}/api/order`;
 
 export const getAllOrder = async () => {
   try {
@@ -63,6 +63,25 @@ export const getOrderById = async (id) => {
      console.log("đã chạy responseOrderById");
 
 console.log("responseOrderById", response.data);
+
+    return response.data; // giả định API trả về chi tiết đơn hàng
+  } catch (error) {
+    console.error(`❌ Lỗi khi lấy đơn hàng với ID ${id}:`, error);
+    throw error;
+  }
+};
+
+export const getOrdersByUserId = async (id) => {
+  try {
+     console.log("đã nhảy vào getOrderById");
+    const response = await axios.get(`${ORDER_API}/getByUserId/${id}`, {
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+      },
+    });
+     console.log("đã chạy responseOrderById");
+
+console.log("responseOrderByUserId", response.data);
 
     return response.data; // giả định API trả về chi tiết đơn hàng
   } catch (error) {

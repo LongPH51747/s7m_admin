@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { API_BASE } from './LinkApi';
 
-const ADDRESS_API = `${API_BASE}/address`;
+const ADDRESS_API = `${API_BASE}/api/address`;
 
 // Lấy thông tin đầy đủ địa chỉ theo userId (dùng cho trang chi tiết đơn hàng)
 export const getAddressByUserId = async (userId) => {
