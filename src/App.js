@@ -46,11 +46,12 @@ function App() {
           <Route path="/orders/:orderCode" element={<OrderDetail />} />
           <Route path="/order-list" element={<CategoryDetailProduct />} />
           */}
-            
           <Route path="/login" element={<LoginPage/>} /> 
+            
             {/* Protected Routes for Admin */}
             {/* Mặc định chuyển đến /categories nếu là admin và đã đăng nhập */}
-          {/* <Route path="/" element={<ProtectedRoute allowedRoles={['admin']}><Navigate to="/login" replace /></ProtectedRoute>} /> */}
+          <Route path="/" element={<ProtectedRoute allowedRoles={['admin']}><Navigate to="/home" replace /></ProtectedRoute>} />
+          <Route path="/home" element={<ProtectedRoute allowedRoles={['admin']}><HomeProduct /></ProtectedRoute>} />
           <Route path="/categories" element={<ProtectedRoute allowedRoles={['admin']}><CategoryAdmin /></ProtectedRoute>} />
           <Route path="/category/:categorySlug" element={<ProtectedRoute allowedRoles={['admin']}><CategoryDetailScreen /></ProtectedRoute>} />
           <Route path="/users" element={<ProtectedRoute allowedRoles={['admin']}><Users /></ProtectedRoute>} />
@@ -58,7 +59,6 @@ function App() {
           <Route path="/orders/:orderCode" element={<ProtectedRoute allowedRoles={['admin']}><OrderDetail /></ProtectedRoute>} />
           <Route path="/order-list" element={<ProtectedRoute allowedRoles={['admin']}><CategoryDetailProduct /></ProtectedRoute>} />
           <Route path="/thongke" element={<ProtectedRoute allowedRoles={['admin']}><MainScreen /></ProtectedRoute>} />
-          <Route path="/home" element={<ProtectedRoute allowedRoles={['admin']}><HomeProduct /></ProtectedRoute>} />
           <Route path="/product/:id" element={<ProtectedRoute allowedRoles={['admin']}><DetailProduct /></ProtectedRoute>} />
           <Route path="/products" element={<ProtectedRoute allowedRoles={['admin']}><ProductScreen /></ProtectedRoute>} />
           <Route path="/add-product" element={<ProtectedRoute allowedRoles={['admin']}><AddProduct /></ProtectedRoute>} />
