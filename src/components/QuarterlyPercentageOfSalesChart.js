@@ -15,7 +15,7 @@ const QuarterlyPercentageOfSalesChart = ({ year, quarter }) => {
       setError(null);
       try {
         const response = await axios.get(
-          `${API_BASE}/statistics/getQuaterPercentOfSales?year=${year}`,
+          `${API_BASE}/api/statistics/getQuaterPercentOfSales?year=${year}`,
           { headers: { 'ngrok-skip-browser-warning': 'true' } }
         );
         // Tìm đúng quý được chọn

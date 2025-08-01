@@ -21,7 +21,7 @@ const YearlyRevenueChart = () => { // Không nhận props 'data' nữa
         // Tôi sẽ giả định nó trả về một mảng dữ liệu nhiều năm nếu bạn muốn vẽ biểu đồ nhiều năm.
         // Nếu nó chỉ trả về một đối tượng đơn { totalRevenue: X } cho một năm cụ thể,
         // bạn sẽ cần điều chỉnh để hiển thị thông tin đó, không phải biểu đồ cột nhiều năm.
-        const response = await axios.get(`${API_BASE}/statistics/getYearlyRevenue`, {
+        const response = await axios.get(`${API_BASE}/api/statistics/getYearlyRevenue`, {
           headers: {
             'ngrok-skip-browser-warning': 'true'
           }

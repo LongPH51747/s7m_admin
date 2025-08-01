@@ -5,7 +5,7 @@ import { API_BASE } from '../services/LinkApi';
 const ProductBestSaleTable = () => {
   const [data, setData] = useState([]);
   useEffect(() => {
-    axios.get(`${API_BASE}/statistics/getProductBestSale`, {
+    axios.get(`${API_BASE}/api/statistics/getProductBestSale`, {
       headers: { 'ngrok-skip-browser-warning': 'true' }
     }).then(res => setData(res.data));
   }, []);
