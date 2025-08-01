@@ -40,6 +40,11 @@ const LoginForm = () => {
             const accessToken = data.user.access_token;
             const refreshToken = data.user.refresh_token; // Lấy refresh_token nếu có
 
+            localStorage.setItem('token', accessToken);
+            localStorage.setItem('adminId', data.user.user._id)
+
+            console.log("Id admin khi đăng nhập: ", data.user.user._id)
+
             // Lấy thông tin user chi tiết từ cấp con 'user'
             const detailedUser = data.user.user; // <--- SỬA TỪ 'data.user' THÀNH 'data.user.user'
 
@@ -56,6 +61,7 @@ const LoginForm = () => {
                 role: detailedUser.role,
                 email: detailedUser.email, // Có thể thêm email nếu bạn cần
             };
+            
 
             // Gọi hàm login từ AuthContext
             login(userDataForContext, accessToken, refreshToken);

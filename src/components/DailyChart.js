@@ -48,7 +48,7 @@ const DailyRevenueRangeChart = ({ startDate, endDate }) => {
         // Gọi API getRevenueByDateRange từ backend
         const response = await axios.get(
           // SỬ DỤNG TRỰC TIẾP startDate VÀ endDate VÌ CHÚNG ĐÃ CÓ ĐỊNH DẠNG YYYY-MM-DD
-          `${API_BASE}/statistics/getRevenueByDateRange?startDate=${startDate}&endDate=${endDate}`,
+          `${API_BASE}/api/statistics/getRevenueByDateRange?startDate=${startDate}&endDate=${endDate}`,
           {
             headers: {
               'ngrok-skip-browser-warning': 'true' // Thêm header này nếu bạn dùng ngrok

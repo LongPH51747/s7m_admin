@@ -15,27 +15,15 @@ const AdminChat = () => {
         isLoadingMessages,
         messagesError,
         selectAdminChatRoom,
-        sendAdminMessage, // <-- GIỮ LẠI HÀM NÀY TỪ useSocket
-        onlineUsers,
+        sendAdminMessage,
+        onlineUsers, // Lấy onlineUsers từ useSocket
         currentUserId 
     } = useSocket();
 
+    // THÊM DÒNG LOG NÀY ĐỂ XEM ONLINEUSERS MÀ ADMINCHAT NHẬN ĐƯỢC
+    console.log("AdminChat: onlineUsers from useSocket():", onlineUsers);
+
     const [newMessageInput, setNewMessageInput] = useState('');
-
-    // XÓA BỎ HOẶC BÌNH LUẬN (COMMENT OUT) HAI HÀM NÀY
-    // Lý do: Logic gửi tin nhắn (bao gồm ảnh) sẽ được xử lý TRỰC TIẾP trong MessageBox
-    // const handleSendMessageSubmit = (e) => {
-    //     e?.preventDefault();
-    //     if (!newMessageInput.trim()) return;
-    //     sendAdminMessage(newMessageInput);
-    //     setNewMessageInput('');
-    // };
-
-    // const handleSendMessageFromInputEmoji = (msg) => {
-    //     if (!msg?.trim()) return;
-    //     sendAdminMessage(msg);
-    //     setNewMessageInput('');
-    // };
 
     if (isLoadingChatRooms) {
         return <div className="admin-chat-container"><p>Đang tải danh sách phòng chat...</p></div>;
@@ -59,23 +47,22 @@ const AdminChat = () => {
                 chatRooms={chatRooms || []} 
                 selectedRoomId={selectedRoomId}
                 onSelectRoom={selectAdminChatRoom}
+                // SỬA ĐỔI Ở ĐÂY: Đảm bảo onlineUsers luôn là một mảng
+                onlineUsers={onlineUsers || []} 
             />
             <MessageBox
                 messages={messages}
                 newMessage={newMessageInput}
                 setNewMessage={setNewMessageInput}
-                // XÓA DÒNG NÀY: handleSendMessage={handleSendMessageSubmit}
-                // XÓA DÒNG NÀY: handleSendMessageFromInput={handleSendMessageFromInputEmoji}
-                // THAY VÀO ĐÓ, TRUYỀN TRỰC TIẾP sendAdminMessage TỪ useSocket
-                sendAdminMessage={sendAdminMessage} // <-- ĐÂY LÀ ĐIỀU QUAN TRỌNG NHẤT!
+                sendAdminMessage={sendAdminMessage}
                 isSocketReady={isSocketReady}
                 selectedRoomId={selectedRoomId}
                 isLoadingMessages={isLoadingMessages} 
                 messagesError={messagesError}
-                onlineUsers={onlineUsers} 
+                // SỬA ĐỔI Ở ĐÂY: Đảm bảo onlineUsers luôn là một mảng
+                onlineUsers={onlineUsers || []} 
                 currentUserId={currentUserId} 
                 chatRooms={chatRooms || []} 
-                // Không cần truyền socket trực tiếp nếu chỉ dùng sendAdminMessage
             />
         </div>
     );

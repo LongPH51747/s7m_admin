@@ -14,7 +14,7 @@ const YearlyPercentageOfSalesChart = ({ year }) => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await axios.get(`${API_BASE}/statistics/getYearlyPercentageOfSales`, {
+        const response = await axios.get(`${API_BASE}/api/statistics/getYearlyPercentageOfSales`, {
             headers: {
               'ngrok-skip-browser-warning': 'true'
             }
