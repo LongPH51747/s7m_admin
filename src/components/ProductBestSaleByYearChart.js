@@ -8,7 +8,7 @@ const ProductBestSaleByYearChart = ({ year }) => {
 
   useEffect(() => {
     if (!year) return;
-    axios.get(`${API_BASE}/api/statistics/getProductBestSaleByYear`, {
+    axios.get(`${API_BASE}/statistics/getProductBestSaleByYear`, {
       headers: { 'ngrok-skip-browser-warning': 'true' }
     })
       .then(res => {

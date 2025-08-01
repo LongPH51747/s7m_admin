@@ -11,7 +11,7 @@ const ProductBestSaleByDateRangeChart = ({ startDate, endDate }) => {
       setData([]);
       return;
     }
-    axios.get(`${API_BASE}/api/statistics/getProductBestSaleByDateRange?startDate=${startDate}&endDate=${endDate}`, {
+    axios.get(`${API_BASE}/statistics/getProductBestSaleByDateRange?startDate=${startDate}&endDate=${endDate}`, {
       headers: { 'ngrok-skip-browser-warning': 'true' }
     }).then(res => setData(res.data));
   }, [startDate, endDate]);

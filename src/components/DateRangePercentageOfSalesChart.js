@@ -34,7 +34,7 @@ const DateRangePercentageOfSalesChart = ({ startDate, endDate }) => {
        
         const response = await axios.get(
           // SỬ DỤNG TRỰC TIẾP startDate VÀ endDate VÌ CHÚNG ĐÃ CÓ ĐỊNH DẠNG YYYY-MM-DD
-          `${API_BASE}/api/statistics/getDateRangePercentageOfSales?startDate=${startDate}&endDate=${endDate}`,
+          `${API_BASE}/statistics/getDateRangePercentageOfSales?startDate=${startDate}&endDate=${endDate}`,
           { headers: { 'ngrok-skip-browser-warning': 'true' } }
         );
         setData(Array.isArray(response.data) ? response.data : []);

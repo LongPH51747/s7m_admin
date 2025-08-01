@@ -9,7 +9,7 @@ const ProductBestSaleByMonthTable = ({ year, month }) => {
       setData([]);
       return;
     }
-    axios.get(`${API_BASE}/api/statistics/getProductBestSaleByMonth?year=${year}`, {
+    axios.get(`${API_BASE}/statistics/getProductBestSaleByMonth?year=${year}`, {
       headers: { 'ngrok-skip-browser-warning': 'true' }
     }).then(res => {
       // Lọc theo tháng

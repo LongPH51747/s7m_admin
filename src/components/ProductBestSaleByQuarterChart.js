@@ -11,7 +11,7 @@ const ProductBestSaleByQuarterChart = ({ year, quarter }) => {
       setData([]);
       return;
     }
-    axios.get(`${API_BASE}/api/statistics/getProductBestSaleByQuater?year=${year}`, {
+    axios.get(`${API_BASE}/statistics/getProductBestSaleByQuater?year=${year}`, {
       headers: { 'ngrok-skip-browser-warning': 'true' }
     }).then(res => {
       // Lọc theo quý

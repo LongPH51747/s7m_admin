@@ -5,7 +5,7 @@ import { API_BASE } from '../services/LinkApi';
 const ProductBestSaleByYearTable = ({ year }) => {
   const [data, setData] = useState([]);
   useEffect(() => {
-    axios.get(`${API_BASE}/api/statistics/getProductBestSaleByYear`, {
+    axios.get(`${API_BASE}/statistics/getProductBestSaleByYear`, {
       headers: { 'ngrok-skip-browser-warning': 'true' }
     }).then(res => {
       // Lọc theo năm nếu cần
