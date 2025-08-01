@@ -67,7 +67,7 @@ function App() {
 
             {/* Thêm route cho Admin Chat */}
             <Route path="/chat" element={<ProtectedRoute allowedRoles={['admin']}><AdminChat /></ProtectedRoute>} />
-            <Route path="/statistics" element={<ProtectedRoute allowedRoles={['admin']}><UserStatistics/></ProtectedRoute>}/>
+            <Route path="/userstatistics" element={<ProtectedRoute allowedRoles={['admin']}><UserStatistics/></ProtectedRoute>}/>
             {/* Fallback route - Chuyển hướng đến /login nếu không khớp route nào */}
             <Route path="*" element={<Navigate to="/login" replace />} />
             <Route path="/update-product/:id" element={<UpdateProduct />} />
