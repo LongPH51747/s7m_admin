@@ -59,7 +59,7 @@ const CategoryDetailProduct = () => {
 
   const getUserNameById = (userId) => {
     const user = users.find(u => u._id === userId);
-    return user?.username || 'Không rõ';
+    return user?.fullname || user?.username || user?.email || 'Không rõ';
   };
 
   return (
