@@ -58,7 +58,7 @@ const UserStatistics = () => {
             onClick={() => setSortBy("totalSpent")}
             className={`px-4 py-2 rounded ${sortBy === "totalSpent" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
           >
-            💰 Tổng chi tiêu
+            💰 Tổng tiền mua hàng
           </button>
           <button
             onClick={() => setSortBy("totalProducts")}
@@ -94,7 +94,7 @@ const UserStatistics = () => {
     {sortBy === "totalSpent" ? (
       <>
         <th className="p-3 border text-center">Tổng đơn hàng</th>
-        <th className="p-3 border text-center">Tổng tiền chi</th>
+        <th className="p-3 border text-center">Tổng tiền mua hàng</th>
       </>
     ) : (
       <>

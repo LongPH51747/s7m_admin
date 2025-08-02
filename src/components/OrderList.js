@@ -12,7 +12,7 @@ const statuses = [
   'Giao thành công',
   'Đã nhận hàng',
   'Hoàn hàng',
-  'Hủy',
+  'Đã hủy',
 ];
 
 const CategoryDetailProduct = () => {
