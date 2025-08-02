@@ -1,6 +1,5 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-
 import CategoryAdmin from './screens/CategoryAdmin';
 import CategoryDetailScreen from './screens/CategoryDetailScreen';
 import Users from './screens/Users';
@@ -61,6 +60,10 @@ function App() {
           <Route path="/orders" element={<ProtectedRoute allowedRoles={['admin']}><Orders /></ProtectedRoute>} />
           <Route path="/orders/:orderCode" element={<ProtectedRoute allowedRoles={['admin']}><OrderDetail /></ProtectedRoute>} />
           <Route path="/order-list" element={<ProtectedRoute allowedRoles={['admin']}><CategoryDetailProduct /></ProtectedRoute>} />
+          <Route path="/product/:id" element={<ProtectedRoute allowedRoles={['admin']}><DetailProduct /></ProtectedRoute>} />
+          <Route path="/products" element={<ProtectedRoute allowedRoles={['admin']}><ProductScreen /></ProtectedRoute>} />
+          <Route path="/add-product" element={<ProtectedRoute allowedRoles={['admin']}><AddProduct /></ProtectedRoute>} />
+          <Route path="/products/edit/:id" element={<ProtectedRoute allowedRoles={['admin']}><UpdateProduct /></ProtectedRoute>} />
           
           <Route path="/update-product/:id" element={<ProtectedRoute allowedRoles={['admin']}><UpdateProduct /></ProtectedRoute>} />
           <Route path="/update-variant/:id" element={<ProtectedRoute allowedRoles={['admin']}><UpdateVariant /></ProtectedRoute>} /> */}

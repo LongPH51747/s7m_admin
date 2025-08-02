@@ -4,7 +4,6 @@ import axios from 'axios';
 import { API_BASE } from '../services/LinkApi';
 import { generateHSLRainbowColor } from '../untils';
 
-
 const DateRangePercentageOfSalesChart = ({ startDate, endDate }) => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
