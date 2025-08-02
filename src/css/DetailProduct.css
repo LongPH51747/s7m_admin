@@ -532,6 +532,42 @@ body {
   align-items: center;
   min-height: 60vh;
   background: var(--background-primary);
+  height: 100%;
+}
+
+/* Footer
+.footer {
+  margin-top: auto;
+  position: relative;
+  z-index: 1000;
+} */
+
+.product-images {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.main-image-section {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.main-image-container {
+  width: 100%;
+  max-width: 500px;
+}
+
+.main-image {
+  width: 100%;
+  max-width: 500px;
+  height: auto;
+  object-fit: cover;
   border-radius: 8px;
   margin: 20px;
   border: 1px solid #f1f5f9;

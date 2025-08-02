@@ -1,21 +1,24 @@
 // src/components/DailyChart.js (hoặc DailyRevenueRangeChart.js)
-import React, { useState, useEffect } from 'react'; // Bắt buộc phải import useState và useEffect
+import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Label } from 'recharts';
 import { formatCurrencyVND } from '../untils'; // Đảm bảo đường dẫn đúng
 import axios from 'axios'; // Import axios để gọi API
 import { API_BASE } from '../services/LinkApi'; // Import API_BASE
 
-const DailyRevenueRangeChart = ({ startDate, endDate }) => { // Xóa prop 'data'
+
+const DailyRevenueRangeChart = ({ startDate, endDate }) => {
   const [dailyRevenueData, setDailyRevenueData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Hàm tiện ích để chuyển đổi định dạng ngày YYYY-MM-DD sang d-m-yyyy cho backend
-  const convertToDMY = (isoDate) => {
-    if (!isoDate) return ''; // Tránh lỗi nếu ngày rỗng
-    const [y, m, d] = isoDate.split("-");
-    return `${parseInt(d)}-${parseInt(m)}-${y}`;
-  };
+
+  // XÓA BỎ HOẶC COMMENT OUT HÀM convertToDMY vì không cần nữa
+  // const convertToDMY = (isoDate) => {
+  //   if (!isoDate) return ''; // Tránh lỗi nếu ngày rỗng
+  //   const [y, m, d] = isoDate.split("-");
+  //   return `${parseInt(d)}-${parseInt(m)}-${y}`;
+  // };
+
 
   useEffect(() => {
     const fetchChartData = async () => {
@@ -30,16 +33,21 @@ const DailyRevenueRangeChart = ({ startDate, endDate }) => { // Xóa prop 'data'
         setIsLoading(true);
         setError(null);
 
-        // Chuyển đổi định dạng ngày cho backend (d-m-yyyy)
-        const formattedStartDate = convertToDMY(startDate);
-        const formattedEndDate = convertToDMY(endDate);
 
-        console.log('Original dates:', startDate, endDate);
-        console.log('Formatted dates:', formattedStartDate, formattedEndDate);
+        // XÓA BỎ CÁC DÒNG CHUYỂN ĐỔI ĐỊNH DẠNG NÀY
+        // const formattedStartDate = convertToDMY(startDate);
+        // const formattedEndDate = convertToDMY(endDate);
+
+
+        // XÓA BỎ CÁC LOG NÀY NẾU KHÔNG CẦN THIẾT NỮA
+        // console.log('Original dates:', startDate, endDate);
+        // console.log('Formatted dates:', formattedStartDate, formattedEndDate); // Dòng này sẽ gây lỗi nếu xóa formattedStartDate/EndDate
+
 
         // Gọi API getRevenueByDateRange từ backend
         const response = await axios.get(
-          `${API_BASE}/statistics/getRevenueByDateRange?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
+          // SỬ DỤNG TRỰC TIẾP startDate VÀ endDate VÌ CHÚNG ĐÃ CÓ ĐỊNH DẠNG YYYY-MM-DD
+          `${API_BASE}/api/statistics/getRevenueByDateRange?startDate=${startDate}&endDate=${endDate}`,
           {
             headers: {
               'ngrok-skip-browser-warning': 'true' // Thêm header này nếu bạn dùng ngrok
@@ -47,7 +55,8 @@ const DailyRevenueRangeChart = ({ startDate, endDate }) => { // Xóa prop 'data'
           }
         );
         // Dữ liệu thô từ backend: [{ "totalRevenue": X, "date": "YYYY-MM-DD" }, ...]
-        const rawDailyData = response.data; 
+        const rawDailyData = response.data;
+
 
         // Kiểm tra nếu rawDailyData không phải là mảng hoặc null/undefined
         if (!Array.isArray(rawDailyData)) {
@@ -60,11 +69,13 @@ const DailyRevenueRangeChart = ({ startDate, endDate }) => { // Xóa prop 'data'
         // Backend: { totalRevenue: X, date: "YYYY-MM-DD" }
         // Frontend: { ngay: "YYYY-MM-DD", doanhThu: X }
         const mappedData = rawDailyData.map(item => ({
-            ngay: item.date,        // 'date' từ BE -> 'ngay' cho FE
+            ngay: item.date,          // 'date' từ BE -> 'ngay' cho FE (giữ nguyên YYYY-MM-DD)
             doanhThu: item.totalRevenue // 'totalRevenue' từ BE -> 'doanhThu' cho FE
         })).sort((a, b) => new Date(a.ngay) - new Date(b.ngay)); // Sắp xếp theo ngày tăng dần
 
+
         setDailyRevenueData(mappedData);
+
 
       } catch (err) {
         console.error(`Lỗi khi tải dữ liệu doanh thu theo khoảng ngày ${startDate} - ${endDate}:`, err);
@@ -74,8 +85,10 @@ const DailyRevenueRangeChart = ({ startDate, endDate }) => { // Xóa prop 'data'
       }
     };
 
+
     fetchChartData();
   }, [startDate, endDate]); // Dependencies là 'startDate' và 'endDate' để gọi lại API khi chúng thay đổi
+
 
   const formatDateTick = (dateString) => {
     const date = new Date(dateString);
@@ -83,8 +96,10 @@ const DailyRevenueRangeChart = ({ startDate, endDate }) => { // Xóa prop 'data'
     if (isNaN(date.getTime())) {
       return ''; // Trả về rỗng nếu ngày không hợp lệ
     }
-    return `${date.getDate()}/${date.getMonth() + 1}`; // DD/MM
+    // Backend trả về YYYY-MM-DD, hiển thị DD/MM
+    return `${date.getDate()}/${date.getMonth() + 1}`;
   };
+
 
   if (isLoading) {
     return <div style={{ textAlign: 'center', padding: '20px' }}>Đang tải dữ liệu doanh thu theo khoảng ngày...</div>;
@@ -98,8 +113,10 @@ const DailyRevenueRangeChart = ({ startDate, endDate }) => { // Xóa prop 'data'
     return <div style={{ textAlign: 'center', padding: '20px' }}>Không có dữ liệu doanh thu cho khoảng ngày đã chọn.</div>;
   }
 
+
   return (
     <div style={{ width: '100%', height: 400 }}>
+      {/* Tiêu đề vẫn hiển thị YYYY-MM-DD như đã nhận từ prop */}
       <h3 style={{ textAlign: 'center' }}>Doanh thu từ {startDate} đến {endDate}</h3>
       <ResponsiveContainer>
         <LineChart data={dailyRevenueData} margin={{ top: 20, right: 40, left: 70, bottom: 30 }}>
@@ -122,4 +139,6 @@ const DailyRevenueRangeChart = ({ startDate, endDate }) => { // Xóa prop 'data'
   );
 };
 
+
 export default DailyRevenueRangeChart;
+

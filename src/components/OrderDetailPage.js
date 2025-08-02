@@ -92,11 +92,14 @@ alert("✅ Cập nhật trạng thái thành công!");
         className="w-full border px-3 py-2 rounded mb-3"
         value={newStatus}
         onChange={(e) => setNewStatus(e.target.value)}
+         disabled={order.status === "Đã nhận hàng"}
       >
+         <option value="Chờ xác nhận">Chờ xác nhận</option>
         <option value="Đã xác nhận">Đã xác nhận</option>
         <option value="Đang giao">Đang giao</option>
         <option value="Giao thành công">Giao thành công</option>
-        <option value="Hủy">Hủy</option>
+         {/* <option value="Đã nhận hàng" >Đã nhận hàng</option> */}
+        <option value="Đã hủy">Đã hủy</option>
       </select>
       <button
         className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 w-full"

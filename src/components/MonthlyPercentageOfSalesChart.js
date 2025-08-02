@@ -15,7 +15,7 @@ const MonthlyPercentageOfSalesChart = ({ year, month }) => {
       setError(null);
       try {
         const response = await axios.get(
-          `${API_BASE}/statistics/getMonthlyPercentageOfSales?year=${year}`,
+          `${API_BASE}/api/statistics/getMonthlyPercentageOfSales?year=${year}`,
           { headers: { 'ngrok-skip-browser-warning': 'true' } }
         );
         // Tìm đúng tháng được chọn

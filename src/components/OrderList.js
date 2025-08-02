@@ -1,17 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { getAllOrder } from '../services/orderService';
 import { getAllUsers } from '../services/userServices';
 import { getFullNameAtAddress } from '../services/addressService';
 import statusColors from '../utils/StatusColors';
+
+const statuses = [
+  'Chờ xác nhận',
+  'Đã xác nhận',
+  'Đang giao',
+  'Giao thành công',
+  'Đã nhận hàng',
+  'Hoàn hàng',
+  'Đã hủy',
+];
 
 const CategoryDetailProduct = () => {
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
   const [addressMap, setAddressMap] = useState({});
   const [search, setSearch] = useState('');
-  const [sortAsc, setSortAsc] = useState(false);
+  const [statusFilter, setStatusFilter] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,28 +49,34 @@ const CategoryDetailProduct = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [location]); // ✅ Trigger lại khi location thay đổi
 
   const filteredOrders = orders
     .filter(order =>
-      (`SMT${order._id}`).toLowerCase().includes(search.toLowerCase())
-    )
-    .sort((a, b) =>
-      sortAsc
-        ? new Date(a.createdAt) - new Date(b.createdAt)
-        : new Date(b.createdAt) - new Date(a.createdAt)
-    );
+      (`SMT${order._id}`).toLowerCase().includes(search.toLowerCase()) &&
+      (!statusFilter || order.status === statusFilter)
+    ).reverse();
 
   const getUserNameById = (userId) => {
     const user = users.find(u => u._id === userId);
-    return user?.username || 'Không rõ';
+    return user?.fullname || user?.username || user?.email || 'Không rõ';
   };
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Đơn hàng</h1>
 
-      <div className="flex gap-4 justify-end mb-4">
+      <div className="flex gap-2 justify-end mb-4 items-center">
+        {statuses.map(status => (
+          <button
+            key={status}
+            onClick={() => setStatusFilter(statusFilter === status ? null : status)}
+            className={`px-3 py-1 rounded ${statusFilter === status ? statusColors[status] : 'bg-gray-200'}`}
+          >
+            {status}
+          </button>
+        ))}
+
         <input
           type="text"
           placeholder="Tìm kiếm theo mã đơn"

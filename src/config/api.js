@@ -1,5 +1,12 @@
 // URL cơ sở API - ngrok URL
-const API_BASE = 'https://9ebdf0408572.ngrok-free.app';
+// URL Proxy CORS - bạn có thể sử dụng bất kỳ dịch vụ nào trong số này:
+// - https://cors-anywhere.herokuapp.com/
+// - https://api.allorigins.win/raw?url=
+// - https://corsproxy.io/?
+const CORS_PROXY = 'https://corsproxy.io/?';
+
+// URL cơ sở API - sử dụng đường dẫn tương đối khi proxy được cấu hình
+const API_BASE = 'https://92f8fa709052.ngrok-free.app';
 
 // Các điểm cuối
 const ENDPOINTS = {
@@ -9,7 +16,7 @@ const ENDPOINTS = {
   GET_PRODUCT_BY_ID: (id) => `${API_BASE}/api/products/get-products-by-id/id/${id}`, // Lấy sản phẩm theo ID
   UPDATE_PRODUCT_BY_ID: (id) => `${API_BASE}/api/products/update-product-by-id/id/${id}`, // Cập nhật sản phẩm theo ID
   UPDATE_VARIANT_BY_PRODUCT_ID: (id) => `${API_BASE}/api/products/updata-variant-by-id-product/id_product/${id}`, // Cập nhật variant theo product ID
-  DELETE_PRODUCT_BY_ID: (id) => `${API_BASE}/api/products/delete/${id}`, // Xóa sản phẩm theo ID
+  DELETE_PRODUCT_BY_ID: (id) => `${API_BASE}/api/products/delete-product-by-id/id/${id}`, // Xóa sản phẩm theo ID
   
   // Danh mục
   GET_ALL_CATEGORIES: `${API_BASE}/api/categories/get-all-categories`, // Lấy tất cả danh mục

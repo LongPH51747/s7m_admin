@@ -1,16 +1,10 @@
 import React from 'react';
-<<<<<<< HEAD
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-=======
 import { Routes, Route, Navigate } from 'react-router-dom';
-
->>>>>>> Origin/Bao
 import CategoryAdmin from './screens/CategoryAdmin';
 import CategoryDetailScreen from './screens/CategoryDetailScreen';
 import Users from './screens/Users';
 import Orders from './screens/Orders';
 import OrderDetail from './screens/OrderDetail';
-<<<<<<< HEAD
 import CategoryDetailProduct from './components/OrderList';
 import { OrderProvider } from './contexts/OrderContext';
 import "./App.css";
@@ -21,12 +15,14 @@ import ProductScreen from "./screens/ProductScreen.js";
 import AddProduct from './screens/AddProduct.js';
 import UpdateProduct from './screens/UpdateProduct.js';
 import UpdateVariant from './screens/UpdateVariant.js';
-=======
-import CategoryDetailProduct from './components/CategoryDetailProduct';
-import LoginPage from './screens/LoginPage';
+// import CategoryDetailProduct from './components/CategoryDetailProduct';
+// import LoginPage from './screens/LoginPage';
 import AdminChat from './screens/AdminChat'; // Import AdminChat component
 import MainScreen from './screens/MainScreen';
 import { useAuth } from './contexts/AuthContext';
+import UserOrderHistory from './screens/UserOrderHistory.js';
+import UserStatistics from './screens/UserStatistic.js';
+import ThongKeDoanhThu from './screens/ThongKeDoanhThu.js';
 
 // ProtectedRoute component đã được cung cấp
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -39,13 +35,14 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
     }
     return children;
 };
->>>>>>> Origin/Bao
 
 function App() {
     return (
         // AuthProvider, SocketProvider, OrderProvider đã được đặt ở index.js
         <Routes>
-<<<<<<< HEAD
+          {/* <Route path="/" element={<LoginPage />} />
+            {/* <Route path="/" element={<CategoryAdmin />} /> */}
+            {/* <Route path="/" element={<LoginPage />} />
           <Route path="/" element={<LoginPage />} />
           <Route path="/categories" element={<CategoryAdmin />} />
           <Route path="/category/:categorySlug" element={<CategoryDetailScreen />} />
@@ -53,33 +50,60 @@ function App() {
           <Route path="/orders" element={<Orders />} />
           <Route path="/orders/:orderCode" element={<OrderDetail />} />
           <Route path="/order-list" element={<CategoryDetailProduct />} />
-          <Route path="/home" element={<HomeProduct />} />
-          <Route path="/product/:id" element={<DetailProduct />} />
-          <Route path="/products" element={<ProductScreen />} />
-          <Route path="/add-product" element={<AddProduct />} />
-          <Route path="/products/edit/:id" element={<UpdateProduct />} />
-          <Route path="/update-product/:id" element={<UpdateProduct />} />
-          <Route path="/update-variant/:id" element={<UpdateVariant />} />
-=======
-            <Route path="/login" element={<LoginPage/>} />
-            
+          */}
             {/* Protected Routes for Admin */}
             {/* Mặc định chuyển đến /categories nếu là admin và đã đăng nhập */}
-            <Route path="/" element={<ProtectedRoute allowedRoles={['admin']}><Navigate to="/categories" replace /></ProtectedRoute>} />
-            <Route path="/categories" element={<ProtectedRoute allowedRoles={['admin']}><CategoryAdmin /></ProtectedRoute>} />
-            <Route path="/category/:categorySlug" element={<ProtectedRoute allowedRoles={['admin']}><CategoryDetailScreen /></ProtectedRoute>} />
-            <Route path="/users" element={<ProtectedRoute allowedRoles={['admin']}><Users /></ProtectedRoute>} />
-            <Route path="/orders" element={<ProtectedRoute allowedRoles={['admin']}><Orders /></ProtectedRoute>} />
-            <Route path="/orders/:orderCode" element={<ProtectedRoute allowedRoles={['admin']}><OrderDetail /></ProtectedRoute>} />
-            <Route path="/order-list" element={<ProtectedRoute allowedRoles={['admin']}><CategoryDetailProduct /></ProtectedRoute>} />
-             <Route path="/thongke" element={<ProtectedRoute allowedRoles={['admin']}><MainScreen /></ProtectedRoute>} />
+          {/* 
+          <Route path="/categories" element={<ProtectedRoute allowedRoles={['admin']}><CategoryAdmin /></ProtectedRoute>} />
+          <Route path="/category/:categorySlug" element={<ProtectedRoute allowedRoles={['admin']}><CategoryDetailScreen /></ProtectedRoute>} />
+          <Route path="/users" element={<ProtectedRoute allowedRoles={['admin']}><Users /></ProtectedRoute>} />
+          <Route path="/orders" element={<ProtectedRoute allowedRoles={['admin']}><Orders /></ProtectedRoute>} />
+          <Route path="/orders/:orderCode" element={<ProtectedRoute allowedRoles={['admin']}><OrderDetail /></ProtectedRoute>} />
+          <Route path="/order-list" element={<ProtectedRoute allowedRoles={['admin']}><CategoryDetailProduct /></ProtectedRoute>} />
+          <Route path="/product/:id" element={<ProtectedRoute allowedRoles={['admin']}><DetailProduct /></ProtectedRoute>} />
+          <Route path="/products" element={<ProtectedRoute allowedRoles={['admin']}><ProductScreen /></ProtectedRoute>} />
+          <Route path="/add-product" element={<ProtectedRoute allowedRoles={['admin']}><AddProduct /></ProtectedRoute>} />
+          <Route path="/products/edit/:id" element={<ProtectedRoute allowedRoles={['admin']}><UpdateProduct /></ProtectedRoute>} />
+          
+          <Route path="/update-product/:id" element={<ProtectedRoute allowedRoles={['admin']}><UpdateProduct /></ProtectedRoute>} />
+          <Route path="/update-variant/:id" element={<ProtectedRoute allowedRoles={['admin']}><UpdateVariant /></ProtectedRoute>} /> */}
             
             {/* Thêm route cho Admin Chat */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/" element={<ProtectedRoute allowedRoles={['admin']}><Navigate to="/home" replace /></ProtectedRoute>} />
             <Route path="/chat" element={<ProtectedRoute allowedRoles={['admin']}><AdminChat /></ProtectedRoute>} />
 
             {/* Fallback route - Chuyển hướng đến /login nếu không khớp route nào */}
             <Route path="*" element={<Navigate to="/login" replace />} />
->>>>>>> Origin/Bao
+
+            {/* Protected Routes for Admin */}
+            {/* Mặc định chuyển đến /categories nếu là admin và đã đăng nhập */}
+            {/* <Route path="/" element={<ProtectedRoute allowedRoles={['admin']}><Navigate to="/categories" replace /></ProtectedRoute>} /> */}
+            <Route path="/categories" element={<ProtectedRoute allowedRoles={['admin']}><CategoryAdmin /></ProtectedRoute>} />
+            {/* <Route path="/home" element={<HomeProduct />} /> */}
+            {/* <Route path="/product/:id" element={<DetailProduct />} /> */}
+            {/* <Route path="/products" element={<ProductScreen />} /> */}
+            {/* <Route path="/add-product" element={<AddProduct />} />
+            <Route path="/products/edit/:id" element={<UpdateProduct />} /> */}
+            <Route path="/home" element={<ProtectedRoute allowedRoles={['admin']}><HomeProduct /></ProtectedRoute>} />
+            <Route path="/category/:categorySlug" element={<ProtectedRoute allowedRoles={['admin']}><CategoryDetailScreen /></ProtectedRoute>} />
+            <Route path="/product/:id" element={<ProtectedRoute allowedRoles={['admin']}><DetailProduct /></ProtectedRoute>} />
+            <Route path="/products" element={<ProtectedRoute allowedRoles={['admin']}><ProductScreen /></ProtectedRoute>} />
+            <Route path="/add-product" element={<ProtectedRoute allowedRoles={['admin']}><AddProduct /></ProtectedRoute>} />
+            <Route path="/products/edit/:id" element={<ProtectedRoute allowedRoles={['admin']}><UpdateProduct /></ProtectedRoute>} />
+            <Route path="/users" element={<ProtectedRoute allowedRoles={['admin']}><Users /></ProtectedRoute>} />
+            <Route path="/orders" element={<ProtectedRoute allowedRoles={['admin']}><Orders /></ProtectedRoute>} />
+            <Route path="/orders/:orderCode" element={<ProtectedRoute allowedRoles={['admin']}><OrderDetail /></ProtectedRoute>} />
+            <Route path="/order-list" element={<ProtectedRoute allowedRoles={['admin']}><CategoryDetailProduct /></ProtectedRoute>} />
+            <Route path="/thongke" element={<ProtectedRoute allowedRoles={['admin']}><MainScreen/></ProtectedRoute>} />
+            {/* Thêm route cho Admin Chat */}
+            <Route path="/chat" element={<ProtectedRoute allowedRoles={['admin']}><AdminChat /></ProtectedRoute>} />
+            <Route path="/userstatistics" element={<ProtectedRoute allowedRoles={['admin']}><UserStatistics/></ProtectedRoute>}/>
+            {/* Fallback route - Chuyển hướng đến /login nếu không khớp route nào */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
+            <Route path="/update-product/:id" element={<UpdateProduct />} />
+            <Route path="/update-variant/:id" element={<UpdateVariant />} />
+            <Route path="/users/:id/orders" element={<UserOrderHistory />} />
         </Routes>
     );
 }

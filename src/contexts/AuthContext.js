@@ -47,6 +47,8 @@ export const AuthProvider = ({children}) => {
         localStorage.setItem('username', userData.username);
         localStorage.setItem('userRole', userData.role);
         localStorage.setItem('fullName', userData.fullName);
+        console.log('data cua b may', userData);
+        
 
         setAccessToken(receivedAccessToken);
         console.log("AuthContext: accessToken state updated.");
@@ -54,7 +56,7 @@ export const AuthProvider = ({children}) => {
         setIsAuthenticated(true);
 
         if(userData.role === 'admin'){
-            navigate('/');
+            navigate('/home');
         }
     }, []); // navigate là stable, có thể bỏ qua
 

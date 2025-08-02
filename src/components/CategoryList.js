@@ -19,7 +19,8 @@ const CategoryList = () => {
         const data = await getAllCategories();
         console.log("dataCate", data);
         
-        setCategories(data);
+        // setCategories(data);
+         setCategories(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error('Lỗi khi lấy danh mục:', error);
         setCategories([]);
@@ -64,17 +65,28 @@ const CategoryList = () => {
   };
 
   const handleRemoveCategory = async (id, e) => {
-    e.stopPropagation();
-    const confirm = window.confirm('Bạn có chắc chắn muốn xóa danh mục này không?');
-    if (!confirm) return;
+  e.stopPropagation();
+  const confirm = window.confirm('Bạn có chắc chắn muốn xóa danh mục này không?');
+  if (!confirm) return;
 
-    try {
-      await deleteCategory(id);
-      setCategories(prev => prev.filter(cat => cat._id !== id));
-    } catch (error) {
-      console.error('Lỗi khi xóa danh mục:', error);
+  try {
+    await deleteCategory(id);
+
+    // ✅ Xóa thành công
+    setCategories(prev => prev.filter(cat => cat._id !== id));
+    alert('✅ Xóa danh mục thành công!');
+  } catch (error) {
+    console.error('Danh mục có sản phẩm, không xóa được!', error);
+
+    // ✅ Kiểm tra message từ backend (ví dụ: "Không thể xóa vì danh mục có sản phẩm")
+    if (error.response && error.response.data && error.response.data.message) {
+      alert(`⚠️ ${error.response.data.message}`);
+    } else {
+      alert('Danh mục có sản phẩm, không xóa được!');
     }
-  };
+  }
+};
+
 
   const handleClick = (slugSource) => {
     const slug = slugSource.toLowerCase().replace(/\s+/g, '-');

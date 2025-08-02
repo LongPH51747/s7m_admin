@@ -6,7 +6,12 @@ const statusColors = {
   'Giao thành công': 'bg-green-200 text-green-800',
   'Đã nhận hàng': 'bg-green-100 text-green-700',
   'Hoàn hàng': 'bg-orange-200 text-orange-800',
-  'Hủy': 'bg-red-100 text-red-700',
+  "Hủy đơn": 'bg-red-100 text-red-700',
+  "Hủy": 'bg-red-100 text-red-700',
+  "hủy": 'bg-red-100 text-red-700',
+  "hủy đơn": 'bg-red-100 text-red-700',
+  "Đã hủy": 'bg-red-100 text-red-700',
+  "Đã Hủy": 'bg-red-100 text-red-700',
 };
 
 export default statusColors;

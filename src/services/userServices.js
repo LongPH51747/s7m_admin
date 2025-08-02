@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { API_BASE } from './LinkApi'; 
 
-const USER_API = `${API_BASE}/users`;
+const USER_API = `${API_BASE}/api/users`;
 
 
 export const getAllUsers = async () => {

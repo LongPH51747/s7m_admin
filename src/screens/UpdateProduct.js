@@ -239,7 +239,7 @@ const UpdateProduct = () => {
       
       // Create FormData
       const formData = new FormData();
-      formData.append('data', JSON.stringify(dataToSend));
+      formData.append('data_product', JSON.stringify(dataToSend));
       
       // Add main image if selected
       if (mainImageFile) {
