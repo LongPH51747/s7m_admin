@@ -32,7 +32,7 @@ const QuarterlyRevenueChart = ({ year, titlePrefix = "Doanh thu các Quý năm" 
 
         // Bước 1: Gọi API getMonthlyRevenue từ backend
         // Giả định API nhận năm qua query parameter: ?year=YYYY
-        const response = await axios.get(`${API_BASE}/statistics/getMonthlyRevenue?year=${year}`, {
+        const response = await axios.get(`${API_BASE}/api/statistics/getMonthlyRevenue?year=${year}`, {
           headers: {
             'ngrok-skip-browser-warning': 'true' // Thêm header này nếu bạn dùng ngrok
           }

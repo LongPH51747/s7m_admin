@@ -22,7 +22,7 @@ const MonthlyRevenueChart = ({ year, titlePrefix = "Doanh thu các Tháng năm" 
         setIsLoading(true);
         setError(null);
 
-        const response = await axios.get(`${API_BASE}/statistics/getMonthlyRevenue?year=${year}`, {
+        const response = await axios.get(`${API_BASE}/api/statistics/getMonthlyRevenue?year=${year}`, {
           headers: {
             'ngrok-skip-browser-warning': 'true' 
           }

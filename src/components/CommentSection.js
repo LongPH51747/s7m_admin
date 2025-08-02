@@ -168,6 +168,7 @@ const CommentSection = ({ productId }) => {
     
     const adminToken = getAdminToken();
     const adminId = getAdminId();
+    console.log("AdminId: ",adminId)
     
     if (!adminToken) {
       alert('Bạn chưa đăng nhập hoặc thiếu token!');
@@ -188,7 +189,6 @@ const CommentSection = ({ productId }) => {
           'Content-Type': 'application/json',
         },
       });
-      
       setEditingAdminReply(null);
       setEditReplyText("");
       setEditSelectedQuickReply("");
@@ -211,7 +211,7 @@ const CommentSection = ({ productId }) => {
     
     const adminToken = getAdminToken();
     const adminId = getAdminId();
-    
+    console.log("AdminId: ", adminId)
     if (!adminToken) {
       alert('Bạn chưa đăng nhập hoặc thiếu token!');
       return;
@@ -231,7 +231,7 @@ const CommentSection = ({ productId }) => {
           'Content-Type': 'application/json',
         },
       });
-      
+      console.log("AdminID: ", adminId)
       setReplying(null);
       setReplyText("");
       setSelectedQuickReply("");
