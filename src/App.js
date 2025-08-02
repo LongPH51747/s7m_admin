@@ -95,7 +95,7 @@ function App() {
             <Route path="/orders" element={<ProtectedRoute allowedRoles={['admin']}><Orders /></ProtectedRoute>} />
             <Route path="/orders/:orderCode" element={<ProtectedRoute allowedRoles={['admin']}><OrderDetail /></ProtectedRoute>} />
             <Route path="/order-list" element={<ProtectedRoute allowedRoles={['admin']}><CategoryDetailProduct /></ProtectedRoute>} />
-            <Route path="/thongke" element={<ProtectedRoute allowedRoles={['admin']}><ThongKeDoanhThu /></ProtectedRoute>} />
+            <Route path="/thongke" element={<ProtectedRoute allowedRoles={['admin']}><MainScreen/></ProtectedRoute>} />
             {/* Thêm route cho Admin Chat */}
             <Route path="/chat" element={<ProtectedRoute allowedRoles={['admin']}><AdminChat /></ProtectedRoute>} />
             <Route path="/userstatistics" element={<ProtectedRoute allowedRoles={['admin']}><UserStatistics/></ProtectedRoute>}/>
