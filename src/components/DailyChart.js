@@ -29,7 +29,6 @@ const DailyRevenueRangeChart = ({ startDate, endDate }) => {
         return;
       }
 
-
       try {
         setIsLoading(true);
         setError(null);
@@ -65,7 +64,6 @@ const DailyRevenueRangeChart = ({ startDate, endDate }) => {
             setDailyRevenueData([]);
             return;
         }
-
 
         // Ánh xạ dữ liệu từ backend sang định dạng mà Recharts mong muốn
         // Backend: { totalRevenue: X, date: "YYYY-MM-DD" }
@@ -107,11 +105,9 @@ const DailyRevenueRangeChart = ({ startDate, endDate }) => {
     return <div style={{ textAlign: 'center', padding: '20px' }}>Đang tải dữ liệu doanh thu theo khoảng ngày...</div>;
   }
 
-
   if (error) {
     return <div style={{ textAlign: 'center', padding: '20px', color: 'red' }}>Lỗi: {error}</div>;
   }
-
 
   if (!dailyRevenueData || dailyRevenueData.length === 0) {
     return <div style={{ textAlign: 'center', padding: '20px' }}>Không có dữ liệu doanh thu cho khoảng ngày đã chọn.</div>;

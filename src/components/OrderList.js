@@ -12,7 +12,7 @@ const statuses = [
   'Giao thành công',
   'Đã nhận hàng',
   'Hoàn hàng',
-  'Hủy',
+  'Đã hủy',
 ];
 
 const CategoryDetailProduct = () => {
@@ -59,7 +59,7 @@ const CategoryDetailProduct = () => {
 
   const getUserNameById = (userId) => {
     const user = users.find(u => u._id === userId);
-    return user?.username || 'Không rõ';
+    return user?.fullname || user?.username || user?.email || 'Không rõ';
   };
 
   return (
