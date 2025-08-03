@@ -68,13 +68,13 @@ const DateRangePercentageOfSalesChart = ({ startDate, endDate }) => {
             cx="50%"
             cy="50%"
             outerRadius={120}
-            label={({ categoryName, percentage }) => `${categoryName}: ${percentage}%`}
+           label={({ categoryName, percentage }) => `${categoryName}: ${percentage.toFixed(2)}%`}
           >
             {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={generateHSLRainbowColor(index, data.length)} />
             ))}
           </Pie>
-          <Tooltip formatter={(value) => `${value}%`} />
+         <Tooltip formatter={(value) => `${parseFloat(value).toFixed(2)}%`} />
           <Legend />
         </PieChart>
       </ResponsiveContainer>

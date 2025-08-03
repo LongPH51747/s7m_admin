@@ -239,6 +239,8 @@ const MessageBox = ({
                     placeholder="Type your message..."
                     height={50}
                     fontSize={16}
+                    placeholderColor='black'
+                    color='black'
                     disabled={!isSocketReady || isLoadingMessages}
                 />
                 <button
