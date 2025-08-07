@@ -34,16 +34,7 @@ const CategoryDetailProduct = () => {
         setOrders(orderData);
         setUsers(userData);
 
-        const addressMapTemp = {};
-        for (const order of orderData) {
-          try {
-            const fullName = await getFullNameAtAddress(order.id_address);
-            addressMapTemp[order.id_address] = fullName || 'Không rõ';
-          } catch {
-            addressMapTemp[order.id_address] = 'Không rõ';
-          }
-        }
-        setAddressMap(addressMapTemp);
+       
       } catch (error) {
         console.error('Lỗi khi tải dữ liệu:', error);
       }
@@ -99,6 +90,8 @@ const CategoryDetailProduct = () => {
           </thead>
           <tbody>
             {filteredOrders.map((order) => (
+              console.log("dday la orrder", order),
+              
               <tr
                 key={order._id}
                 className="bg-gray-50 border-b cursor-pointer hover:bg-gray-100"
@@ -106,7 +99,7 @@ const CategoryDetailProduct = () => {
               >
                 <td className="p-3 font-medium">SMT{order._id}</td>
                 <td className="p-3">{getUserNameById(order.userId)}</td>
-                <td className="p-3">{addressMap[order.id_address] || '...'}</td>
+                <td className="p-3">{order.id_address&&order.id_address.fullName || '...'}</td>
                 <td className="p-3">{new Date(order.createdAt).toLocaleDateString()}</td>
                 <td className="p-3">
                   <span className={`px-4 py-1 rounded-full font-semibold text-sm ${statusColors[order.status]}`}>

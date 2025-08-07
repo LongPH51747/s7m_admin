@@ -111,13 +111,25 @@ alert("✅ Cập nhật trạng thái thành công!");
     </div>
   </div>
 
+  {/* Thông tin đặt hàng + shipper */}
+<div className="grid grid-cols-2 gap-6 mb-6">
   {/* Thông tin đặt hàng */}
-  <div className="bg-gray-100 p-4 rounded mb-6">
+  <div className="bg-gray-100 p-4 rounded shadow">
     <h2 className="font-bold text-md mb-2">Thông Tin Đặt Hàng</h2>
     <p>Ngày đặt hàng: <strong>{new Date(order.createdAt).toLocaleDateString()}</strong></p>
-    <p>Hình thức vận chuyển: <strong>{order.shipping}</strong></p>
-    <p>Hình thức thanh toán: <strong>{order.paymentMethod}</strong></p>
+    <p>Chi phí vận chuyển: <strong>{order.shipping}</strong></p>
+    <p>Hình thức thanh toán: <strong>{order.payment_method}</strong></p>
   </div>
+
+  {/* Thông tin shipper */}
+  <div className="bg-gray-100 p-4 rounded shadow">
+    <h2 className="font-bold text-md mb-2">Thông Tin Shipper</h2>
+    <p>Tên shipper: <strong>{order.shipper?.fullName || 'Đang xử lý'}</strong></p>
+    <p>Số điện thoại: <strong>{order.shipper?.phone || '---'}</strong></p>
+    <p>Địa chỉ: <strong>{order.shipper?.address || '---'}</strong></p>
+  </div>
+</div>
+
 
   {/* Danh sách đơn hàng */}
   <div className="bg-white p-4 rounded shadow">
