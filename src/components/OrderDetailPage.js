@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getOrderById, updateOrderStatusApi } from '../services/orderService';
 import { getByIdAddress } from '../services/addressService';
 import { statusMap, statusColors } from '../utils/StatusColors';
-import { getAllShipper } from '../services/shipperService';
+import { getAllShippers } from '../services/shipperService';
 
 const OrderDetailPage = () => {
   const { orderCode } = useParams();
@@ -34,7 +34,7 @@ const OrderDetailPage = () => {
 
         // Lấy thông tin shipper
         if (orderData.shipper?._id) {
-          const allShippers = await getAllShipper();
+          const allShippers = await getAllShippers();
           const foundShipper = allShippers.find(s => s._id === orderData.shipper._id);
           if (foundShipper) {
             setShipperInfo({

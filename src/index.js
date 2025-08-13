@@ -12,20 +12,27 @@ import { AuthProvider } from './contexts/AuthContext';
 import { SocketProvider } from './contexts/SocketContext'; 
 import { OrderProvider } from './contexts/OrderContext'; // Giữ nguyên nếu bạn có OrderContext
 
+// ✅ Thêm React Query
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'; // hoặc 'react-query' nếu bản cũ
+
+// ✅ Tạo QueryClient
+const queryClient = new QueryClient();
+
 // Sử dụng createRoot thay vì render
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     // <React.StrictMode> {/* Bạn đã chọn tắt StrictMode, giữ nguyên */}
-        <BrowserRouter basename="/LongPH51747/s7m_admin"> {/* Đảm bảo basename đúng */}
-            <AuthProvider>
-                
+    <BrowserRouter basename="/LongPH51747/s7m_admin"> {/* Đảm bảo basename đúng */}
+        <AuthProvider>
+            <QueryClientProvider client={queryClient}> {/* ✅ Bọc toàn bộ app */}
                 <SocketProvider> 
                     <OrderProvider> 
-                           <App />
+                        <App />
                     </OrderProvider>
                 </SocketProvider>
-            </AuthProvider>
-        </BrowserRouter>
+            </QueryClientProvider>
+        </AuthProvider>
+    </BrowserRouter>
     // </React.StrictMode>
 );
 
