@@ -6,7 +6,8 @@ import {
   Package,
   Inbox,
   BarChart2,
-  MessageCircle
+  MessageCircle,
+  TruckIcon
 } from 'lucide-react';
 
 const Sidebar = () => (
@@ -35,6 +36,10 @@ const Sidebar = () => (
       <Link to="/chat" className="flex items-center gap-3 hover:text-blue-600">
         <MessageCircle size={20} />
         Chat
+      </Link>
+       <Link to="/shipper" className="flex items-center gap-3 hover:text-blue-600">
+        <TruckIcon size={20} />
+        Shipper
       </Link>
     </nav>
   </div>
