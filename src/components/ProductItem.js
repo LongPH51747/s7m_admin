@@ -13,6 +13,7 @@ const ProductItem = () => {
   // Khai báo state lưu danh sách sản phẩm và trạng thái loading
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [totalStock, setTotalStock] = useState(0);
 
   // Gọi API lấy danh sách sản phẩm khi component được mount
   useEffect(() => {
@@ -35,8 +36,12 @@ const ProductItem = () => {
         }
         return { ...product, variant_stock };
       });
+
+      const totalStock = productsWithStock.reduce((sum, product) => sum + product.variant_stock, 0);
+      setTotalStock(totalStock);
       setProducts(productsWithStock);
       console.log("Response data:", productsWithStock);
+      console.log("Total stock:", totalStock);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -44,31 +49,33 @@ const ProductItem = () => {
     }
   };
 
+  
   // Hàm xử lý xóa sản phẩm
-  const handleDelete = async (productId) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
-      try {
-        setLoading(true);
-        await axios.delete(ENDPOINTS.DELETE_PRODUCT_BY_ID(productId), {
-          headers: {
-            'ngrok-skip-browser-warning': 'true'
-          }
-        });
-        
-        alert('Xóa sản phẩm thành công!');
-        
-        setTimeout(async () => {
-          await fetchProducts();
-          setLoading(false);
-        }, 1000);
-        
-      } catch (error) {
-        console.error('Error deleting product:', error);
-        alert('Có lỗi xảy ra khi xóa sản phẩm!');
+// ... existing code ...
+const handleDelete = async (productId) => {
+  if (window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
+    try {
+      setLoading(true);
+      await axios.delete(ENDPOINTS.DELETE_PRODUCT_BY_ID(productId), {
+        headers: {
+          'ngrok-skip-browser-warning': 'true'
+        }
+      });
+      
+      alert('Xóa sản phẩm thành công!');
+      
+      setTimeout(async () => {
+        await fetchProducts(); // Hàm này sẽ tự động cập nhật totalStock
         setLoading(false);
-      }
+      }, 1000);
+      
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Có lỗi xảy ra khi xóa sản phẩm!');
+      setLoading(false);
     }
-  };
+  }
+};
 
   // Hiển thị trạng thái loading khi đang tải dữ liệu
   if (loading) {
@@ -153,7 +160,7 @@ const ProductItem = () => {
                     className="product-quantity"
                     sx={{ color: '#1976d2', fontWeight: 500, mt: 1 }}
                   >
-                    Tổng kho: {product.variant_stock}
+                    Tổng số lượng trong kho: {totalStock.toLocaleString('vi-VN')}
                   </Typography>
                 </Link>
               </CardContent>

@@ -35,13 +35,9 @@
     "react-scripts": "5.0.1",
     "recharts": "^3.0.2",
     "socket.io-client": "^4.8.1",
-<<<<<<< HEAD
-    "web-vitals": "^2.1.4",
-=======
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
->>>>>>> Origin/test6
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.3",
     "regexpu-core": "^6.2.0",
