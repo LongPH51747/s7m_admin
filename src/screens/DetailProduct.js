@@ -141,6 +141,7 @@ useEffect(() => {
       const response = await axios.get(ENDPOINTS.GET_PRODUCT_BY_ID(id), {
         headers: {
           "ngrok-skip-browser-warning": "true",
+          "Content-Type": "application/json"
         },
       });
 

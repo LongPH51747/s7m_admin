@@ -3,7 +3,7 @@
 // - https://cors-anywhere.herokuapp.com/
 // - https://api.allorigins.win/raw?url=
 // - https://corsproxy.io/?
-const CORS_PROXY = 'https://corsproxy.io/?';
+// const CORS_PROXY = 'https://corsproxy.io/?';
 
 // URL cơ sở API - sử dụng đường dẫn tương đối khi proxy được cấu hình
 const API_BASE = 'https://389a5362809e.ngrok-free.app';
