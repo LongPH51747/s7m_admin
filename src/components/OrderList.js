@@ -2,15 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getAllOrder } from '../services/orderService';
 import { getAllUsers } from '../services/userServices';
-import { getFullNameAtAddress } from '../services/addressService';
-import statusColors from '../utils/StatusColors';
+import { statusMap, statusColors } from '../utils/StatusColors';
 
 const statuses = [
   'Chờ xác nhận',
   'Đã xác nhận',
   'Đang giao',
   'Giao thành công',
-  'Đã nhận hàng',
+  'Đã nhận',
   'Hoàn hàng',
   'Hủy',
 ];
@@ -18,7 +17,6 @@ const statuses = [
 const CategoryDetailProduct = () => {
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
-  const [addressMap, setAddressMap] = useState({});
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState(null);
   const navigate = useNavigate();
@@ -33,20 +31,19 @@ const CategoryDetailProduct = () => {
         ]);
         setOrders(orderData);
         setUsers(userData);
-
-       
       } catch (error) {
         console.error('Lỗi khi tải dữ liệu:', error);
       }
     };
     fetchData();
-  }, [location]); // ✅ Trigger lại khi location thay đổi
+  }, [location]);
 
   const filteredOrders = orders
     .filter(order =>
       (`SMT${order._id}`).toLowerCase().includes(search.toLowerCase()) &&
-      (!statusFilter || order.status === statusFilter)
-    ).reverse();
+      (!statusFilter || statusMap[order.status] === statusFilter)
+    )
+    .reverse();
 
   const getUserNameById = (userId) => {
     const user = users.find(u => u._id === userId);
@@ -67,7 +64,6 @@ const CategoryDetailProduct = () => {
             {status}
           </button>
         ))}
-
         <input
           type="text"
           placeholder="Tìm kiếm theo mã đơn"
@@ -90,8 +86,6 @@ const CategoryDetailProduct = () => {
           </thead>
           <tbody>
             {filteredOrders.map((order) => (
-              console.log("dday la orrder", order),
-              
               <tr
                 key={order._id}
                 className="bg-gray-50 border-b cursor-pointer hover:bg-gray-100"
@@ -99,11 +93,15 @@ const CategoryDetailProduct = () => {
               >
                 <td className="p-3 font-medium">SMT{order._id}</td>
                 <td className="p-3">{getUserNameById(order.userId)}</td>
-                <td className="p-3">{order.id_address&&order.id_address.fullName || '...'}</td>
+                <td className="p-3">{order.id_address?.fullName || '...'}</td>
                 <td className="p-3">{new Date(order.createdAt).toLocaleDateString()}</td>
                 <td className="p-3">
-                  <span className={`px-4 py-1 rounded-full font-semibold text-sm ${statusColors[order.status]}`}>
-                    {order.status}
+                  <span
+                    className={`px-4 py-1 rounded-full font-semibold text-sm ${
+                      statusColors[statusMap[order.status]] || 'bg-gray-200'
+                    }`}
+                  >
+                    {statusMap[order.status] || 'Không rõ'}
                   </span>
                 </td>
               </tr>
@@ -116,3 +114,4 @@ const CategoryDetailProduct = () => {
 };
 
 export default CategoryDetailProduct;
+

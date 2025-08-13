@@ -20,20 +20,9 @@ export const getAllOrder = async () => {
   }
 };
 
-// export const updateOrderStatusApi = async (orderId, newStatus) => {
-//   try {
-//     // Giả định endpoint cập nhật là: PATCH /api/order/update-status/:id
-//     const url = `${ORDER_API}/update-status/${orderId}`;
-//     const body = { status: newStatus };
-//     const response = await axios.patch(url, body, {
-//       headers: { 'ngrok-skip-browser-warning': 'true' }
-//     });
-//     return response.data;
-//   } catch (error) {
-//     console.error(`Lỗi khi cập nhật trạng thái cho đơn hàng ${orderId}:`, error);
-//     throw error;
-//   }
-// };
+
+
+
 export const updateOrderStatusApi = async (id, status) => {
   try {
     await axios.patch(`${ORDER_API}/updateStatus/${id}`, 
