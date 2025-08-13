@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getOrderById, updateOrderStatusApi } from '../services/orderService';
 import { getByIdAddress } from '../services/addressService';
 import { statusMap, statusColors } from '../utils/StatusColors';
+import { getAllShipper } from '../services/shipperService';
 
 const OrderDetailPage = () => {
   const { orderCode } = useParams();
@@ -14,6 +15,7 @@ const OrderDetailPage = () => {
   const [address, setAddress] = useState('...');
   const [newStatus, setNewStatus] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [shipperInfo, setShipperInfo] = useState(null);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -21,19 +23,34 @@ const OrderDetailPage = () => {
         const orderData = await getOrderById(rawId);
         setOrder(orderData);
         setNewStatus(orderData.status);
+
+        // Lấy thông tin địa chỉ người nhận
         if (orderData.id_address?._id) {
           const addressInfo = await getByIdAddress(orderData.id_address._id);
           setReceiverName(addressInfo?.fullName || 'Không rõ');
           setPhone(addressInfo?.phone_number || 'Không rõ');
           setAddress(addressInfo?.addressDetail || 'Không rõ');
         }
+
+        // Lấy thông tin shipper
+        if (orderData.shipper?._id) {
+          const allShippers = await getAllShipper();
+          const foundShipper = allShippers.find(s => s._id === orderData.shipper._id);
+          if (foundShipper) {
+            setShipperInfo({
+              name: foundShipper.fullName || foundShipper.name || 'Không rõ',
+              phone_number: foundShipper.phone_number || '---',
+              post_office: foundShipper.post_office || '---'
+            });
+          }
+        }
+
       } catch (err) {
         console.error('❌ Lỗi khi tải chi tiết đơn hàng:', err);
       }
     };
     fetchDetail();
   }, [rawId]);
-
   const handleUpdateStatus = async () => {
     try {
       setIsUpdating(true);
@@ -95,7 +112,7 @@ const OrderDetailPage = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 mb-6">
+       <div className="grid grid-cols-2 gap-6 mb-6">
         <div className="bg-gray-100 p-4 rounded shadow">
           <h2 className="font-bold text-md mb-2">Thông Tin Đặt Hàng</h2>
           <p>Ngày đặt hàng: <strong>{new Date(order.createdAt).toLocaleDateString()}</strong></p>
@@ -104,9 +121,15 @@ const OrderDetailPage = () => {
         </div>
         <div className="bg-gray-100 p-4 rounded shadow">
           <h2 className="font-bold text-md mb-2">Thông Tin Shipper</h2>
-          <p>Tên shipper: <strong>{order.shipper?.fullName || 'Đang xử lý'}</strong></p>
-          <p>Số điện thoại: <strong>{order.shipper?.phone || '---'}</strong></p>
-          <p>Địa chỉ: <strong>{order.shipper?.address || '---'}</strong></p>
+          {shipperInfo ? (
+            <>
+              <p>Tên shipper: <strong>{shipperInfo.name}</strong></p>
+              <p>Số điện thoại: <strong>{shipperInfo.phone_number}</strong></p>
+              <p>Bưu cục: <strong>{shipperInfo.post_office}</strong></p>
+            </>
+          ) : (
+            <p>Đang xử lý...</p>
+          )}
         </div>
       </div>
 
