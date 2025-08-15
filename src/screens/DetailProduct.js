@@ -133,6 +133,8 @@ const ProductDetail = () => {
   const [error, setError] = useState(""); // Lỗi nếu có
   const [imageLoaded, setImageLoaded] = useState(false); // Trạng thái ảnh đã load
   const [isLiked, setIsLiked] = useState(false); // Trạng thái yêu thích
+  const [avgRating, setAvgRating] = useState(0); // Điểm đánh giá trung bình
+  const [totalReviews, setTotalReviews] = useState(0); // Tổng số đánh giá
 
 // Gọi API lấy thông tin sản phẩm khi component được mount
 useEffect(() => {
@@ -179,6 +181,38 @@ useEffect(() => {
   };
 
   fetchProductData();
+}, [id]);
+
+// Gọi API lấy dữ liệu đánh giá từ comment
+useEffect(() => {
+  const fetchRatingData = async () => {
+    try {
+      const response = await axios.get(ENDPOINTS.GET_COMMENT_BY_PRODUCT_ID(id), {
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+          "Content-Type": "application/json"
+        },
+      });
+      
+      const comments = response.data || [];
+      
+      if (comments.length > 0) {
+        const total = comments.length;
+        const sum = comments.reduce((acc, comment) => acc + (comment.review_rate || 0), 0);
+        setAvgRating(parseFloat((sum / total).toFixed(1)));
+        setTotalReviews(total);
+      } else {
+        setAvgRating(0);
+        setTotalReviews(0);
+      }
+    } catch (err) {
+      console.error("Lỗi khi lấy dữ liệu đánh giá:", err);
+      setAvgRating(0);
+      setTotalReviews(0);
+    }
+  };
+
+  fetchRatingData();
 }, [id]);
 
 // Khi chọn màu, tự động chọn size tương ứng nếu size đang chọn không hợp lệ
@@ -608,22 +642,37 @@ const ProductInfo = () => (
           {/* Rating & Category */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, flexWrap: 'wrap' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Rating value={4.8} precision={0.1} readOnly size="small" />
+              <Rating 
+                value={avgRating} 
+                precision={0.1} 
+                readOnly 
+                size="small"
+                sx={{
+                  '& .MuiRating-iconFilled': {
+                    color: '#f59e0b',
+                  },
+                  '& .MuiRating-iconHover': {
+                    color: '#f59e0b',
+                  },
+                }}
+              />
               <Typography variant="body2" sx={{ color: '#6b7280', fontWeight: 500, ml: 1 }}>
-                4.8 (248 đánh giá)
+                {avgRating > 0 ? `${avgRating} (${totalReviews} đánh giá)` : 'Chưa có đánh giá'}
               </Typography>
             </Box>
-            <Chip 
-              label="Bestseller" 
-              size="small" 
-              icon={<RecommendRounded />}
-              sx={{ 
-                background: 'linear-gradient(135deg, #10b981, #059669)',
-                color: '#fff',
-                fontWeight: 600,
-                borderRadius: 0
-              }}
-            />
+            {avgRating >= 4.5 && totalReviews >= 5 && (
+              <Chip 
+                label="Bestseller" 
+                size="small" 
+                icon={<RecommendRounded />}
+                sx={{ 
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  color: '#fff',
+                  fontWeight: 600,
+                  borderRadius: 0
+                }}
+              />
+            )}
             <Chip 
               label={product?.category || "Thời trang"}
               size="small" 

@@ -17,20 +17,41 @@ const ProductItem = () => {
   const [loading, setLoading] = useState(true);
   const [totalStock, setTotalStock] = useState(0);
   
+  console.log("Component state - totalStock:", totalStock, "products.length:", products.length);
+  
   // State cho tìm kiếm và lọc
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('default');
   const [priceRange, setPriceRange] = useState('all');
+  const [productsWithRatings, setProductsWithRatings] = useState([]);
 
   // Gọi API lấy danh sách sản phẩm khi component được mount
   useEffect(() => {
     fetchProducts();
   }, []);
 
+  // Đảm bảo totalStock được tính toán khi component mount
+  useEffect(() => {
+    console.log("Component mounted, current totalStock:", totalStock);
+  }, []);
+
   // Lọc và sắp xếp sản phẩm khi có thay đổi
   useEffect(() => {
     filterAndSortProducts();
   }, [products, searchTerm, sortBy, priceRange]);
+
+  // Cập nhật totalStock khi products thay đổi
+  useEffect(() => {
+    if (products.length > 0) {
+      const newTotalStock = products.reduce((sum, product) => {
+        const stock = parseInt(product.variant_stock) || 0;
+        return sum + stock;
+      }, 0);
+      setTotalStock(newTotalStock);
+    } else {
+      setTotalStock(0);
+    }
+  }, [products]);
 
   // Hàm lấy danh sách sản phẩm từ API
   const fetchProducts = async () => {
@@ -41,20 +62,73 @@ const ProductItem = () => {
           'Content-Type': 'application/json'
         }
       });
+      
       // Tính tổng số lượng variant cho mỗi sản phẩm và thêm thuộc tính variant_stock
       const productsWithStock = response.data.map(product => {
         let variant_stock = 0;
         if (Array.isArray(product.product_variant)) {
-          variant_stock = product.product_variant.reduce((sum, v) => sum + (parseInt(v.variant_quantity) || 0), 0);
+          variant_stock = product.product_variant.reduce((sum, v) => {
+            // Sử dụng variant_stock nếu có, nếu không thì dùng variant_quantity
+            const stock = parseInt(v.variant_stock) || parseInt(v.variant_quantity) || 0;
+            console.log(`Variant ${v.variant_color} ${v.variant_size}: stock = ${stock}`);
+            return sum + stock;
+          }, 0);
         }
         return { ...product, variant_stock };
       });
 
-      const totalStock = productsWithStock.reduce((sum, product) => sum + product.variant_stock, 0);
+      // Lấy dữ liệu đánh giá cho từng sản phẩm
+      const productsWithRatings = await Promise.all(
+        productsWithStock.map(async (product) => {
+          try {
+            const ratingResponse = await axios.get(ENDPOINTS.GET_COMMENT_BY_PRODUCT_ID(product._id), {
+              headers: {
+                'ngrok-skip-browser-warning': 'true',
+                'Content-Type': 'application/json'
+              }
+            });
+            
+            const comments = ratingResponse.data || [];
+            let avgRating = 0;
+            let totalReviews = 0;
+            
+            if (comments.length > 0) {
+              const sum = comments.reduce((acc, comment) => acc + (comment.review_rate || 0), 0);
+              avgRating = parseFloat((sum / comments.length).toFixed(1));
+              totalReviews = comments.length;
+            }
+            
+            return { 
+              ...product, 
+              avgRating,
+              totalReviews
+            };
+          } catch (err) {
+            console.error(`Lỗi khi lấy đánh giá cho sản phẩm ${product._id}:`, err);
+            return { 
+              ...product, 
+              avgRating: 0,
+              totalReviews: 0
+            };
+          }
+        })
+      );
+
+      // Tính tổng số lượng từ dữ liệu gốc để đảm bảo chính xác
+      let totalStock = 0;
+      response.data.forEach(product => {
+        if (Array.isArray(product.product_variant)) {
+          product.product_variant.forEach(variant => {
+            const stock = parseInt(variant.variant_stock) || parseInt(variant.variant_quantity) || 0;
+            totalStock += stock;
+          });
+        }
+      });
+      
       setTotalStock(totalStock);
-      setProducts(productsWithStock);
-      console.log("Response data:", productsWithStock);
-      console.log("Total stock:", totalStock);
+      setProducts(productsWithRatings);
+      setProductsWithRatings(productsWithRatings);
+      
       setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -100,6 +174,18 @@ const ProductItem = () => {
         break;
       case 'name-z-a':
         filtered.sort((a, b) => b.product_name.localeCompare(a.product_name, 'vi'));
+        break;
+      case 'rating-high-low':
+        filtered.sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0));
+        break;
+      case 'rating-low-high':
+        filtered.sort((a, b) => (a.avgRating || 0) - (b.avgRating || 0));
+        break;
+      case 'reviews-high-low':
+        filtered.sort((a, b) => (b.totalReviews || 0) - (a.totalReviews || 0));
+        break;
+      case 'reviews-low-high':
+        filtered.sort((a, b) => (a.totalReviews || 0) - (b.totalReviews || 0));
         break;
       default:
         // Giữ nguyên thứ tự ban đầu
@@ -148,9 +234,11 @@ const ProductItem = () => {
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box className="product-header">
-        <Typography variant="h4" component="h2">
-          Danh sách sản phẩm
-        </Typography>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+          <Typography variant="h4" component="h2">
+            Danh sách sản phẩm
+          </Typography>
+        </Box>
         <Link to="/add-product" className="add-product-btn">
           Thêm sản phẩm
         </Link>
@@ -187,6 +275,10 @@ const ProductItem = () => {
                 <MenuItem value="price-low-high">Giá: Thấp → Cao</MenuItem>
                 <MenuItem value="name-a-z">Tên: A → Z</MenuItem>
                 <MenuItem value="name-z-a">Tên: Z → A</MenuItem>
+                <MenuItem value="rating-high-low">Đánh giá: Cao → Thấp</MenuItem>
+                <MenuItem value="rating-low-high">Đánh giá: Thấp → Cao</MenuItem>
+                <MenuItem value="reviews-high-low">Số đánh giá: Nhiều → Ít</MenuItem>
+                <MenuItem value="reviews-low-high">Số đánh giá: Ít → Nhiều</MenuItem>
               </Select>
             </FormControl>
           </Grid>
@@ -276,12 +368,56 @@ const ProductItem = () => {
                   <Typography variant="h6" className="product-price">
                     {product.product_price?.toLocaleString('vi-VN')}VNĐ
                   </Typography>
+                  
+                  {/* Hiển thị đánh giá */}
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, mb: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <span style={{ 
+                        color: '#f59e0b', 
+                        fontSize: '16px',
+                        fontWeight: 'bold'
+                      }}>
+                        ★
+                      </span>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: '#6b7280', 
+                          fontWeight: 500, 
+                          ml: 0.5,
+                          fontSize: '14px'
+                        }}
+                      >
+                        {product.avgRating > 0 ? product.avgRating : 'Chưa có'}
+                      </Typography>
+                    </Box>
+                    {product.totalReviews > 0 && (
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: '#9ca3af', 
+                          fontSize: '12px'
+                        }}
+                      >
+                        ({product.totalReviews})
+                      </Typography>
+                    )}
+                  </Box>
+                  
+                  {/* Hiển thị số lượng trong kho của sản phẩm này */}
                   <Typography
                     variant="body2"
-                    className="product-quantity"
-                    sx={{ color: '#1976d2', fontWeight: 500, mt: 1 }}
+                    sx={{ 
+                      color: '#1976d2', 
+                      fontWeight: 600, 
+                      mt: 1,
+                      fontSize: '14px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 0.5
+                    }}
                   >
-                    Tổng số lượng trong kho: {product.variant_stock?.toLocaleString('vi-VN')}
+                    📦 Tổng trong kho: {product.variant_stock?.toLocaleString('vi-VN') || '0'}
                   </Typography>
                 </Link>
               </CardContent>
