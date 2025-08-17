@@ -107,7 +107,7 @@ const UserStatistics = () => {
       align: 'center',
     },
     {
-      title: metric === 'totalSpent' ? 'Tổng tiền chi (VND)' : 'Tổng sản phẩm đã mua',
+      title: metric === 'totalSpent' ? 'Tổng tiền mua hàng (VND)' : 'Tổng sản phẩm đã mua',
       dataIndex: metric === 'totalSpent' ? 'totalSpent' : 'totalQuantityPurchased',
       key: 'metric',
       align: 'center',

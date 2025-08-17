@@ -1,11 +1,20 @@
 import React from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Modal, Form, Input, Button, message } from 'antd';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Modal, Form, Input, Button, message, Select } from 'antd';
 import { registerShipper } from '../services/shipperService';
+import { getAllPostOffices } from '../services/postOfficeService';
+
+const { Option } = Select;
 
 const AddShipperModal = ({ isOpen, onClose }) => {
     const [form] = Form.useForm();
     const queryClient = useQueryClient();
+
+    const { data: postOffices, isLoading: isLoadingPostOffices } = useQuery({
+        queryKey: ['postOffices'],
+        queryFn: getAllPostOffices,
+        enabled: isOpen,
+    });
 
     const mutation = useMutation({
         mutationFn: registerShipper,
@@ -15,91 +24,75 @@ const AddShipperModal = ({ isOpen, onClose }) => {
             onClose();
             form.resetFields();
         },
-        onError: (error) => {
-            const errorMessage = error.response?.data?.message || 'Đã có lỗi xảy ra khi tạo shipper.';
-            message.error(errorMessage);
-        },
+        onError: (error) => message.error(error.response?.data?.message || 'Đã có lỗi xảy ra.'),
     });
 
     const handleCreateShipper = () => {
-        form.validateFields()
-            .then(values => {
-                const payload = {
-                    ...values,
-                    post_office: values.post_office || "", 
-                };
-                mutation.mutate(payload);
-            })
-            .catch(info => {
-                console.log('Validate Failed:', info);
-            });
+        form.validateFields().then(values => {
+            mutation.mutate(values);
+        });
     };
 
+    // --- HÀM MỚI ĐỂ XỬ LÝ VIỆC TỰ ĐỘNG ĐIỀN ĐỊA CHỈ ---
+    const handlePostOfficeChange = (value) => {
+        if (value) {
+            // `value` ở đây là `_id` của bưu cục được chọn
+            // Tìm đối tượng bưu cục tương ứng trong danh sách đã fetch
+            const selectedOffice = postOffices?.find(office => office._id === value);
+            if (selectedOffice) {
+                // Sử dụng `form.setFieldsValue` để cập nhật trường 'address_shipping'
+                form.setFieldsValue({
+                    address_shipping: selectedOffice.address_post_office
+                });
+            }
+        } else {
+            // Nếu người dùng xóa lựa chọn (allowClear), thì cũng xóa địa chỉ
+            form.setFieldsValue({
+                address_shipping: ''
+            });
+        }
+    };
+    
     return (
         <Modal
             title="Tạo Tài Khoản Shipper Mới"
             open={isOpen}
             onCancel={onClose}
-            footer={[
-                <Button key="back" onClick={onClose}>
-                    Hủy
-                </Button>,
-                <Button 
-                    key="submit" 
-                    type="primary" 
-                    loading={mutation.isPending}
-                    onClick={handleCreateShipper}
-                >
-                    Tạo
-                </Button>,
-            ]}
+            onOk={handleCreateShipper}
+            confirmLoading={mutation.isPending}
         >
             <Form form={form} layout="vertical" name="add_shipper_form">
-                <Form.Item
-                    name="name"
-                    label="Họ và Tên"
-                    rules={[{ required: true, message: 'Vui lòng nhập họ và tên!' }]}
-                >
-                    <Input placeholder="Ví dụ: Nguyễn Văn A" />
+                <Form.Item name="name" label="Họ và Tên" rules={[{ required: true }]}>
+                    <Input />
                 </Form.Item>
-
-                <Form.Item
-                    name="user_name"
-                    label="Tên đăng nhập (Username)"
-                    rules={[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]}
-                >
-                    <Input placeholder="Ví dụ: nva_shipper" />
+                <Form.Item name="user_name" label="Tên đăng nhập" rules={[{ required: true }]}>
+                    <Input />
                 </Form.Item>
-
-                <Form.Item
-                    name="password"
-                    label="Mật khẩu"
-                    rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
-                >
-                    <Input.Password placeholder="Nhập mật khẩu an toàn" />
+                <Form.Item name="password" label="Mật khẩu" rules={[{ required: true }]}>
+                    <Input.Password />
                 </Form.Item>
-
-                <Form.Item
-                    name="phone_number"
-                    label="Số điện thoại"
-                    rules={[{ required: true, message: 'Vui lòng nhập số điện thoại!' }]}
-                >
-                    <Input placeholder="Ví dụ: 0987654321" />
+                <Form.Item name="phone_number" label="Số điện thoại" rules={[{ required: true }]}>
+                    <Input />
                 </Form.Item>
-
-                <Form.Item
-                    name="post_office"
-                    label="ID Bưu cục (Tùy chọn)" 
-                >
-                    <Input placeholder="Nhập ID của bưu cục (nếu có)" />
+                
+                {/* CẬP NHẬT SELECT VỚI SỰ KIỆN `onChange` */}
+                <Form.Item name="post_office" label="Bưu Cục" rules={[{ required: true }]} > 
+                    <Select
+                        placeholder="Chọn bưu cục cho shipper"
+                        loading={isLoadingPostOffices}
+                        allowClear
+                        onChange={handlePostOfficeChange} 
+                    >
+                        {postOffices?.map(office => (
+                            <Option key={office._id} value={office._id}>
+                                {office.name}
+                            </Option>
+                        ))}
+                    </Select>
                 </Form.Item>
                
-                <Form.Item
-                    name="address_shipping"
-                    label="Địa chỉ kho/Lấy hàng"
-                    rules={[{ required: true, message: 'Vui lòng nhập địa chỉ kho!' }]}
-                >
-                    <Input placeholder="Ví dụ: 123 Đường ABC, Phường XYZ, Quận 1" />
+                <Form.Item name="address_shipping" label="Địa chỉ kho/Lấy hàng" rules={[{ required: true }]}>
+                    <Input />
                 </Form.Item>
             </Form>
         </Modal>

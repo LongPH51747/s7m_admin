@@ -22,26 +22,26 @@ const OrderDetailPage = () => {
       try {
         const orderData = await getOrderById(rawId);
         
-        setOrder(orderData.order);
-        setNewStatus(orderData.order.status);
+        setOrder(orderData);
+        setNewStatus(orderData.status);
 
         // Lấy thông tin địa chỉ người nhận
-        if (orderData.order.id_address?._id) {
-          const addressInfo = await getByIdAddress(orderData.order.id_address._id);
+        if (orderData.id_address?._id) {
+          const addressInfo = await getByIdAddress(orderData.id_address._id);
           setReceiverName(addressInfo?.fullName || 'Không rõ');
           setPhone(addressInfo?.phone_number || 'Không rõ');
           setAddress(addressInfo?.addressDetail || 'Không rõ');
         }
-         console.log("day la thong tin shipper", orderData.order.shipper)
+         console.log("day la thong tin shipper", orderData.shipper)
         // Lấy thông tin shipper
-       if (orderData.order.shipper) {
-          const foundShipper = await getShipperById(orderData.order.shipper);
+       if (orderData.shipper) {
+          const foundShipper = orderData.shipper
           if (foundShipper) {
             setShipperInfo({
               name: foundShipper.name || 'Không rõ',
               phone_number: foundShipper.phone_number || '---',
               // Xử lý trường hợp `post_office` là một object
-              post_office: foundShipper.post_office || '---' 
+              post_office: foundShipper.address_shipping || '---' 
             });
           }
         }
@@ -127,7 +127,7 @@ const OrderDetailPage = () => {
             <>
               <p>Tên shipper: <strong>{shipperInfo.name}</strong></p>
               <p>Số điện thoại: <strong>{shipperInfo.phone_number}</strong></p>
-              <p>Bưu cục: <strong>{shipperInfo.post_office}</strong></p>
+              <p>Khu vực: <strong>{shipperInfo.post_office}</strong></p>
             </>
           ) : (
             <p>Đang xử lý...</p>
