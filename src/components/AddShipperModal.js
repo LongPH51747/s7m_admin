@@ -1,40 +1,34 @@
 import React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Modal, Form, Input, Button, message } from 'antd';
-import { registerShipper } from '../services/shipperService'; // Giả sử hàm này đã được tạo
+import { registerShipper } from '../services/shipperService';
 
 const AddShipperModal = ({ isOpen, onClose }) => {
-    // Hook của Ant Design để điều khiển form
     const [form] = Form.useForm();
     const queryClient = useQueryClient();
 
-    // Sử dụng useMutation để xử lý logic gọi API tạo shipper
     const mutation = useMutation({
-        mutationFn: registerShipper, // Hàm API sẽ được gọi
+        mutationFn: registerShipper,
         onSuccess: () => {
-            // Khi API trả về thành công
             message.success('Tạo tài khoản shipper mới thành công!');
-            // Quan trọng: Vô hiệu hóa query 'shippers' để React Query tự động fetch lại danh sách mới
             queryClient.invalidateQueries({ queryKey: ['shippers'] });
-            onClose(); // Đóng modal
-            form.resetFields(); // Xóa sạch các trường trong form
+            onClose();
+            form.resetFields();
         },
         onError: (error) => {
-            // Khi API trả về lỗi
-            // Cố gắng hiển thị lỗi từ server, nếu không có thì hiển thị lỗi mặc định
             const errorMessage = error.response?.data?.message || 'Đã có lỗi xảy ra khi tạo shipper.';
             message.error(errorMessage);
         },
     });
 
-    // Hàm xử lý khi người dùng nhấn nút "Tạo"
     const handleCreateShipper = () => {
         form.validateFields()
             .then(values => {
-                // `values` là một object chứa tất cả dữ liệu từ form
-                // Ví dụ: { name: '...', user_name: '...', ... }
-                // Gọi mutation để thực thi việc tạo shipper
-                mutation.mutate(values);
+                const payload = {
+                    ...values,
+                    post_office: values.post_office || "", 
+                };
+                mutation.mutate(payload);
             })
             .catch(info => {
                 console.log('Validate Failed:', info);
@@ -46,7 +40,6 @@ const AddShipperModal = ({ isOpen, onClose }) => {
             title="Tạo Tài Khoản Shipper Mới"
             open={isOpen}
             onCancel={onClose}
-            // Tùy chỉnh footer để có nút "Tạo" với trạng thái loading
             footer={[
                 <Button key="back" onClick={onClose}>
                     Hủy
@@ -54,7 +47,7 @@ const AddShipperModal = ({ isOpen, onClose }) => {
                 <Button 
                     key="submit" 
                     type="primary" 
-                    loading={mutation.isPending} // Nút sẽ có icon loading khi đang gọi API
+                    loading={mutation.isPending}
                     onClick={handleCreateShipper}
                 >
                     Tạo
@@ -65,7 +58,7 @@ const AddShipperModal = ({ isOpen, onClose }) => {
                 <Form.Item
                     name="name"
                     label="Họ và Tên"
-                    rules={[{ required: true, message: 'Vui lòng nhập họ và tên của shipper!' }]}
+                    rules={[{ required: true, message: 'Vui lòng nhập họ và tên!' }]}
                 >
                     <Input placeholder="Ví dụ: Nguyễn Văn A" />
                 </Form.Item>
@@ -96,13 +89,11 @@ const AddShipperModal = ({ isOpen, onClose }) => {
 
                 <Form.Item
                     name="post_office"
-                    label="Khu vực giao (Bưu cục)"
-                    rules={[{ required: true, message: 'Vui lòng nhập khu vực giao!' }]}
+                    label="ID Bưu cục (Tùy chọn)" 
                 >
-                    <Input placeholder="Ví dụ: 64cfa8b76e2b3c1a4f2f9b11 (ID Bưu cục)" />
-                    {/* LƯU Ý: Nếu `post_office` là một Dropdown/Select thì bạn cần thay đổi Input này */}
+                    <Input placeholder="Nhập ID của bưu cục (nếu có)" />
                 </Form.Item>
-
+               
                 <Form.Item
                     name="address_shipping"
                     label="Địa chỉ kho/Lấy hàng"

@@ -41,6 +41,7 @@ const Sidebar = () => (
         <TruckIcon size={20} />
         Shipper
       </Link>
+     
     </nav>
   </div>
 );

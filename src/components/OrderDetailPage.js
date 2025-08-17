@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getOrderById, updateOrderStatusApi } from '../services/orderService';
 import { getByIdAddress } from '../services/addressService';
 import { statusMap, statusColors } from '../utils/StatusColors';
-import { getAllShippers } from '../services/shipperService';
+import { getShipperById } from '../services/shipperService';
 
 const OrderDetailPage = () => {
   const { orderCode } = useParams();
@@ -21,26 +21,27 @@ const OrderDetailPage = () => {
     const fetchDetail = async () => {
       try {
         const orderData = await getOrderById(rawId);
-        setOrder(orderData);
-        setNewStatus(orderData.status);
+        
+        setOrder(orderData.order);
+        setNewStatus(orderData.order.status);
 
         // Lấy thông tin địa chỉ người nhận
-        if (orderData.id_address?._id) {
-          const addressInfo = await getByIdAddress(orderData.id_address._id);
+        if (orderData.order.id_address?._id) {
+          const addressInfo = await getByIdAddress(orderData.order.id_address._id);
           setReceiverName(addressInfo?.fullName || 'Không rõ');
           setPhone(addressInfo?.phone_number || 'Không rõ');
           setAddress(addressInfo?.addressDetail || 'Không rõ');
         }
-
+         console.log("day la thong tin shipper", orderData.order.shipper)
         // Lấy thông tin shipper
-        if (orderData.shipper?._id) {
-          const allShippers = await getAllShippers();
-          const foundShipper = allShippers.find(s => s._id === orderData.shipper._id);
+       if (orderData.order.shipper) {
+          const foundShipper = await getShipperById(orderData.order.shipper);
           if (foundShipper) {
             setShipperInfo({
-              name: foundShipper.fullName || foundShipper.name || 'Không rõ',
+              name: foundShipper.name || 'Không rõ',
               phone_number: foundShipper.phone_number || '---',
-              post_office: foundShipper.post_office || '---'
+              // Xử lý trường hợp `post_office` là một object
+              post_office: foundShipper.post_office || '---' 
             });
           }
         }
@@ -117,10 +118,11 @@ const OrderDetailPage = () => {
           <h2 className="font-bold text-md mb-2">Thông Tin Đặt Hàng</h2>
           <p>Ngày đặt hàng: <strong>{new Date(order.createdAt).toLocaleDateString()}</strong></p>
           <p>Chi phí vận chuyển: <strong>{order.shipping}</strong></p>
+          <p>Giảm giá: <strong>{order.discount}</strong></p>
           <p>Hình thức thanh toán: <strong>{order.payment_method}</strong></p>
         </div>
         <div className="bg-gray-100 p-4 rounded shadow">
-          <h2 className="font-bold text-md mb-2">Thông Tin Shipper</h2>
+         <h2 className="font-bold text-md mb-2">Thông Tin Shipper</h2>
           {shipperInfo ? (
             <>
               <p>Tên shipper: <strong>{shipperInfo.name}</strong></p>
@@ -158,18 +160,30 @@ const OrderDetailPage = () => {
               </tr>
             ))}
           </tbody>
-          <tfoot className="text-sm">
+         <tfoot className="text-sm">
+            {/* 1. TỔNG TIỀN HÀNG */}
             <tr className="border-t font-medium">
-              <td colSpan="5" className="p-2 text-right">Tổng tiền</td>
-              <td className="p-2">{order.sub_total_amount.toLocaleString()}</td>
+              <td colSpan="5" className="p-2 text-right">Tổng tiền hàng</td>
+              <td className="p-2">{(order.sub_total_amount || 0).toLocaleString()}</td>
             </tr>
+            
+            {/* 2. PHÍ VẬN CHUYỂN */}
             <tr className="font-medium">
-              <td colSpan="5" className="p-2 text-right">Shipping</td>
-              <td className="p-2">{(order.shipping || 0).toLocaleString()}</td>
+              <td colSpan="5" className="p-2 text-right">Phí vận chuyển</td>
+              <td className="p-2">+ {(order.shipping || 0).toLocaleString()}</td>
             </tr>
+
+            {/* 3. GIẢM GIÁ */}
+            <tr className="font-medium text-red-500">
+              <td colSpan="5" className="p-2 text-right">Giảm giá</td>
+              <td className="p-2">- {(order.discount || 0).toLocaleString()}</td>
+            </tr>
+
+            {/* 4. TỔNG THANH TOÁN CUỐI CÙNG */}
             <tr className="border-t font-bold text-green-700 text-base">
-              <td colSpan="5" className="p-2 text-right">Thanh toán</td>
-              <td className="p-2">{(order.total_amount - (order.voucher || 0)).toLocaleString()}</td>
+              <td colSpan="5" className="p-2 text-right">Tổng thanh toán</td>
+              {/* Hiển thị trực tiếp `total_amount` từ backend là chính xác nhất */}
+              <td className="p-2">{(order.total_amount || 0).toLocaleString()}</td>
             </tr>
           </tfoot>
         </table>
