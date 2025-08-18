@@ -6,43 +6,42 @@ import { useQuery } from '@tanstack/react-query';
 import { Spin, Alert, Row, Col, Card, Descriptions, Table, Tag, Button, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 
-// Import các hàm gọi API cần thiết
+// Import các hàm gọi API
 import { getShipperById } from '../services/shipperService';
-import { getAllOrder } from '../services/orderService'; // <-- Sử dụng hàm API hiện có của bạn
+import { getAllOrder } from '../services/orderService';
+
+// 1. SAO CHÉP LOGIC BẢN ĐỒ TRẠNG THÁI VÀ MÀU SẮC VÀO ĐÂY
+import { statusMap, statusColors } from '../utils/StatusColors'; // Giả sử bạn đã có file này
 
 const { Title } = Typography;
 
 const ShipperDetailPage = () => {
-    // Lấy shipperId từ URL
     const { shipperId } = useParams();
     const navigate = useNavigate();
 
-    // Query 1: Lấy thông tin chi tiết của shipper (giữ nguyên)
+    // Query 1: Lấy thông tin chi tiết của shipper
     const { data: shipper, isLoading: isLoadingShipper } = useQuery({
         queryKey: ['shipper', shipperId],
         queryFn: () => getShipperById(shipperId),
         enabled: !!shipperId,
     });
 
-    // Query 2: Lấy TẤT CẢ đơn hàng từ hệ thống
+    // Query 2: Lấy tất cả đơn hàng
     const { data: allOrders, isLoading: isLoadingOrders } = useQuery({
-        queryKey: ['orders'], // Key chung cho tất cả đơn hàng
-        queryFn: getAllOrder, // <-- Gọi hàm getAllOrder của bạn
+        queryKey: ['orders'],
+        queryFn: getAllOrder,
     });
-
+    
     // --- PHẦN LỌC DỮ LIỆU ---
-    // Lọc danh sách `allOrders` để chỉ lấy những đơn hàng của shipper này
-    // Lưu ý: Hãy chắc chắn rằng trong đối tượng `order` của bạn có một trường để xác định shipper,
-    // ví dụ như `shipper._id` hoặc `shipperId`. Tôi sẽ giả định là `shipper`
+    // Giả định `order.shipper` chứa ID của shipper. Nếu nó là object, bạn cần dùng `order.shipper?._id`
     const shipperOrders = allOrders?.filter(order => order.shipper === shipperId) || [];
 
-    // Cấu hình cột cho bảng đơn hàng
+    // --- 2. CẬP NHẬT LẠI CỘT TRẠNG THÁI ĐƠN ---
     const orderColumns = [
         { 
             title: 'Mã Đơn', 
             dataIndex: '_id', 
             key: '_id',
-            // Render dưới dạng link đến chi tiết đơn hàng
             render: (id) => <Button type="link" onClick={() => navigate(`/orders/SMT${id}`)}>{`SMT${id}`}</Button>
         },
         { 
@@ -61,11 +60,18 @@ const ShipperDetailPage = () => {
             title: 'Trạng Thái Đơn', 
             dataIndex: 'status', 
             key: 'status', 
-            // Giả định `status` là số, bạn có thể thay đổi logic này
+            // Sử dụng logic render giống hệt bên OrderDetailPage
             render: (status) => {
-                const statusMap = { 3: 'Giao thành công', 4: 'Đã nhận hàng', 5: 'Hoàn hàng' };
-                const colorMap = { 3: 'blue', 4: 'green', 5: 'red' };
-                return <Tag color={colorMap[status] || 'default'}>{statusMap[status] || 'Không rõ'}</Tag>;
+                const statusText = statusMap[status] || 'Không rõ';
+                const colorClass = statusColors[statusText] || 'bg-gray-200';
+                // Chuyển đổi class của TailwindCSS sang màu của AntD Tag (nếu có thể)
+                const tagColor = colorClass.includes('green') ? 'success' :
+                                 colorClass.includes('blue') ? 'processing' :
+                                 colorClass.includes('yellow') ? 'warning' :
+                                 colorClass.includes('red') ? 'error' :
+                                 'default';
+
+                return <Tag color={tagColor}>{statusText}</Tag>;
             }
         },
     ];
@@ -78,15 +84,6 @@ const ShipperDetailPage = () => {
 
     return (
         <div style={{ padding: '24px' }}>
-            {/* <Button 
-                type="text" 
-                icon={<ArrowLeftOutlined />} 
-                onClick={() => navigate('/shippers')}
-                style={{ marginBottom: '20px' }}
-            >
-                Quay Lại Danh Sách
-            </Button> */}
-            
             <Row gutter={[24, 24]}>
                 {/* Thông tin shipper */}
                 <Col span={24}>
@@ -97,7 +94,11 @@ const ShipperDetailPage = () => {
                                 <Descriptions.Item label="Tên Shipper">{shipper.name}</Descriptions.Item>
                                 <Descriptions.Item label="Username">{shipper.user_name}</Descriptions.Item>
                                 <Descriptions.Item label="Số điện thoại">{shipper.phone_number}</Descriptions.Item>
-                                <Descriptions.Item label="Khu vực giao"> {shipper?.post_office?.name}</Descriptions.Item>
+                                
+                                <Descriptions.Item label="Khu vực giao">
+                                    {shipper.post_office?.name || shipper.post_office || 'Chưa có'}
+                                </Descriptions.Item>
+                                
                                 <Descriptions.Item label="Trạng thái">
                                     <Tag color={shipper.status ? 'green' : 'red'}>
                                         {shipper.status ? 'HOẠT ĐỘNG' : 'KHÔNG HOẠT ĐỘNG'}
@@ -116,7 +117,7 @@ const ShipperDetailPage = () => {
                         <Title level={4}>Các Đơn Hàng Liên Quan</Title>
                         <Table
                             columns={orderColumns}
-                            dataSource={shipperOrders} // <-- Sử dụng dữ liệu đã được lọc
+                            dataSource={shipperOrders}
                             rowKey="_id"
                             bordered
                         />

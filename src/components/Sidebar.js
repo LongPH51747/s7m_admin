@@ -7,7 +7,8 @@ import {
   Inbox,
   BarChart2,
   MessageCircle,
-  TruckIcon
+  TruckIcon, 
+  Ticket
 } from 'lucide-react';
 
 const Sidebar = () => (
@@ -41,7 +42,6 @@ const Sidebar = () => (
         <TruckIcon size={20} />
         Shipper
       </Link>
-     
     </nav>
   </div>
 );

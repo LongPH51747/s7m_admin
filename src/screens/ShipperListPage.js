@@ -44,8 +44,20 @@ const ShipperListPage = () => {
         },
         {
             title: 'Khu vực giao',
-            dataIndex: 'address_shipping',
-            key: 'address_shipping',
+            dataIndex: 'post_office',
+            key: 'post_office',
+            render: (postOffice) => {
+                // Nếu postOffice là object và có thuộc tính `name`, thì hiển thị `name`
+                if (typeof postOffice === 'object' && postOffice !== null && postOffice.name) {
+                    return postOffice.name;
+                }
+                // Nếu nó là chuỗi hoặc một dạng khác, hiển thị chính nó
+                if (typeof postOffice === 'string' && postOffice) {
+                    return postOffice;
+                }
+                // Trường hợp không có dữ liệu
+                return 'Chưa có';
+            }
         },
         {
             title: 'Trạng thái',
