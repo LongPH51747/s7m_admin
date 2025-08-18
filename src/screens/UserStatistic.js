@@ -1,13 +1,29 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getTopSpenders, getTopBuyersByQuantity } from "../services/statisticUserService";
+import CreateVoucherModal from "../components/VoucherModal";
 
 const UserStatistics = () => {
   const [stats, setStats] = useState([]);
   const [sortBy, setSortBy] = useState("totalSpent");
   const [limit, setLimit] = useState(0); // 0 = tất cả
   const [limitInput, setLimitInput] = useState("");
+  const [selectedUser, setSelectedUser] = useState(null); // State để lưu người dùng được chọn
+  const [isModalVisible, setIsModalVisible] = useState(false); // State để quản lý hiển thị modal
   const navigate = useNavigate();
+
+  
+
+  // Thêm hàm xử lý khi click nút "Tạo Voucher"
+  const handleCreateVoucher = (user) => {
+    setSelectedUser(user);
+    setIsModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+    setSelectedUser(null);
+  };
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -68,73 +84,90 @@ const UserStatistics = () => {
           </button>
         </div>
 
-       <div>
-  <label className="mr-2">Giới hạn: </label>
-  <input
-    type="number"
-    min="0"
-    placeholder="Nhập ..."
-    value={limitInput}
-    onChange={(e) => setLimitInput(e.target.value)}
-    className="border rounded px-3 py-2 w-24"
-  />
-  <button
-    onClick={() => setLimit(Number(limitInput))}
-    className="ml-2 px-3 py-2 bg-blue-500 text-white rounded"
-  >
-    Áp dụng
-  </button>
-</div>
+        <div>
+          <label className="mr-2">Giới hạn: </label>
+          <input
+            type="number"
+            min="0"
+            placeholder="Nhập ..."
+            value={limitInput}
+            onChange={(e) => setLimitInput(e.target.value)}
+            className="border rounded px-3 py-2 w-24"
+          />
+          <button
+            onClick={() => setLimit(Number(limitInput))}
+            className="ml-2 px-3 py-2 bg-blue-500 text-white rounded"
+          >
+            Áp dụng
+          </button>
+        </div>
       </div>
 
       <table className="w-full table-auto border-collapse">
         <thead>
-  <tr className="bg-gray-100 text-left">
-    <th className="p-3 border">Tên người dùng</th>
-    {sortBy === "totalSpent" ? (
-      <>
-        <th className="p-3 border text-center">Tổng đơn hàng</th>
-        <th className="p-3 border text-center">Tổng tiền mua hàng</th>
-      </>
-    ) : (
-      <>
-        <th className="p-3 border text-center">Tổng đơn hàng</th>
-        <th className="p-3 border text-center">Tổng sản phẩm</th>
-      </>
-    )}
-  </tr>
-</thead>
+          <tr className="bg-gray-100 text-left">
+            <th className="p-3 border">Tên người dùng</th>
+            {sortBy === "totalSpent" ? (
+              <>
+                <th className="p-3 border text-center">Tổng đơn hàng</th>
+                <th className="p-3 border text-center">Tổng tiền mua hàng</th>
+              </>
+            ) : (
+              <>
+                <th className="p-3 border text-center">Tổng đơn hàng</th>
+                <th className="p-3 border text-center">Tổng sản phẩm</th>
+              </>
+            )}
+            <th className="p-3 border text-center">Hành động</th>
+          </tr>
+        </thead>
 
-<tbody>
-  {filteredStats.map(user => (
-    <tr key={user.userId} className="border-b">
-      <td
-        className="p-3 border cursor-pointer text-blue-600 hover:underline"
-        onClick={() => navigate(`/users/${user.userId}/orders`)}
-      >
-        {user.fullname}
-      </td>
+        <tbody>
+          {filteredStats.map(user => (
+            <tr key={user.userId} className="border-b">
+              <td
+                className="p-3 border cursor-pointer text-blue-600 hover:underline"
+                onClick={() => navigate(`/users/${user.userId}/orders`)}
+              >
+                {user.fullname}
+              </td>
 
-      {sortBy === "totalSpent" ? (
-        <>
-          <td className="p-3 border text-center">{user.orderCount}</td>
-          <td className="p-3 border text-center bg-yellow-100 font-semibold">
-            {user.totalSpent?.toLocaleString("vi-VN")} đ
-          </td>
-        </>
-      ) : (
-        <>
-          <td className="p-3 border text-center">{user.orderCount}</td>
-          <td className="p-3 border text-center bg-yellow-100 font-semibold">
-            {user.totalQuantityPurchased}
-          </td>
-        </>
-      )}
-    </tr>
-  ))}
-</tbody>
-
+              {sortBy === "totalSpent" ? (
+                <>
+                  <td className="p-3 border text-center">{user.orderCount}</td>
+                  <td className="p-3 border text-center bg-yellow-100 font-semibold">
+                    {user.totalSpent?.toLocaleString("vi-VN")} đ
+                  </td>
+                </>
+              ) : (
+                <>
+                  <td className="p-3 border text-center">{user.orderCount}</td>
+                  <td className="p-3 border text-center bg-yellow-100 font-semibold">
+                    {user.totalQuantityPurchased}
+                  </td>
+                </>
+              )}
+              {/* Thêm cột mới với nút "Tạo Voucher" */}
+              <td className="p-3 border text-center">
+                <button
+                   onClick={() => handleCreateVoucher(user)} 
+                  className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+                >
+                  Tạo Voucher
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
       </table>
+
+       {selectedUser && (
+        <CreateVoucherModal
+          user={selectedUser}
+          visible={isModalVisible}
+          onClose={handleCloseModal}
+        />
+      )}
     </div>
   );
 };

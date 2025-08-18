@@ -6,7 +6,7 @@
 const CORS_PROXY = 'https://corsproxy.io/?';
 
 // URL cơ sở API - sử dụng đường dẫn tương đối khi proxy được cấu hình
-const API_BASE = 'https://92f8fa709052.ngrok-free.app';
+const API_BASE = 'https://290538b87be0.ngrok-free.app';
 
 // Các điểm cuối
 const ENDPOINTS = {
@@ -31,6 +31,10 @@ const ENDPOINTS = {
 
   //User
   GET_ALL_USERS: `${API_BASE}/api/users/get-all-users`, // Lấy tất cả user
+
+  GET_ALL_VOUCHERS: `${API_BASE}/api/voucher/getAllVoucherByAdmin`,  // lấy tât cả voucher
+  CREATE_VOUCHER: `${API_BASE}/api/voucher/createVoucher`, // Tạo voucher
+  UPDATE_VOUCHER: (id) => `${API_BASE}/api/voucher/updateVoucher/${id}`, // Cập nhật voucher theo ID
 };
 
 // Hàm trợ giúp để lấy URL đầy đủ - trực tiếp sử dụng ngrok URL
