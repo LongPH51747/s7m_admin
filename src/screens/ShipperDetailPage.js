@@ -95,13 +95,12 @@ const ShipperDetailPage = () => {
                                 <Descriptions.Item label="Username">{shipper.user_name}</Descriptions.Item>
                                 <Descriptions.Item label="Số điện thoại">{shipper.phone_number}</Descriptions.Item>
                                 
-                                <Descriptions.Item label="Khu vực giao">
-                                    {shipper.post_office?.name || shipper.post_office || 'Chưa có'}
-                                </Descriptions.Item>
+                                {/* 3. SỬA LỖI HIỂN THỊ KHU VỰC GIAO */}
+                                <Descriptions.Item label="Khu vực giao">{shipper.address_shipping || 'Chưa có'}</Descriptions.Item>
                                 
                                 <Descriptions.Item label="Trạng thái">
-                                    <Tag color={shipper.status ? 'green' : 'red'}>
-                                        {shipper.status ? 'HOẠT ĐỘNG' : 'KHÔNG HOẠT ĐỘNG'}
+                                    <Tag color={shipper.status ? 'red' : 'green'}>
+                                        {shipper.status ? 'KHÔNG HOẠT ĐỘNG' : 'HOẠT ĐỘNG'}
                                     </Tag>
                                 </Descriptions.Item>
                             </Descriptions>

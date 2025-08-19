@@ -65,13 +65,13 @@ const ShipperListPage = () => {
             dataIndex: 'status',
             filters: [
                 { text: 'Hoạt động', value: true },
-                { text: 'Không hoạt động', value: false },
+                // { text: 'Không hoạt động', value: false },
             ],
             onFilter: (value, record) => record.status === value,
             render: (status) => {
                 const isActive = status === true;
-                const color = isActive ? 'green' : 'volcano';
-                const text = isActive ? 'HOẠT ĐỘNG' : 'KHÔNG HOẠT ĐỘNG';
+                const color = isActive ? 'volcano' : 'green';
+                const text = isActive ? 'KHÔNG HOẠT ĐỘNG' : 'HOẠT ĐỘNG';
                 return <Tag color={color}>{text}</Tag>;
             },
         },
