@@ -1,8 +1,8 @@
+// AdminChat.js - Dùng Tailwind CSS
 import React, { useState } from 'react';
 import { useSocket } from '../contexts/SocketContext';
 import ChatSidebar from '../components/ChatSidebar';
 import MessageBox from '../components/MessageBox';
-import '../css/AdminChat.css';
 
 const AdminChat = () => {
     const { 
@@ -16,54 +16,65 @@ const AdminChat = () => {
         messagesError,
         selectAdminChatRoom,
         sendAdminMessage,
-        onlineUsers, // Lấy onlineUsers từ useSocket
+        onlineUsers,
         currentUserId 
     } = useSocket();
-
-    // THÊM DÒNG LOG NÀY ĐỂ XEM ONLINEUSERS MÀ ADMINCHAT NHẬN ĐƯỢC
-    console.log("AdminChat: onlineUsers from useSocket():", onlineUsers);
 
     const [newMessageInput, setNewMessageInput] = useState('');
 
     if (isLoadingChatRooms) {
-        return <div className="admin-chat-container"><p>Đang tải danh sách phòng chat...</p></div>;
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-100 p-8">
+                <p className="text-gray-500 text-lg">Đang tải danh sách phòng chat...</p>
+            </div>
+        );
     }
 
     if (chatRoomsError) {
-        return <div className="admin-chat-container"><p>Lỗi: {chatRoomsError.message || "Không xác định"}</p></div>;
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-100 p-8">
+                <p className="text-red-500 text-lg">Lỗi: {chatRoomsError.message || "Không xác định"}</p>
+            </div>
+        );
     }
 
     if (!isLoadingChatRooms && (!chatRooms || chatRooms.length === 0)) {
         return (
-            <div className="admin-chat-container">
-                <p className="no-chat-rooms-fallback">Chưa có cuộc trò chuyện nào. Hãy chờ đợi người dùng bắt đầu chat.</p>
+            <div className="flex items-center justify-center min-h-screen bg-gray-100 p-8">
+                <p className="text-gray-500 text-lg text-center max-w-md">
+                    Chưa có cuộc trò chuyện nào. Hãy chờ đợi người dùng bắt đầu chat.
+                </p>
             </div>
         );
     }
 
     return (
-        <div className="admin-chat-container">
-            <ChatSidebar
-                chatRooms={chatRooms || []} 
-                selectedRoomId={selectedRoomId}
-                onSelectRoom={selectAdminChatRoom}
-                // SỬA ĐỔI Ở ĐÂY: Đảm bảo onlineUsers luôn là một mảng
-                onlineUsers={onlineUsers || []} 
-            />
-            <MessageBox
-                messages={messages}
-                newMessage={newMessageInput}
-                setNewMessage={setNewMessageInput}
-                sendAdminMessage={sendAdminMessage}
-                isSocketReady={isSocketReady}
-                selectedRoomId={selectedRoomId}
-                isLoadingMessages={isLoadingMessages} 
-                messagesError={messagesError}
-                // SỬA ĐỔI Ở ĐÂY: Đảm bảo onlineUsers luôn là một mảng
-                onlineUsers={onlineUsers || []} 
-                currentUserId={currentUserId} 
-                chatRooms={chatRooms || []} 
-            />
+        <div className="flex h-screen bg-gray-100 p-8 space-x-8 font-sans antialiased">
+            {/* Chat Sidebar */}
+            <div className="flex-none w-80">
+                <ChatSidebar
+                    chatRooms={chatRooms || []} 
+                    selectedRoomId={selectedRoomId}
+                    onSelectRoom={selectAdminChatRoom}
+                    onlineUsers={onlineUsers || []} 
+                />
+            </div>
+            {/* Message Box */}
+            <div className="flex-1">
+                <MessageBox
+                    messages={messages}
+                    newMessage={newMessageInput}
+                    setNewMessage={setNewMessageInput}
+                    sendAdminMessage={sendAdminMessage}
+                    isSocketReady={isSocketReady}
+                    selectedRoomId={selectedRoomId}
+                    isLoadingMessages={isLoadingMessages} 
+                    messagesError={messagesError}
+                    onlineUsers={onlineUsers || []} 
+                    currentUserId={currentUserId} 
+                    chatRooms={chatRooms || []} 
+                />
+            </div>
         </div>
     );
 };

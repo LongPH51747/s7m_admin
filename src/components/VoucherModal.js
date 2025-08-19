@@ -5,34 +5,38 @@ import { ENDPOINTS } from '../config/api';
 
 const CreateVoucherModal = ({ user, visible, onClose, onVoucherCreated }) => {
     const [code, setCode] = useState('');
-    const [type, setType] = useState('percent');
+    const [type, setType] = useState('percentage');
     const [value, setValue] = useState('');
     const [minOrderValue, setMinOrderValue] = useState('');
     const [maxDiscount, setMaxDiscount] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [quantity, setQuantity] = useState('');
     const [message, setMessage] = useState(null); // State để hiển thị thông báo
 
     // Reset form và message khi modal được mở hoặc đóng
     useEffect(() => {
         if (visible) {
             setCode('');
-            setType('percent');
+            setType('percentage');
             setValue('');
             setMinOrderValue('');
             setMaxDiscount('');
             setStartDate('');
             setEndDate('');
-            setQuantity('');
             setMessage(null);
         }
     }, [visible]);
 
     const handleCreatePrivateVoucher = async () => {
         // Kiểm tra dữ liệu đầu vào
-        if (!code || !value || !minOrderValue || !maxDiscount || !startDate || !endDate || !quantity) {
+        if (!code || !value || !minOrderValue || !startDate || !endDate) {
             setMessage({ type: 'error', text: 'Lỗi: Vui lòng điền đầy đủ thông tin.' });
+            return;
+        }
+
+        // Kiểm tra thêm cho loại voucher percentage
+        if (type === 'percentage' && !maxDiscount) {
+            setMessage({ type: 'error', text: 'Lỗi: Vui lòng nhập giá trị giảm tối đa.' });
             return;
         }
 
@@ -41,18 +45,22 @@ const CreateVoucherModal = ({ user, visible, onClose, onVoucherCreated }) => {
             type,
             value: Number(value),
             minOrderValue: Number(minOrderValue),
-            maxDiscount: Number(maxDiscount),
             startDate,
             endDate,
-            quantity: Number(quantity),
+            quantity: 1, // Số lượng được cố định là 1 cho voucher riêng tư
             isPublic: false,
             userId: user.userId,
         };
 
+        // Chỉ thêm maxDiscount vào payload nếu type là 'percentage'
+        if (type === 'percentage') {
+            payload.maxDiscount = Number(maxDiscount);
+        }
+
         try {
             const response = await axios.post(ENDPOINTS.CREATE_VOUCHER, payload);
 
-            if (response.status === 201) {
+            if (response.status === 200) {
                 setMessage({ type: 'success', text: `Thành công: Voucher đã được tạo cho ${user.fullname}` });
                 if (onVoucherCreated) {
                     onVoucherCreated();
@@ -107,9 +115,12 @@ const CreateVoucherModal = ({ user, visible, onClose, onVoucherCreated }) => {
                         <select 
                             className="border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
                             value={type} 
-                            onChange={(e) => setType(e.target.value)}
+                            onChange={(e) => {
+                                setType(e.target.value);
+                                setMaxDiscount('');
+                            }}
                         >
-                            <option value="percent">Phần trăm</option>
+                            <option value="percentage">Phần trăm</option>
                             <option value="fixed">Cố định</option>
                         </select>
                     </div>
@@ -134,15 +145,17 @@ const CreateVoucherModal = ({ user, visible, onClose, onVoucherCreated }) => {
                         />
                     </div>
 
-                    <div className="flex flex-col">
-                        <label className="mb-1 text-sm font-medium">Giá trị giảm tối đa:</label>
-                        <input 
-                            type="number" 
-                            className="border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                            value={maxDiscount} 
-                            onChange={(e) => setMaxDiscount(e.target.value)} 
-                        />
-                    </div>
+                    {type === 'percentage' && (
+                        <div className="flex flex-col">
+                            <label className="mb-1 text-sm font-medium">Giá trị giảm tối đa:</label>
+                            <input 
+                                type="number" 
+                                className="border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+                                value={maxDiscount} 
+                                onChange={(e) => setMaxDiscount(e.target.value)} 
+                            />
+                        </div>
+                    )}
 
                     <div className="flex flex-col">
                         <label className="mb-1 text-sm font-medium">Ngày bắt đầu:</label>
@@ -164,15 +177,7 @@ const CreateVoucherModal = ({ user, visible, onClose, onVoucherCreated }) => {
                         />
                     </div>
 
-                    <div className="flex flex-col">
-                        <label className="mb-1 text-sm font-medium">Số lượng:</label>
-                        <input 
-                            type="number" 
-                            className="border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
-                            value={quantity} 
-                            onChange={(e) => setQuantity(e.target.value)} 
-                        />
-                    </div>
+                    {/* Trường số lượng đã được ẩn đi vì số lượng voucher riêng tư luôn là 1 */}
                 </div>
 
                 <div className="flex justify-end gap-4 mt-6">

@@ -1,172 +1,261 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getTopSpenders, getTopBuyersByQuantity } from "../services/statisticUserService";
-import CreateVoucherModal from "../components/VoucherModal";
+import { useQuery } from "@tanstack/react-query";
+import { Radio, DatePicker, Input, Button, Table, Typography, Spin, Alert, Tag, Select, Space, Modal } from 'antd';
+import moment from 'moment';
+import CreateVoucherModal from '../components/VoucherModal'; // Import the new modal component
+
+// Import các hàm API
+import {
+  getTopSpendersByMonth,
+  getTopSpendersYearly,
+  getTopSpendersQuarterly,
+  getTopSpendersByCustomRange,
+  getTopBuyersByItemQuantityMonthly,
+  getTopBuyersByItemQuantityYearly,
+  getTopBuyersByItemQuantityQuarterly,
+  getTopBuyersByItemQuantityDateRange,
+} from "../services/statisticUserService";
+
+const { Title } = Typography;
+const { RangePicker } = DatePicker;
+const { Option } = Select;
 
 const UserStatistics = () => {
-  const [stats, setStats] = useState([]);
-  const [sortBy, setSortBy] = useState("totalSpent");
-  const [limit, setLimit] = useState(0); // 0 = tất cả
-  const [limitInput, setLimitInput] = useState("");
-  const [selectedUser, setSelectedUser] = useState(null); // State để lưu người dùng được chọn
-  const [isModalVisible, setIsModalVisible] = useState(false); // State để quản lý hiển thị modal
   const navigate = useNavigate();
 
-  
+  const [metric, setMetric] = useState("totalSpent");
+  const [period, setPeriod] = useState("month");
+  const [limit, setLimit] = useState(10);
+  const [limitInput, setLimitInput] = useState("10");
 
-  // Thêm hàm xử lý khi click nút "Tạo Voucher"
-  const handleCreateVoucher = (user) => {
+  const [dateRange, setDateRange] = useState([null, null]);
+  const [selectedMonth, setSelectedMonth] = useState(moment());
+  const [selectedYear, setSelectedYear] = useState(moment());
+  const [selectedQuarter, setSelectedQuarter] = useState(moment().quarter());
+
+  // State để điều khiển modal
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+
+  // Hàm mở modal và truyền thông tin người dùng
+  const handleOpenModal = (user) => {
     setSelectedUser(user);
     setIsModalVisible(true);
   };
 
+  // Hàm đóng modal
   const handleCloseModal = () => {
     setIsModalVisible(false);
     setSelectedUser(null);
   };
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const [spenders, buyers] = await Promise.all([
-          getTopSpenders(99999),
-          getTopBuyersByQuantity(99999)
-        ]);
+  // Hàm xử lý sau khi tạo voucher thành công
+  const handleVoucherCreated = () => {
+    // Bạn có thể thêm logic ở đây để làm mới dữ liệu, ví dụ:
+    // queryClient.invalidateQueries('userStatistics');
+    console.log("Voucher đã được tạo thành công!");
+  };
 
-        const merged = spenders.map(s => {
-          const buyer = buyers.find(b => b.userId === s.userId) || {};
-          return {
-            userId: s.userId,
-            fullname: s.fullname,
-            totalSpent: s.totalSpent || 0,
-            totalQuantityPurchased: buyer.totalQuantityPurchased || 0,
-            orderCount: s.orderCount || 0
-          };
-        });
 
-        setStats(merged);
-      } catch (err) {
-        console.error("Lỗi khi lấy thống kê:", err);
+  // `useQuery` sẽ tự động chạy lại khi các state trong `queryKey` thay đổi
+  const { data: stats = [], isLoading, isError, error } = useQuery({
+    queryKey: ['userStatistics', { metric, period, limit, dateRange, selectedMonth, selectedYear, selectedQuarter }],
+    
+    queryFn: async () => {
+      // Chỉ truyền `limit` vào các API có hỗ trợ
+      const numericLimit = limit > 0 ? limit : undefined;
+
+      switch (period) {
+        case 'month': {
+          if (!selectedMonth) return [];
+          const year = selectedMonth.year();
+          const month = selectedMonth.month() + 1;
+          if (metric === 'totalSpent') return getTopSpendersByMonth(year, month, numericLimit);
+          if (metric === 'totalQuantity') return getTopBuyersByItemQuantityMonthly(year, month, numericLimit);
+          break;
+        }
+        case 'quarter': {
+          if (!selectedYear) return [];
+          const year = selectedYear.year();
+          if (metric === 'totalSpent') return getTopSpendersQuarterly(year, selectedQuarter, numericLimit);
+          if (metric === 'totalQuantity') return getTopBuyersByItemQuantityQuarterly(year, selectedQuarter, numericLimit);
+          break;
+        }
+        case 'year': {
+          if (!selectedYear) return [];
+          const year = selectedYear.year();
+          // API theo năm không có tham số limit
+          if (metric === 'totalSpent') return getTopSpendersYearly(year);
+          if (metric === 'totalQuantity') return getTopBuyersByItemQuantityYearly(year);
+          break;
+        }
+        case 'custom': {
+          const [startDate, endDate] = dateRange;
+          if (!startDate || !endDate) return [];
+          const formattedStartDate = startDate.format('YYYY-MM-DD');
+          const formattedEndDate = endDate.format('YYYY-MM-DD');
+          if (metric === 'totalSpent') return getTopSpendersByCustomRange(formattedStartDate, formattedEndDate, numericLimit);
+          if (metric === 'totalQuantity') return getTopBuyersByItemQuantityDateRange(formattedStartDate, formattedEndDate, numericLimit);
+          break;
+        }
+        default:
+          return [];
       }
-    };
+    },
+    enabled: !(period === 'custom' && (!dateRange || !dateRange[0] || !dateRange[1])),
+  });
+  
+  // Xử lý dữ liệu sau khi fetch về, áp dụng limit cho các API không hỗ trợ
+  const processedStats = React.useMemo(() => {
+    if (period === 'year' && limit > 0) {
+      return stats.slice(0, limit);
+    }
+    return stats;
+  }, [stats, period, limit]);
 
-    fetchStats();
-  }, []);
+  const columns = [
+    {
+      title: 'Tên người dùng',
+      dataIndex: 'fullname',
+      key: 'fullname',
+      render: (text, record) => (
+        <Button type="link" onClick={() => navigate(`/users/${record.userId}/orders`)}>
+          {text}
+        </Button>
+      ),
+    },
+    {
+      title: 'Tổng đơn hàng',
+      dataIndex: 'orderCount',
+      key: 'orderCount',
+      align: 'center',
+    },
+    {
+      title: metric === 'totalSpent' ? 'Tổng tiền mua hàng (VND)' : 'Tổng sản phẩm đã mua',
+      dataIndex: metric === 'totalSpent' ? 'totalSpent' : 'totalQuantityPurchased',
+      key: 'metric',
+      align: 'center',
+      sorter: (a, b) => (a[metric === 'totalSpent' ? 'totalSpent' : 'totalQuantityPurchased'] || 0) - (b[metric === 'totalSpent' ? 'totalSpent' : 'totalQuantityPurchased'] || 0),
+      render: (value) => (
+        <Tag color="blue" style={{ fontSize: '14px', padding: '5px 10px' }}>
+          {metric === 'totalSpent' ? (value || 0).toLocaleString('vi-VN') : (value || 0)}
+        </Tag>
+      ),
+    },
+    {
+      title: 'Hành động',
+      key: 'action',
+      render: (text, record) => (
+        <Button 
+          type="primary" 
+          onClick={() => handleOpenModal(record)}
+        >
+          Tặng Voucher
+        </Button>
+      ),
+    },
+  ];
 
-  const filteredStats = stats
-    .sort((a, b) => {
-      if (sortBy === "totalSpent") {
-        return b.totalSpent - a.totalSpent;
-      } else if (sortBy === "totalProducts") {
-        return b.totalQuantityPurchased - a.totalQuantityPurchased;
-      }
-      return 0;
-    })
-    .slice(0, limit > 0 ? limit : stats.length);
+  // Component render các ô chọn thời gian
+  const renderTimePickers = () => {
+    return (
+      <Space>
+        {period === 'month' && (
+          <DatePicker
+            picker="month"
+            value={selectedMonth}
+            onChange={setSelectedMonth}
+            placeholder="Chọn tháng"
+          />
+        )}
+        {period === 'quarter' && (
+          <>
+            <DatePicker
+              picker="year"
+              value={selectedYear}
+              onChange={setSelectedYear}
+              placeholder="Chọn năm"
+            />
+            <Select value={selectedQuarter} onChange={setSelectedQuarter} style={{ width: 120 }}>
+              <Option value={1}>Quý 1</Option>
+              <Option value={2}>Quý 2</Option>
+              <Option value={3}>Quý 3</Option>
+              <Option value={4}>Quý 4</Option>
+            </Select>
+          </>
+        )}
+        {period === 'year' && (
+          <DatePicker
+            picker="year"
+            value={selectedYear}
+            onChange={setSelectedYear}
+            placeholder="Chọn năm"
+          />
+        )}
+        {period === 'custom' && (
+          <RangePicker value={dateRange} onChange={setDateRange} />
+        )}
+      </Space>
+    );
+  };
 
   return (
-    <div className="p-6">
-      <h1 className="text-xl font-semibold mb-4">📊 Thống kê mua hàng</h1>
+    <div style={{ padding: '24px' }}>
+      <Title level={2}>📊 Thống kê người dùng</Title>
 
-      <div className="flex justify-between gap-4 mb-4 flex-wrap">
-        <div className="flex gap-2">
-          <button
-            onClick={() => setSortBy("totalSpent")}
-            className={`px-4 py-2 rounded ${sortBy === "totalSpent" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-          >
-            💰 Tổng tiền mua hàng
-          </button>
-          <button
-            onClick={() => setSortBy("totalProducts")}
-            className={`px-4 py-2 rounded ${sortBy === "totalProducts" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
-          >
-            📦 Tổng sản phẩm
-          </button>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px', padding: '16px', background: '#f0f2f5', borderRadius: '8px' }}>
+        <div style={{ display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div>
+            <label style={{ marginRight: 8, fontWeight: 500 }}>Thống kê theo:</label>
+            <Radio.Group value={metric} onChange={(e) => setMetric(e.target.value)}>
+              <Radio.Button value="totalSpent">💰 Tổng tiền mua hàng</Radio.Button>
+              <Radio.Button value="totalQuantity">📦 Tổng sản phẩm</Radio.Button>
+            </Radio.Group>
+          </div>
+          <div>
+            <label style={{ marginRight: 8, fontWeight: 500 }}>Giai đoạn:</label>
+            <Radio.Group value={period} onChange={(e) => setPeriod(e.target.value)}>
+              <Radio.Button value="month">Theo tháng</Radio.Button>
+              <Radio.Button value="quarter">Theo quý</Radio.Button>
+              <Radio.Button value="year">Theo năm</Radio.Button>
+              <Radio.Button value="custom">Tùy chọn</Radio.Button>
+            </Radio.Group>
+          </div>
         </div>
 
-        <div>
-          <label className="mr-2">Giới hạn: </label>
-          <input
-            type="number"
-            min="0"
-            placeholder="Nhập ..."
-            value={limitInput}
-            onChange={(e) => setLimitInput(e.target.value)}
-            className="border rounded px-3 py-2 w-24"
-          />
-          <button
-            onClick={() => setLimit(Number(limitInput))}
-            className="ml-2 px-3 py-2 bg-blue-500 text-white rounded"
-          >
-            Áp dụng
-          </button>
+        <div style={{ display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
+          {renderTimePickers()}
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+          </div>
         </div>
       </div>
-
-      <table className="w-full table-auto border-collapse">
-        <thead>
-          <tr className="bg-gray-100 text-left">
-            <th className="p-3 border">Tên người dùng</th>
-            {sortBy === "totalSpent" ? (
-              <>
-                <th className="p-3 border text-center">Tổng đơn hàng</th>
-                <th className="p-3 border text-center">Tổng tiền mua hàng</th>
-              </>
-            ) : (
-              <>
-                <th className="p-3 border text-center">Tổng đơn hàng</th>
-                <th className="p-3 border text-center">Tổng sản phẩm</th>
-              </>
-            )}
-            <th className="p-3 border text-center">Hành động</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {filteredStats.map(user => (
-            <tr key={user.userId} className="border-b">
-              <td
-                className="p-3 border cursor-pointer text-blue-600 hover:underline"
-                onClick={() => navigate(`/users/${user.userId}/orders`)}
-              >
-                {user.fullname}
-              </td>
-
-              {sortBy === "totalSpent" ? (
-                <>
-                  <td className="p-3 border text-center">{user.orderCount}</td>
-                  <td className="p-3 border text-center bg-yellow-100 font-semibold">
-                    {user.totalSpent?.toLocaleString("vi-VN")} đ
-                  </td>
-                </>
-              ) : (
-                <>
-                  <td className="p-3 border text-center">{user.orderCount}</td>
-                  <td className="p-3 border text-center bg-yellow-100 font-semibold">
-                    {user.totalQuantityPurchased}
-                  </td>
-                </>
-              )}
-              {/* Thêm cột mới với nút "Tạo Voucher" */}
-              <td className="p-3 border text-center">
-                <button
-                   onClick={() => handleCreateVoucher(user)} 
-                  className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
-                >
-                  Tạo Voucher
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-
-       {selectedUser && (
-        <CreateVoucherModal
-          user={selectedUser}
-          visible={isModalVisible}
-          onClose={handleCloseModal}
+      
+      {isLoading ? <Spin /> : isError ? <Alert message="Lỗi" description={error.message} type="error" /> : (
+        <Table
+          columns={columns}
+          dataSource={processedStats}
+          rowKey="userId"
+          bordered
+          locale={{ emptyText: 'Không có dữ liệu' }}
         />
+      )}
+      
+      {/* Modal để tạo voucher */}
+      {selectedUser && (
+        <Modal
+          title={`Tạo Voucher cho ${selectedUser.fullname}`}
+          visible={isModalVisible}
+          onCancel={handleCloseModal}
+          footer={null} // Ẩn footer mặc định của Modal
+        >
+          <CreateVoucherModal
+            user={selectedUser}
+            visible={isModalVisible} // Mặc dù Modal đã điều khiển, prop này vẫn cần cho logic của CreateVoucherModal
+            onClose={handleCloseModal}
+            onVoucherCreated={handleVoucherCreated}
+          />
+        </Modal>
       )}
     </div>
   );

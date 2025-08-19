@@ -10,7 +10,7 @@ const VoucherDisplayScreen = () => {
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
-    const [voucherToDelete, setVoucherToDelete] = useState(null);
+
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState(null);
     const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -27,7 +27,7 @@ const VoucherDisplayScreen = () => {
         startDate: '',
         endDate: '',
         isPublic: true,
-        quantityofuse: 0,
+        limit: 0,
         userId: null,
     });
 
@@ -105,9 +105,7 @@ const VoucherDisplayScreen = () => {
                 maxDiscount: 0,
                 minOrderValue: 0,
                 startDate: '',
-                endDate: '',
-                isPublic: true,
-                quantityofuse: 0,
+                limit: 0,
                 userId: null,
             });
         }
@@ -125,7 +123,7 @@ const VoucherDisplayScreen = () => {
             startDate: '',
             endDate: '',
             isPublic: true,
-            quantityofuse: 0,
+            limit: 0,
             userId: null,
         });
     };
@@ -148,7 +146,7 @@ const VoucherDisplayScreen = () => {
             delete voucherData.maxDiscount;
         }
 
-        voucherData.quantityofuse = Number(voucherData.quantityofuse);
+        voucherData.limit = Number(voucherData.limit);
         voucherData.userId = null;
         voucherData.isPublic = true;
 
@@ -194,33 +192,8 @@ const VoucherDisplayScreen = () => {
         }
     };
 
-    const openConfirmModal = (id) => {
-        setVoucherToDelete(id);
-        setIsConfirmModalOpen(true);
-    };
+   
 
-    const closeConfirmModal = () => {
-        setVoucherToDelete(null);
-        setIsConfirmModalOpen(false);
-        setSubmitError(null);
-    };
-
-    const handleDeleteVoucher = async () => {
-        if (!voucherToDelete) return;
-
-        try {
-            await axios.delete(ENDPOINTS.DELETE_VOUCHER(voucherToDelete), {
-                headers: {
-                    'ngrok-skip-browser-warning': 'true'
-                }
-            });
-            fetchVouchers(); // Reload the list after successful deletion
-            closeConfirmModal();
-        } catch (err) {
-            console.error("Error deleting voucher:", err.response?.data || err.message);
-            setSubmitError(`Error: Could not delete voucher. ${err.response?.data?.message || err.message}`);
-        }
-    };
 
     return (
         <div className="home-page bg-gray-100 min-h-screen">
@@ -282,7 +255,7 @@ const VoucherDisplayScreen = () => {
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{voucher.type === 'percentage' ? `${voucher.value}%` : `${new Intl.NumberFormat('vi-VN').format(voucher.value)}đ`}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Intl.NumberFormat('vi-VN').format(voucher.minOrderValue)}đ</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Intl.NumberFormat('vi-VN').format(voucher.maxDiscount)}đ</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{voucher.quantityofuse}</td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{voucher.limit}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{voucher.startDate}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{voucher.endDate}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -299,12 +272,7 @@ const VoucherDisplayScreen = () => {
                                                     >
                                                         Sửa
                                                     </button>
-                                                    <button
-                                                        onClick={() => openConfirmModal(voucher._id)}
-                                                        className="px-3 py-1 text-white bg-red-500 rounded-full hover:bg-red-600 transition-colors duration-300"
-                                                    >
-                                                        Xóa
-                                                    </button>
+                                                   
                                                 </td>
                                             </tr>
                                         ))}
@@ -400,12 +368,12 @@ const VoucherDisplayScreen = () => {
                                 </div>
                                 {/* Số lượng sử dụng */}
                                 <div>
-                                    <label htmlFor="quantityofuse" className="block text-sm font-medium text-gray-700">Số lượng sử dụng</label>
+                                    <label htmlFor="limit" className="block text-sm font-medium text-gray-700">Số lượng sử dụng</label>
                                     <input
                                         type="number"
-                                        name="quantityofuse"
-                                        id="quantityofuse"
-                                        value={newVoucher.quantityofuse}
+                                        name="limit"
+                                        id="limit"
+                                        value={newVoucher.limit}
                                         onChange={handleInputChange}
                                         required
                                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
@@ -473,34 +441,8 @@ const VoucherDisplayScreen = () => {
                 </div>
             )}
 
-            {/* Confirmation Modal for deletion */}
-            {isConfirmModalOpen && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center z-50">
-                    <div className="relative p-8 bg-white w-full max-w-sm rounded-lg shadow-xl text-center">
-                        <h3 className="text-xl font-bold mb-4 text-gray-800">Xác nhận xóa</h3>
-                        <p className="text-gray-600 mb-6">Bạn có chắc chắn muốn xóa voucher này không?</p>
-                        {submitError && (
-                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-4" role="alert">
-                                <p>{submitError}</p>
-                            </div>
-                        )}
-                        <div className="flex justify-center space-x-4">
-                            <button
-                                onClick={closeConfirmModal}
-                                className="px-4 py-2 bg-gray-300 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-400 transition duration-300"
-                            >
-                                Hủy
-                            </button>
-                            <button
-                                onClick={handleDeleteVoucher}
-                                className="px-4 py-2 bg-red-500 text-white font-semibold rounded-lg shadow-md hover:bg-red-600 transition duration-300"
-                            >
-                                Xóa
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            
+            
         </div>
     );
 };
