@@ -18,7 +18,8 @@ const statusMap = {
   16: 'Bưu cục nhận hàng hoàn',
   17: 'Hàng hoàn rời bưu cục',
   18: 'Hàng hoàn tới kho',
-  19: 'Đã hủy'
+  19: 'Đã hủy',
+  24: 'Không xác nhận đơn hoàn'
 };
 
 const statusColors = {
@@ -36,18 +37,19 @@ const statusColors = {
   'Bưu cục nhận hàng hoàn': 'bg-amber-200 text-amber-800', 
   'Hàng hoàn rời bưu cục': 'bg-amber-200 text-amber-800', 
   'Hàng hoàn tới kho': 'bg-slate-300 text-slate-800', 
-  'Hủy': 'bg-red-200 text-red-900',
   'Đã hủy': 'bg-red-200 text-red-900', 
 };
 
 
 const statusMapUpdates = {
+  1: 'Chờ xác nhận',
   2: 'Xác nhận',
   6: 'Đang giao',
   7: 'Giao thành công',
   14: 'Xác nhận hoàn',
   19: 'Đã hủy'
 };
+
 
 export { statusMap, statusColors, statusMapUpdates };
 

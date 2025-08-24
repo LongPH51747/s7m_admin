@@ -118,6 +118,18 @@ const UserStatistics = () => {
         </Tag>
       ),
     },
+    {
+      title: 'Hành động',
+      key: 'action',
+      align: 'center',
+      render: (_, record) => (
+        <Button 
+          onClick={() => (record)}
+        >
+          Tặng Voucher
+        </Button>
+      ),
+    },
   ];
 
   // Component render các ô chọn thời gian
