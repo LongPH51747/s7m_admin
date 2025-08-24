@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { getOrderById, updateOrderStatusApi } from '../services/orderService';
 import { getByIdAddress } from '../services/addressService';
-import { statusMap, statusColors } from '../utils/StatusColors';
+import { statusMap, statusColors, statusMapUpdates } from '../utils/StatusColors';
 import { getShipperById } from '../services/shipperService';
 
 const OrderDetailPage = () => {
@@ -99,7 +99,7 @@ const OrderDetailPage = () => {
             onChange={(e) => setNewStatus(Number(e.target.value))}
             disabled={order.status === 8}
           >
-            {Object.entries(statusMap).map(([key, label]) => (
+            {Object.entries(statusMapUpdates).map(([key, label]) => (
               <option key={key} value={key}>{label}</option>
             ))}
           </select>

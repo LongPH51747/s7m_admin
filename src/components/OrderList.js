@@ -4,6 +4,7 @@ import { getAllOrder } from '../services/orderService';
 import { getAllUsers } from '../services/userServices';
 import { statusMap, statusColors } from '../utils/StatusColors';
 
+// Mảng này giữ nguyên, vì nó là UI cho các nút bấm
 const statuses = [
   'Chờ xác nhận',
   'Đã xác nhận',
@@ -39,10 +40,25 @@ const CategoryDetailProduct = () => {
   }, [location]);
 
   const filteredOrders = orders
-    .filter(order =>
-      (`SMT${order._id}`).toLowerCase().includes(search.toLowerCase()) &&
-      (!statusFilter || statusMap[order.status] === statusFilter)
-    )
+    .filter(order => {
+      // 1. Lọc theo mã đơn hàng (giữ nguyên)
+      const searchMatch = (`SMT${order._id}`).toLowerCase().includes(search.toLowerCase());
+
+      // 2. Lọc theo trạng thái
+      let statusMatch = true; // Mặc định là true nếu không có bộ lọc
+      if (statusFilter) {
+        // Trường hợp đặc biệt: Nếu người dùng chọn "Hoàn hàng"
+        if (statusFilter === 'Hoàn hàng') {
+          // Lọc tất cả các trạng thái từ 13 đến 18
+          statusMatch = order.status > 12 && order.status < 19;
+        } else {
+          // Logic lọc thông thường cho các trạng thái khác
+          statusMatch = statusMap[order.status] === statusFilter;
+        }
+      }
+
+      return searchMatch && statusMatch;
+    })
     .reverse();
 
   const getUserNameById = (userId) => {
@@ -51,7 +67,7 @@ const CategoryDetailProduct = () => {
   };
 
   return (
-    <div className="p-6">
+     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Đơn hàng</h1>
 
       <div className="flex gap-2 justify-end mb-4 items-center">

@@ -29,6 +29,7 @@ import ShipperScreen from './screens/ShipperScreen.js'
 import ShipperDetailPage from './screens/ShipperDetailPage';
 import PostOfficePage from './screens/PostOfficePage';
 
+
 // ProtectedRoute component đã được cung cấp
 const ProtectedRoute = ({ children, allowedRoles }) => {
     const { isAuthenticated, loadingAuth, user } = useAuth();
@@ -103,7 +104,7 @@ function App() {
             <Route path="/thongke" element={<ProtectedRoute allowedRoles={['admin']}><MainScreen/></ProtectedRoute>} />
             {/* Thêm route cho Admin Chat */}
             <Route path="/chat" element={<ProtectedRoute allowedRoles={['admin']}><AdminChat /></ProtectedRoute>} />
-             <Route path="/shipper" element={<ProtectedRoute allowedRoles={['admin']}><ShipperScreen /></ProtectedRoute>} />
+            <Route path="/shipper" element={<ProtectedRoute allowedRoles={['admin']}><ShipperScreen /></ProtectedRoute>} />
             <Route path="/shippers/:shipperId" element={<ProtectedRoute allowedRoles={['admin']}><ShipperDetailPage /></ProtectedRoute>} />
             <Route path="/post-offices" element={<ProtectedRoute allowedRoles={['admin']}><PostOfficePage /></ProtectedRoute>} />
             <Route path="/userstatistics" element={<ProtectedRoute allowedRoles={['admin']}><UserStatistics/></ProtectedRoute>}/>

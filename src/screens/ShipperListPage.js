@@ -44,8 +44,20 @@ const ShipperListPage = () => {
         },
         {
             title: 'Khu vực giao',
-            dataIndex: 'address_shipping',
-            key: 'address_shipping',
+            dataIndex: 'post_office',
+            key: 'post_office',
+            render: (postOffice) => {
+                // Nếu postOffice là object và có thuộc tính `name`, thì hiển thị `name`
+                if (typeof postOffice === 'object' && postOffice !== null && postOffice.name) {
+                    return postOffice.name;
+                }
+                // Nếu nó là chuỗi hoặc một dạng khác, hiển thị chính nó
+                if (typeof postOffice === 'string' && postOffice) {
+                    return postOffice;
+                }
+                // Trường hợp không có dữ liệu
+                return 'Chưa có';
+            }
         },
         {
             title: 'Trạng thái',
@@ -53,13 +65,13 @@ const ShipperListPage = () => {
             dataIndex: 'status',
             filters: [
                 { text: 'Hoạt động', value: true },
-                { text: 'Không hoạt động', value: false },
+                // { text: 'Không hoạt động', value: false },
             ],
             onFilter: (value, record) => record.status === value,
             render: (status) => {
                 const isActive = status === true;
-                const color = isActive ? 'green' : 'volcano';
-                const text = isActive ? 'HOẠT ĐỘNG' : 'KHÔNG HOẠT ĐỘNG';
+                const color = isActive ? 'volcano' : 'green';
+                const text = isActive ? 'KHÔNG HOẠT ĐỘNG' : 'HOẠT ĐỘNG';
                 return <Tag color={color}>{text}</Tag>;
             },
         },
