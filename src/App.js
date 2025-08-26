@@ -23,6 +23,12 @@ import { useAuth } from './contexts/AuthContext';
 import UserOrderHistory from './screens/UserOrderHistory.js';
 import UserStatistics from './screens/UserStatistic.js';
 import ThongKeDoanhThu from './screens/ThongKeDoanhThu.js';
+import VoucherScreen from './screens/VoucherScreen.js';
+import VoucherDisplayScreen from './screens/VoucherScreen.js';
+import ShipperScreen from './screens/ShipperScreen.js'
+import ShipperDetailPage from './screens/ShipperDetailPage';
+import PostOfficePage from './screens/PostOfficePage';
+
 
 // ProtectedRoute component đã được cung cấp
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -98,7 +104,11 @@ function App() {
             <Route path="/thongke" element={<ProtectedRoute allowedRoles={['admin']}><MainScreen/></ProtectedRoute>} />
             {/* Thêm route cho Admin Chat */}
             <Route path="/chat" element={<ProtectedRoute allowedRoles={['admin']}><AdminChat /></ProtectedRoute>} />
+            <Route path="/shipper" element={<ProtectedRoute allowedRoles={['admin']}><ShipperScreen /></ProtectedRoute>} />
+            <Route path="/shippers/:shipperId" element={<ProtectedRoute allowedRoles={['admin']}><ShipperDetailPage /></ProtectedRoute>} />
+            <Route path="/post-offices" element={<ProtectedRoute allowedRoles={['admin']}><PostOfficePage /></ProtectedRoute>} />
             <Route path="/userstatistics" element={<ProtectedRoute allowedRoles={['admin']}><UserStatistics/></ProtectedRoute>}/>
+            <Route path="/voucher" element={<ProtectedRoute allowedRoles={['admin']}><VoucherDisplayScreen/></ProtectedRoute>} />
             {/* Fallback route - Chuyển hướng đến /login nếu không khớp route nào */}
             <Route path="*" element={<Navigate to="/login" replace />} />
             <Route path="/update-product/:id" element={<UpdateProduct />} />

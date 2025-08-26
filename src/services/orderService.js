@@ -44,7 +44,7 @@ export const updateOrderStatusApi = async (id, status) => {
 export const getOrderById = async (id) => {
   try {
      console.log("đã nhảy vào getOrderById");
-    const response = await axios.get(`${ORDER_API}/getById/${id}`, {
+    const response = await axios.get(`${ORDER_API}/getOrderByIdForAddmin/${id}`, {
       headers: {
         'ngrok-skip-browser-warning': 'true',
       },
@@ -78,3 +78,4 @@ console.log("responseOrderByUserId", response.data);
     throw error;
   }
 };
+

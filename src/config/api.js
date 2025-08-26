@@ -31,6 +31,10 @@ const ENDPOINTS = {
 
   //User
   GET_ALL_USERS: `${API_BASE}/api/users/get-all-users`, // Lấy tất cả user
+
+  GET_ALL_VOUCHERS: `${API_BASE}/api/voucher/getAllVoucherByAdmin`,  // lấy tât cả voucher
+  CREATE_VOUCHER: `${API_BASE}/api/voucher/createVoucher`, // Tạo voucher
+  UPDATE_VOUCHER: (id) => `${API_BASE}/api/voucher/updateVoucher/${id}`, // Cập nhật voucher theo ID
 };
 
 // Hàm trợ giúp để lấy URL đầy đủ - trực tiếp sử dụng ngrok URL
