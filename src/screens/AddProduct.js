@@ -43,6 +43,7 @@ const AddProduct = () => {
   const [messageType, setMessageType] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [variantImageFiles, setVariantImageFiles] = useState([]);
+  const [sizesInput, setSizesInput] = useState('');
 
   // Fetch categories when component mounts
   useEffect(() => {
@@ -109,6 +110,7 @@ const AddProduct = () => {
   };
 
   // Add variant
+  // eslint-disable-next-line no-unused-vars
   const handleAddVariant = () => {
     if (!color || !size) {
       alert('Vui lòng nhập đầy đủ màu và size!');
@@ -138,6 +140,60 @@ const AddProduct = () => {
     setSize('');
   };
 
+  // Add multiple variants with the same color and multiple sizes at once
+  const handleAddMultipleVariants = () => {
+    if (!color) {
+      alert('Vui lòng nhập màu sắc!');
+      return;
+    }
+    if (!sizesInput.trim()) {
+      alert('Vui lòng nhập ít nhất một size!');
+      return;
+    }
+
+    const parsedSizes = sizesInput
+      .split(/[\s,]+/)
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+
+    if (parsedSizes.length === 0) {
+      alert('Danh sách size không hợp lệ!');
+      return;
+    }
+
+    const uniqueSizesLower = Array.from(new Set(parsedSizes.map((s) => s.toLowerCase())));
+
+    const nextVariants = [...variants];
+    let addedCount = 0;
+
+    uniqueSizesLower.forEach((sizeLower) => {
+      const original = parsedSizes.find((s) => s.toLowerCase() === sizeLower) || sizeLower;
+      const exists = nextVariants.find(
+        (v) => v.variant_color.toLowerCase() === color.toLowerCase() && v.variant_size.toLowerCase() === sizeLower
+      );
+      if (!exists) {
+        nextVariants.push({
+          variant_color: color,
+          variant_size: original,
+          variant_price: '',
+          variant_stock: 0,
+          variant_image_preview: ''
+        });
+        addedCount += 1;
+      }
+    });
+
+    if (addedCount === 0) {
+      alert('Tất cả các biến thể với màu và size đã tồn tại!');
+      return;
+    }
+
+    setVariants(nextVariants);
+    setSizesInput('');
+    setColor('');
+    setSize('');
+  };
+
   // Delete variant
   const handleDeleteVariant = (index) => {
     const newVariants = variants.filter((_, i) => i !== index);
@@ -150,8 +206,10 @@ const AddProduct = () => {
   const handleVariantChange = (index, field, value) => {
     const newVariants = [...variants];
     if (field === 'variant_price' || field === 'variant_stock') {
-      value = value.replace(/[^0-9]/g, '');
-      if (value === '') value = '0';
+      const digitsOnly = (value || '').toString().replace(/[^0-9]/g, '');
+      // Remove leading zeros but keep a single 0 if that's the only digit
+      const normalized = digitsOnly.replace(/^0+(?=\d)/, '');
+      value = normalized;
     }
     
     newVariants[index] = {
@@ -479,13 +537,24 @@ const AddProduct = () => {
               value={color}
               onChange={(e) => setColor(e.target.value)}
             />
-            <TextField
+            {/* <TextField
               label="Size"
               value={size}
               onChange={(e) => setSize(e.target.value)}
-            />
-            <Button variant="contained" onClick={handleAddVariant}>
+            /> */}
+            {/* <Button variant="contained" onClick={handleAddVariant}>
               Thêm biến thể
+            </Button> */}
+          </Box>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <TextField
+              fullWidth
+              label="Nhiều size (cách nhau bằng dấu phẩy hoặc khoảng trắng)"
+              value={sizesInput}
+              onChange={(e) => setSizesInput(e.target.value)}
+            />
+            <Button variant="outlined" onClick={handleAddMultipleVariants}>
+              Thêm nhiều size
             </Button>
           </Box>
         </Box>

@@ -23,21 +23,68 @@ const ProductItem = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('default');
   const [priceRange, setPriceRange] = useState('all');
-  const [productsWithRatings, setProductsWithRatings] = useState([]);
+  // const [productsWithRatings, setProductsWithRatings] = useState([]);
 
   // Gọi API lấy danh sách sản phẩm khi component được mount
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  // Đảm bảo totalStock được tính toán khi component mount
-  useEffect(() => {
-    console.log("Component mounted, current totalStock:", totalStock);
-  }, []);
+  // Bỏ effect log không cần thiết để tránh cảnh báo dependency
 
   // Lọc và sắp xếp sản phẩm khi có thay đổi
   useEffect(() => {
-    filterAndSortProducts();
+    let filtered = [...products];
+
+    if (searchTerm) {
+      filtered = filtered.filter(product =>
+        product.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        product.product_description?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (priceRange !== 'all') {
+      const [min, max] = priceRange.split('-').map(Number);
+      filtered = filtered.filter(product => {
+        const price = product.product_price || 0;
+        if (max) {
+          return price >= min && price <= max;
+        } else {
+          return price >= min;
+        }
+      });
+    }
+
+    switch (sortBy) {
+      case 'price-high-low':
+        filtered.sort((a, b) => (b.product_price || 0) - (a.product_price || 0));
+        break;
+      case 'price-low-high':
+        filtered.sort((a, b) => (a.product_price || 0) - (b.product_price || 0));
+        break;
+      case 'name-a-z':
+        filtered.sort((a, b) => a.product_name.localeCompare(b.product_name, 'vi'));
+        break;
+      case 'name-z-a':
+        filtered.sort((a, b) => b.product_name.localeCompare(a.product_name, 'vi'));
+        break;
+      case 'rating-high-low':
+        filtered.sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0));
+        break;
+      case 'rating-low-high':
+        filtered.sort((a, b) => (a.avgRating || 0) - (b.avgRating || 0));
+        break;
+      case 'reviews-high-low':
+        filtered.sort((a, b) => (b.totalReviews || 0) - (a.totalReviews || 0));
+        break;
+      case 'reviews-low-high':
+        filtered.sort((a, b) => (a.totalReviews || 0) - (b.totalReviews || 0));
+        break;
+      default:
+        break;
+    }
+
+    setFilteredProducts(filtered);
   }, [products, searchTerm, sortBy, priceRange]);
 
   // Cập nhật totalStock khi products thay đổi
@@ -114,6 +161,28 @@ const ProductItem = () => {
         })
       );
 
+      // Helper: convert created date to ms; fallback to ObjectId time
+      const getCreatedTimeMs = (p) => {
+        if (p.createdAt) {
+          const t = new Date(p.createdAt).getTime();
+          if (!Number.isNaN(t)) return t;
+        }
+        if (p.created_at) {
+          const t = new Date(p.created_at).getTime();
+          if (!Number.isNaN(t)) return t;
+        }
+        // MongoDB ObjectId first 4 bytes are a timestamp (seconds)
+        if (typeof p._id === 'string' && p._id.length === 24) {
+          const tsHex = p._id.substring(0, 8);
+          const seconds = parseInt(tsHex, 16);
+          if (!Number.isNaN(seconds)) return seconds * 1000;
+        }
+        return 0;
+      };
+
+      // Sort newest first so newly added products appear at the top
+      const sortedProducts = [...productsWithRatings].sort((a, b) => getCreatedTimeMs(b) - getCreatedTimeMs(a));
+
       // Tính tổng số lượng từ dữ liệu gốc để đảm bảo chính xác
       let totalStock = 0;
       response.data.forEach(product => {
@@ -126,8 +195,7 @@ const ProductItem = () => {
       });
       
       setTotalStock(totalStock);
-      setProducts(productsWithRatings);
-      setProductsWithRatings(productsWithRatings);
+      setProducts(sortedProducts);
       
       setLoading(false);
     } catch (error) {
@@ -136,64 +204,7 @@ const ProductItem = () => {
     }
   };
 
-  // Hàm lọc và sắp xếp sản phẩm
-  const filterAndSortProducts = () => {
-    let filtered = [...products];
-
-    // Lọc theo từ khóa tìm kiếm (không phân biệt hoa thường)
-    if (searchTerm) {
-      filtered = filtered.filter(product =>
-        product.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.product_description?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Lọc theo khoảng giá
-    if (priceRange !== 'all') {
-      const [min, max] = priceRange.split('-').map(Number);
-      filtered = filtered.filter(product => {
-        const price = product.product_price || 0;
-        if (max) {
-          return price >= min && price <= max;
-        } else {
-          return price >= min;
-        }
-      });
-    }
-
-    // Sắp xếp sản phẩm
-    switch (sortBy) {
-      case 'price-high-low':
-        filtered.sort((a, b) => (b.product_price || 0) - (a.product_price || 0));
-        break;
-      case 'price-low-high':
-        filtered.sort((a, b) => (a.product_price || 0) - (b.product_price || 0));
-        break;
-      case 'name-a-z':
-        filtered.sort((a, b) => a.product_name.localeCompare(b.product_name, 'vi'));
-        break;
-      case 'name-z-a':
-        filtered.sort((a, b) => b.product_name.localeCompare(a.product_name, 'vi'));
-        break;
-      case 'rating-high-low':
-        filtered.sort((a, b) => (b.avgRating || 0) - (a.avgRating || 0));
-        break;
-      case 'rating-low-high':
-        filtered.sort((a, b) => (a.avgRating || 0) - (b.avgRating || 0));
-        break;
-      case 'reviews-high-low':
-        filtered.sort((a, b) => (b.totalReviews || 0) - (a.totalReviews || 0));
-        break;
-      case 'reviews-low-high':
-        filtered.sort((a, b) => (a.totalReviews || 0) - (b.totalReviews || 0));
-        break;
-      default:
-        // Giữ nguyên thứ tự ban đầu
-        break;
-    }
-
-    setFilteredProducts(filtered);
-  };
+  // Đã chuyển logic lọc/sắp xếp vào useEffect ở trên
 
   // Hàm xử lý xóa sản phẩm
   const handleDelete = async (productId) => {

@@ -83,10 +83,10 @@ const UpdateVariant = () => {
   const handleVariantChange = (index, field, value) => {
     const updatedVariants = [...variants];
     
-    // Convert price and stock to numbers
     if (field === 'variant_price' || field === 'variant_stock') {
-      value = value.replace(/[^0-9]/g, '');
-      if (value === '') value = '0';
+      const digitsOnly = (value || '').toString().replace(/[^0-9]/g, '');
+      const normalized = digitsOnly.replace(/^0+(?=\d)/, '');
+      value = normalized;
     }
     
     updatedVariants[index] = {
