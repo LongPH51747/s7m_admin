@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import { getOrderById, updateOrderStatusApi } from '../services/orderService';
 import { getByIdAddress } from '../services/addressService';
 import { statusMap, statusColors, statusMapUpdates } from '../utils/StatusColors';
-import { getShipperById } from '../services/shipperService';
 import { updateReturnRequestStatus, getReturnRequestByOrder } from '../services/returnRequestService';
 import { API_BASE } from '../services/LinkApi';
 
@@ -74,7 +73,7 @@ const OrderDetailPage2 = () => {
         } finally {
             setIsLoading(false);
         }
-        console.log("returnrequet", returnRequest);
+        // no-op
     };
     fetchDetail();
 }, [rawId]);

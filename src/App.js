@@ -6,7 +6,6 @@ import Users from './screens/Users';
 import Orders from './screens/Orders';
 import OrderDetail from './screens/OrderDetail';
 import CategoryDetailProduct from './components/OrderList';
-import { OrderProvider } from './contexts/OrderContext';
 import "./App.css";
 import LoginPage from "./screens/LoginPage.js";
 import HomeProduct from "./screens/HomeProduct.js";
@@ -22,8 +21,6 @@ import MainScreen from './screens/MainScreen';
 import { useAuth } from './contexts/AuthContext';
 import UserOrderHistory from './screens/UserOrderHistory.js';
 import UserStatistics from './screens/UserStatistic.js';
-import ThongKeDoanhThu from './screens/ThongKeDoanhThu.js';
-import VoucherScreen from './screens/VoucherScreen.js';
 import VoucherDisplayScreen from './screens/VoucherScreen.js';
 import ShipperScreen from './screens/ShipperScreen.js'
 import ShipperDetailPage from './screens/ShipperDetailPage';
