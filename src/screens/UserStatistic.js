@@ -146,6 +146,18 @@ const UserStatistics = () => {
     {
       title: 'Hành động',
       key: 'action',
+      align: 'center',
+      render: (_, record) => (
+        <Button 
+          onClick={() => (record)}
+        >
+          Tặng Voucher
+        </Button>
+      ),
+    },
+    {
+      title: 'Hành động',
+      key: 'action',
       render: (text, record) => (
         <Button 
           type="primary" 
