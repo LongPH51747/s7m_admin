@@ -148,9 +148,7 @@ const MessageBox = ({
             <div className="flex items-center space-x-4 pb-4 border-b border-gray-200">
                 <div className={`w-3 h-3 rounded-full ${isOtherUserOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
                 <h3 className="font-bold text-lg text-gray-800">{otherUsername}</h3>
-                <span className={`text-sm ${isOtherUserOnline ? 'text-green-500' : 'text-gray-400'}`}>
-                    {isOtherUserOnline ? 'Online' : 'Offline'}
-                </span>
+               
             </div>
 
             {/* Messages container */}
