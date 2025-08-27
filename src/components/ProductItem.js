@@ -428,7 +428,7 @@ const ProductItem = () => {
                       gap: 0.5
                     }}
                   >
-                    📦 Tổng trong kho: {product.variant_stock?.toLocaleString('vi-VN') || '0'}
+                    📦 Tổng kho: {product.variant_stock?.toLocaleString('vi-VN') || '0'}
                   </Typography>
                 </Link>
               </CardContent>
