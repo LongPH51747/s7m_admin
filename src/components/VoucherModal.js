@@ -12,6 +12,7 @@ const CreateVoucherModal = ({ user, visible, onClose, onVoucherCreated }) => {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [message, setMessage] = useState(null); // State để hiển thị thông báo
+    const [limit, setLimit] = useState(null);
 
     // Reset form và message khi modal được mở hoặc đóng
     useEffect(() => {
@@ -24,6 +25,7 @@ const CreateVoucherModal = ({ user, visible, onClose, onVoucherCreated }) => {
             setStartDate('');
             setEndDate('');
             setMessage(null);
+            setLimit(null)
         }
     }, [visible]);
 
@@ -47,7 +49,7 @@ const CreateVoucherModal = ({ user, visible, onClose, onVoucherCreated }) => {
             minOrderValue: Number(minOrderValue),
             startDate,
             endDate,
-            quantity: 1, // Số lượng được cố định là 1 cho voucher riêng tư
+            limit , // Số lượng được cố định là 1 cho voucher riêng tư
             isPublic: false,
             userId: user.userId,
         };

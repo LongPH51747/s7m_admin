@@ -5,24 +5,28 @@ import { getByIdAddress } from '../services/addressService';
 import { statusMap, statusColors, statusMapUpdates } from '../utils/StatusColors';
 import { getShipperById } from '../services/shipperService';
 import { updateReturnRequestStatus, getReturnRequestByOrder } from '../services/returnRequestService';
+import { API_BASE } from '../services/LinkApi';
 
-const OrderDetailPage = () => {
+const OrderDetailPage2 = () => {
   const { orderCode } = useParams();
   const rawId = orderCode.replace(/^SMT/, '');
 
   const [order, setOrder] = useState(null);
+  const [returnRequest, setReturnRequest] = useState(null);
   const [receiverName, setReceiverName] = useState('...');
   const [phone, setPhone] = useState('...');
   const [address, setAddress] = useState('...');
   const [newStatus, setNewStatus] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const [shipperInfo, setShipperInfo] = useState(null);
-
+  const [isLoading, setIsLoading] = useState(true);
+   const idAdmin = localStorage.getItem('adminId')
   useEffect(() => {
     const fetchDetail = async () => {
       try {
-        const orderData = await getOrderById(rawId);
+        setIsLoading(true);
 
+        const orderData = await getOrderById(rawId);
         setOrder(orderData);
         setNewStatus(orderData.status);
 
@@ -33,7 +37,7 @@ const OrderDetailPage = () => {
           setPhone(addressInfo?.phone_number || 'Không rõ');
           setAddress(addressInfo?.addressDetail || 'Không rõ');
         }
-        console.log("day la thong tin shipper", orderData.shipper)
+
         // Lấy thông tin shipper
         if (orderData.shipper) {
           const foundShipper = orderData.shipper
@@ -41,31 +45,45 @@ const OrderDetailPage = () => {
             setShipperInfo({
               name: foundShipper.name || 'Không rõ',
               phone_number: foundShipper.phone_number || '---',
-              // Xử lý trường hợp `post_office` là một object
               post_office: foundShipper.address_shipping || '---'
             });
           }
         }
 
-      } catch (err) {
-        console.error('❌ Lỗi khi tải chi tiết đơn hàng:', err);
-      }
+       const statusNumber = Number(orderData.status);
+            if (statusNumber >= 13 && statusNumber <= 18) {
+                try {
+                    // API này đã trả về userId là object đã populate
+                    const response = await getReturnRequestByOrder(orderData._id);
+                    console.log("response", response);
+                    
+                    if (response) {
+                        setReturnRequest(response);
+                    } else {
+                        setReturnRequest(null);
+                    }
+                } catch (err) {
+                    console.error('Lỗi khi tải dữ liệu hoàn hàng:', err);
+                    setReturnRequest(null);
+                }
+            } else {
+                setReturnRequest(null);
+            }
+        } catch (err) {
+            console.error('❌ Lỗi khi tải chi tiết đơn hàng:', err);
+        } finally {
+            setIsLoading(false);
+        }
+        console.log("returnrequet", returnRequest);
     };
     fetchDetail();
-  }, [rawId]);
+}, [rawId]);
 
-  
-    const idAdmin = localStorage.getItem('adminId')
-   
-   console.log("Id admin: ",idAdmin)
   const handleUpdateStatus = async () => {
     try {
       setIsUpdating(true);
-      if (order.status > 12 && order.status  < 19) {
-        const data = await getReturnRequestByOrder(rawId);
-        await updateReturnRequestStatus(data._id, {status:Number(newStatus), resolution:22});
-       console.log("data.id", data);
-       
+      if (order.status >= 13 && order.status <= 18 && returnRequest) {
+        await updateReturnRequestStatus({ requestId: returnRequest._id, statusData: { status: Number(newStatus), resolution: 22 } });
       } else {
         await updateOrderStatusApi(rawId, Number(newStatus), idAdmin);
       }
@@ -73,14 +91,14 @@ const OrderDetailPage = () => {
       setOrder((prev) => ({ ...prev, status: Number(newStatus) }));
       alert("✅ Cập nhật trạng thái thành công!");
     } catch (err) {
-       alert("❌ Cập nhật thất bại! Lỗi: " + (err.response?.data?.message || err.message));
+      alert("❌ Cập nhật thất bại! Lỗi: " + (err.response?.data?.message || err.message));
       console.error("Lỗi cập nhật trạng thái:", err.response?.data?.message || err.message);
     } finally {
       setIsUpdating(false);
     }
   };
 
-  if (!order) {
+  if (isLoading || !order) {
     return <div className="p-6 text-center text-gray-600">⏳ Đang tải thông tin đơn hàng...</div>;
   }
 
@@ -89,8 +107,7 @@ const OrderDetailPage = () => {
       <div className="flex justify-between items-center border-b-2 pb-3 mb-4">
         <h1 className="text-xl font-bold">ĐƠN HÀNG #{orderCode}</h1>
         <span
-          className={`px-4 py-1 rounded-full font-semibold text-sm capitalize ${statusColors[statusMap[order.status]] || 'bg-gray-100 text-gray-500'
-            }`}
+          className={`px-4 py-1 rounded-full font-semibold text-sm capitalize ${statusColors[statusMap[order.status]] || 'bg-gray-100 text-gray-500'}`}
         >
           {statusMap[order.status] || 'Không rõ'}
         </span>
@@ -147,6 +164,29 @@ const OrderDetailPage = () => {
           )}
         </div>
       </div>
+       {returnRequest && (
+  <div className="bg-white p-4 rounded shadow mb-6">
+    <h2 className="font-bold text-lg mb-2 text-red-600">THÔNG TIN HOÀN HÀNG</h2>
+    {/* Người yêu cầu */}
+    <p>Người yêu cầu: <strong>{returnRequest.userId?.fullname || 'Không rõ'}</strong></p>
+    {/* Lý do hoàn hàng */}
+    <p>Lý do hoàn: <strong>{returnRequest.reason}</strong></p>
+    <p>Ghi chú của người dùng: <strong>{returnRequest.adminNotes || 'Không có'}</strong></p>
+    <div className="mt-4">
+      <h3 className="font-semibold mb-2">Hình ảnh minh chứng:</h3>
+      <div className="flex gap-2 flex-wrap">
+        {/* Sửa từ `image` thành `images` */}
+        {returnRequest.images && returnRequest.images.length > 0 ? (
+          returnRequest.images.map((imgUrl, index) => (
+            <img key={index} src={ `${API_BASE}${imgUrl}`} alt={`Hình ảnh minh chứng ${index + 1}`} className="w-24 h-24 object-cover rounded" />
+          ))
+        ) : (
+          <p>Không có hình ảnh</p>
+        )}
+      </div>
+    </div>
+  </div>
+)}
 
       <div className="bg-white p-4 rounded shadow">
         <h2 className="font-bold text-lg mb-4">Đơn Hàng</h2>
@@ -195,7 +235,6 @@ const OrderDetailPage = () => {
             {/* 4. TỔNG THANH TOÁN CUỐI CÙNG */}
             <tr className="border-t font-bold text-green-700 text-base">
               <td colSpan="5" className="p-2 text-right">Tổng thanh toán</td>
-              {/* Hiển thị trực tiếp `total_amount` từ backend là chính xác nhất */}
               <td className="p-2">{(order.total_amount || 0).toLocaleString()}</td>
             </tr>
           </tfoot>
@@ -205,4 +244,4 @@ const OrderDetailPage = () => {
   );
 };
 
-export default OrderDetailPage;
+export default OrderDetailPage2;
