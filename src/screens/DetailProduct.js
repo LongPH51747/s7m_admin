@@ -153,16 +153,69 @@ useEffect(() => {
       setProduct(productData);
       setVariants(productVariants);
 
-      // Xử lý mảng ảnh từ biến thể (không bao gồm ảnh sản phẩm chính)
+      // Xử lý mảng ảnh từ biến thể, loại bỏ ảnh trùng lặp hoàn toàn
       let images = [];
+      const seenImages = new Set();
+      const seenImageNames = new Set();
+      const seenImagePaths = new Set();
+      
       if (productVariants.length > 0) {
-        images = productVariants.map((variant) => formatImageData(variant));
+        productVariants.forEach((variant) => {
+          const imageUrl = formatImageData(variant);
+          
+          // Trích xuất tên file và đường dẫn để kiểm tra trùng lặp
+          let imageName = '';
+          let imagePath = '';
+          
+          if (imageUrl.includes('/')) {
+            const urlParts = imageUrl.split('/');
+            imageName = urlParts[urlParts.length - 1].split('?')[0]; // Tên file cuối cùng
+            imagePath = urlParts.slice(-2).join('/').split('?')[0]; // 2 phần cuối của đường dẫn
+          }
+          
+          // Kiểm tra trùng lặp theo nhiều tiêu chí
+          const isDuplicate = 
+            seenImages.has(imageUrl) || 
+            (imageName && seenImageNames.has(imageName)) ||
+            (imagePath && seenImagePaths.has(imagePath)) ||
+            imageUrl === "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop&auto=format";
+          
+          if (!isDuplicate) {
+            seenImages.add(imageUrl);
+            if (imageName) seenImageNames.add(imageName);
+            if (imagePath) seenImagePaths.add(imagePath);
+            images.push(imageUrl);
+            console.log(`✅ Added unique image: ${imageName || imageUrl}`);
+          } else {
+            console.log(`❌ Skipped duplicate image: ${imageName || imageUrl}`);
+          }
+        });
       }
-
-      images = [...new Set(images)]; // Loại bỏ ảnh trùng lặp
-      if (images.length === 0) images.push("https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop&auto=format");
-
-      setProductImages(images);
+      
+      // Loại bỏ ảnh trùng lặp cuối cùng bằng cách so sánh nội dung
+      const finalImages = [];
+      const finalSeen = new Set();
+      
+      images.forEach(imgUrl => {
+        // Tạo key duy nhất cho mỗi ảnh
+        const imageKey = imgUrl.includes('http') ? 
+          imgUrl.split('/').pop().split('?')[0] : 
+          imgUrl;
+        
+        if (!finalSeen.has(imageKey)) {
+          finalSeen.add(imageKey);
+          finalImages.push(imgUrl);
+        }
+      });
+      
+      // Nếu không có ảnh nào, sử dụng ảnh mặc định
+      if (finalImages.length === 0) {
+        finalImages.push("https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop&auto=format");
+      }
+      
+      console.log(`📸 Final result: ${finalImages.length} unique images from ${productVariants.length} variants`);
+      console.log('🔍 Final images:', finalImages);
+      setProductImages(finalImages);
 
       // Thiết lập biến thể đầu tiên làm mặc định
       if (productVariants.length > 0) {
