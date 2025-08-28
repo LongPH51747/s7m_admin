@@ -52,6 +52,11 @@ const OrderDetailPage = () => {
     };
     fetchDetail();
   }, [rawId]);
+
+  
+    const idAdmin = localStorage.getItem('adminId')
+   
+   console.log("Id admin: ",idAdmin)
   const handleUpdateStatus = async () => {
     try {
       setIsUpdating(true);
@@ -61,7 +66,7 @@ const OrderDetailPage = () => {
        console.log("data.id", data);
        
       } else {
-        await updateOrderStatusApi(rawId, { status: Number(newStatus) });
+        await updateOrderStatusApi(rawId, Number(newStatus), idAdmin);
       }
 
       setOrder((prev) => ({ ...prev, status: Number(newStatus) }));

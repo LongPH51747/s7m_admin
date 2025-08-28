@@ -19,7 +19,7 @@ const OrderDetailPage2 = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [shipperInfo, setShipperInfo] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
+   const idAdmin = localStorage.getItem('adminId')
   useEffect(() => {
     const fetchDetail = async () => {
       try {
@@ -84,7 +84,7 @@ const OrderDetailPage2 = () => {
       if (order.status >= 13 && order.status <= 18 && returnRequest) {
         await updateReturnRequestStatus({ requestId: returnRequest._id, statusData: { status: Number(newStatus), resolution: 22 } });
       } else {
-        await updateOrderStatusApi(rawId, { status: Number(newStatus) });
+        await updateOrderStatusApi(rawId, Number(newStatus), idAdmin);
       }
 
       setOrder((prev) => ({ ...prev, status: Number(newStatus) }));

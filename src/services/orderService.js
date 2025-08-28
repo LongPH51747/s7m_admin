@@ -23,10 +23,15 @@ export const getAllOrder = async () => {
 
 
 
-export const updateOrderStatusApi = async (id, status) => {
+export const updateOrderStatusApi = async (id, status, id_Admin) => {
   try {
-    await axios.patch(`${ORDER_API}/updateStatus/${id}`, 
-       status , // ✅ sửa lại thành object JSON đúng
+   
+    await axios.patch(`${ORDER_API}/updateStatusByAdmin/${id}`, {
+      status: status,
+      id_admin: id_Admin
+    }
+      , // ✅ sửa lại thành object JSON đúng
+       
       {
         headers: {
           'ngrok-skip-browser-warning': 'true',
@@ -75,6 +80,23 @@ console.log("responseOrderByUserId", response.data);
     return response.data; // giả định API trả về chi tiết đơn hàng
   } catch (error) {
     console.error(`❌ Lỗi khi lấy đơn hàng với ID ${id}:`, error);
+    throw error;
+  }
+};
+
+export const filterOrdersByCity = async (province) => {
+  try {
+    const response = await axios.get(`${ORDER_API}/filterOrderAddressByCityAndWard?province=${encodeURIComponent(province)}`, {
+      headers: { 'ngrok-skip-browser-warning': 'true' }
+    });
+    
+    const orders = response.data;
+    if (!Array.isArray(orders)) {
+      throw new Error("API không trả về một mảng đơn hàng.");
+    }
+    return orders;
+  } catch (error) {
+    console.error("Lỗi khi lọc đơn hàng theo thành phố:", error);
     throw error;
   }
 };
