@@ -5,13 +5,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Spin, Alert, Row, Col, Card, Descriptions, Table, Tag, Button, Typography } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
+import moment from 'moment';
 
 // Import các hàm gọi API
 import { getShipperById } from '../services/shipperService';
 import { getAllOrder } from '../services/orderService';
 
-// 1. SAO CHÉP LOGIC BẢN ĐỒ TRẠNG THÁI VÀ MÀU SẮC VÀO ĐÂY
-import { statusMap, statusColors } from '../utils/StatusColors'; // Giả sử bạn đã có file này
+// Import các map trạng thái và màu sắc
+import { statusMap, statusColors } from '../utils/StatusColors';
 
 const { Title } = Typography;
 
@@ -31,46 +32,56 @@ const ShipperDetailPage = () => {
         queryKey: ['orders'],
         queryFn: getAllOrder,
     });
-    
-    // --- PHẦN LỌC DỮ LIỆU ---
-    // Giả định `order.shipper` chứa ID của shipper. Nếu nó là object, bạn cần dùng `order.shipper?._id`
-    const shipperOrders = allOrders?.filter(order => order.shipper === shipperId) || [];
 
-    // --- 2. CẬP NHẬT LẠI CỘT TRẠNG THÁI ĐƠN ---
-    const orderColumns = [
-        { 
-            title: 'Mã Đơn', 
-            dataIndex: '_id', 
+    // Lọc các đơn hàng của shipper và sắp xếp theo ngày cập nhật mới nhất
+    const shipperOrders = allOrders?.filter(order => order.shipper === shipperId) || [];
+    const sortedOrders = [...shipperOrders].sort((a, b) => {
+        return new Date(b.updatedAt) - new Date(a.updatedAt);
+    });
+
+   const orderColumns = [
+        {
+            title: 'Mã Đơn',
+            dataIndex: '_id',
             key: '_id',
             render: (id) => <Button type="link" onClick={() => navigate(`/orders/SMT${id}`)}>{`SMT${id}`}</Button>
         },
-        { 
-            title: 'Ngày Cập Nhật', 
-            dataIndex: 'updatedAt', 
-            key: 'updatedAt', 
-            render: (date) => new Date(date).toLocaleDateString() 
+        {
+            title: 'Ngày Cập Nhật',
+            dataIndex: 'updatedAt',
+            key: 'updatedAt',
+            render: (date) => moment(date).format('DD/MM/YYYY')
         },
-        { 
-            title: 'Tổng Tiền', 
-            dataIndex: 'total_amount', 
-            key: 'total_amount', 
-            render: (amount) => `${(amount || 0).toLocaleString()} VND` 
+        {
+            title: 'Tổng Tiền',
+            dataIndex: 'total_amount',
+            key: 'total_amount',
+            // LOGIC MỚI: Chỉ hiển thị tiền nếu phương thức thanh toán là COD
+            render: (amount, record) => {
+                if (record.payment_method === 'MOMO') {
+                    return '0 VND';
+                }
+                return `${(amount || 0).toLocaleString()} VND`;
+            }
         },
-        { 
-            title: 'Trạng Thái Đơn', 
-            dataIndex: 'status', 
-            key: 'status', 
-            // Sử dụng logic render giống hệt bên OrderDetailPage
+        {
+            title: 'Phương Thức Thanh Toán',
+            dataIndex: 'payment_method',
+            key: 'payment_method',
+            render: (method) => <Tag color={method === 'Momo' ? 'blue' : 'green'}>{method}</Tag>
+        },
+        {
+            title: 'Trạng Thái Đơn',
+            dataIndex: 'status',
+            key: 'status',
             render: (status) => {
                 const statusText = statusMap[status] || 'Không rõ';
                 const colorClass = statusColors[statusText] || 'bg-gray-200';
-                // Chuyển đổi class của TailwindCSS sang màu của AntD Tag (nếu có thể)
                 const tagColor = colorClass.includes('green') ? 'success' :
-                                 colorClass.includes('blue') ? 'processing' :
-                                 colorClass.includes('yellow') ? 'warning' :
-                                 colorClass.includes('red') ? 'error' :
-                                 'default';
-
+                    colorClass.includes('blue') ? 'processing' :
+                        colorClass.includes('yellow') ? 'warning' :
+                            colorClass.includes('red') ? 'error' :
+                                'default';
                 return <Tag color={tagColor}>{statusText}</Tag>;
             }
         },
@@ -84,6 +95,14 @@ const ShipperDetailPage = () => {
 
     return (
         <div style={{ padding: '24px' }}>
+            <Button
+                type="text"
+                icon={<ArrowLeftOutlined />}
+                onClick={() => navigate(-1)}
+                style={{ marginBottom: '16px', fontWeight: 'bold' }}
+            >
+                Quay lại
+            </Button>
             <Row gutter={[24, 24]}>
                 {/* Thông tin shipper */}
                 <Col span={24}>
@@ -94,10 +113,7 @@ const ShipperDetailPage = () => {
                                 <Descriptions.Item label="Tên Shipper">{shipper.name}</Descriptions.Item>
                                 <Descriptions.Item label="Username">{shipper.user_name}</Descriptions.Item>
                                 <Descriptions.Item label="Số điện thoại">{shipper.phone_number}</Descriptions.Item>
-                                
-                                {/* 3. SỬA LỖI HIỂN THỊ KHU VỰC GIAO */}
                                 <Descriptions.Item label="Khu vực giao">{shipper.address_shipping || 'Chưa có'}</Descriptions.Item>
-                                
                                 <Descriptions.Item label="Trạng thái">
                                     <Tag color={shipper.status ? 'red' : 'green'}>
                                         {shipper.status ? 'KHÔNG HOẠT ĐỘNG' : 'HOẠT ĐỘNG'}
@@ -116,9 +132,10 @@ const ShipperDetailPage = () => {
                         <Title level={4}>Các Đơn Hàng Liên Quan</Title>
                         <Table
                             columns={orderColumns}
-                            dataSource={shipperOrders}
+                            dataSource={sortedOrders}
                             rowKey="_id"
                             bordered
+                            locale={{ emptyText: 'Chưa có đơn hàng nào' }}
                         />
                     </Card>
                 </Col>
