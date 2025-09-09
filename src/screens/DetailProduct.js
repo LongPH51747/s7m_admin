@@ -133,6 +133,8 @@ const ProductDetail = () => {
   const [error, setError] = useState(""); // Lỗi nếu có
   const [imageLoaded, setImageLoaded] = useState(false); // Trạng thái ảnh đã load
   const [isLiked, setIsLiked] = useState(false); // Trạng thái yêu thích
+  const [avgRating, setAvgRating] = useState(0); // Điểm đánh giá trung bình
+  const [totalReviews, setTotalReviews] = useState(0); // Tổng số đánh giá
 
 // Gọi API lấy thông tin sản phẩm khi component được mount
 useEffect(() => {
@@ -141,6 +143,7 @@ useEffect(() => {
       const response = await axios.get(ENDPOINTS.GET_PRODUCT_BY_ID(id), {
         headers: {
           "ngrok-skip-browser-warning": "true",
+          "Content-Type": "application/json"
         },
       });
 
@@ -150,16 +153,69 @@ useEffect(() => {
       setProduct(productData);
       setVariants(productVariants);
 
-      // Xử lý mảng ảnh từ biến thể (không bao gồm ảnh sản phẩm chính)
+      // Xử lý mảng ảnh từ biến thể, loại bỏ ảnh trùng lặp hoàn toàn
       let images = [];
+      const seenImages = new Set();
+      const seenImageNames = new Set();
+      const seenImagePaths = new Set();
+      
       if (productVariants.length > 0) {
-        images = productVariants.map((variant) => formatImageData(variant));
+        productVariants.forEach((variant) => {
+          const imageUrl = formatImageData(variant);
+          
+          // Trích xuất tên file và đường dẫn để kiểm tra trùng lặp
+          let imageName = '';
+          let imagePath = '';
+          
+          if (imageUrl.includes('/')) {
+            const urlParts = imageUrl.split('/');
+            imageName = urlParts[urlParts.length - 1].split('?')[0]; // Tên file cuối cùng
+            imagePath = urlParts.slice(-2).join('/').split('?')[0]; // 2 phần cuối của đường dẫn
+          }
+          
+          // Kiểm tra trùng lặp theo nhiều tiêu chí
+          const isDuplicate = 
+            seenImages.has(imageUrl) || 
+            (imageName && seenImageNames.has(imageName)) ||
+            (imagePath && seenImagePaths.has(imagePath)) ||
+            imageUrl === "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop&auto=format";
+          
+          if (!isDuplicate) {
+            seenImages.add(imageUrl);
+            if (imageName) seenImageNames.add(imageName);
+            if (imagePath) seenImagePaths.add(imagePath);
+            images.push(imageUrl);
+            console.log(`✅ Added unique image: ${imageName || imageUrl}`);
+          } else {
+            console.log(`❌ Skipped duplicate image: ${imageName || imageUrl}`);
+          }
+        });
       }
-
-      images = [...new Set(images)]; // Loại bỏ ảnh trùng lặp
-      if (images.length === 0) images.push("https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop&auto=format");
-
-      setProductImages(images);
+      
+      // Loại bỏ ảnh trùng lặp cuối cùng bằng cách so sánh nội dung
+      const finalImages = [];
+      const finalSeen = new Set();
+      
+      images.forEach(imgUrl => {
+        // Tạo key duy nhất cho mỗi ảnh
+        const imageKey = imgUrl.includes('http') ? 
+          imgUrl.split('/').pop().split('?')[0] : 
+          imgUrl;
+        
+        if (!finalSeen.has(imageKey)) {
+          finalSeen.add(imageKey);
+          finalImages.push(imgUrl);
+        }
+      });
+      
+      // Nếu không có ảnh nào, sử dụng ảnh mặc định
+      if (finalImages.length === 0) {
+        finalImages.push("https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=400&fit=crop&auto=format");
+      }
+      
+      console.log(`📸 Final result: ${finalImages.length} unique images from ${productVariants.length} variants`);
+      console.log('🔍 Final images:', finalImages);
+      setProductImages(finalImages);
 
       // Thiết lập biến thể đầu tiên làm mặc định
       if (productVariants.length > 0) {
@@ -178,6 +234,38 @@ useEffect(() => {
   };
 
   fetchProductData();
+}, [id]);
+
+// Gọi API lấy dữ liệu đánh giá từ comment
+useEffect(() => {
+  const fetchRatingData = async () => {
+    try {
+      const response = await axios.get(ENDPOINTS.GET_COMMENT_BY_PRODUCT_ID(id), {
+        headers: {
+          "ngrok-skip-browser-warning": "true",
+          "Content-Type": "application/json"
+        },
+      });
+      
+      const comments = response.data || [];
+      
+      if (comments.length > 0) {
+        const total = comments.length;
+        const sum = comments.reduce((acc, comment) => acc + (comment.review_rate || 0), 0);
+        setAvgRating(parseFloat((sum / total).toFixed(1)));
+        setTotalReviews(total);
+      } else {
+        setAvgRating(0);
+        setTotalReviews(0);
+      }
+    } catch (err) {
+      console.error("Lỗi khi lấy dữ liệu đánh giá:", err);
+      setAvgRating(0);
+      setTotalReviews(0);
+    }
+  };
+
+  fetchRatingData();
 }, [id]);
 
 // Khi chọn màu, tự động chọn size tương ứng nếu size đang chọn không hợp lệ
@@ -607,22 +695,37 @@ const ProductInfo = () => (
           {/* Rating & Category */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3, flexWrap: 'wrap' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Rating value={4.8} precision={0.1} readOnly size="small" />
+              <Rating 
+                value={avgRating} 
+                precision={0.1} 
+                readOnly 
+                size="small"
+                sx={{
+                  '& .MuiRating-iconFilled': {
+                    color: '#f59e0b',
+                  },
+                  '& .MuiRating-iconHover': {
+                    color: '#f59e0b',
+                  },
+                }}
+              />
               <Typography variant="body2" sx={{ color: '#6b7280', fontWeight: 500, ml: 1 }}>
-                4.8 (248 đánh giá)
+                {avgRating > 0 ? `${avgRating} (${totalReviews} đánh giá)` : 'Chưa có đánh giá'}
               </Typography>
             </Box>
-            <Chip 
-              label="Bestseller" 
-              size="small" 
-              icon={<RecommendRounded />}
-              sx={{ 
-                background: 'linear-gradient(135deg, #10b981, #059669)',
-                color: '#fff',
-                fontWeight: 600,
-                borderRadius: 0
-              }}
-            />
+            {avgRating >= 4.5 && totalReviews >= 5 && (
+              <Chip 
+                label="Bestseller" 
+                size="small" 
+                icon={<RecommendRounded />}
+                sx={{ 
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  color: '#fff',
+                  fontWeight: 600,
+                  borderRadius: 0
+                }}
+              />
+            )}
             <Chip 
               label={product?.category || "Thời trang"}
               size="small" 

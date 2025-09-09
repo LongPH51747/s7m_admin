@@ -20,24 +20,18 @@ export const getAllOrder = async () => {
   }
 };
 
-// export const updateOrderStatusApi = async (orderId, newStatus) => {
-//   try {
-//     // Giả định endpoint cập nhật là: PATCH /api/order/update-status/:id
-//     const url = `${ORDER_API}/update-status/${orderId}`;
-//     const body = { status: newStatus };
-//     const response = await axios.patch(url, body, {
-//       headers: { 'ngrok-skip-browser-warning': 'true' }
-//     });
-//     return response.data;
-//   } catch (error) {
-//     console.error(`Lỗi khi cập nhật trạng thái cho đơn hàng ${orderId}:`, error);
-//     throw error;
-//   }
-// };
-export const updateOrderStatusApi = async (id, status) => {
+
+
+
+export const updateOrderStatusApi = async (id, status, id_Admin) => {
   try {
-    await axios.patch(`${ORDER_API}/updateStatus/${id}`, 
-       status , // ✅ sửa lại thành object JSON đúng
+   
+    await axios.patch(`${ORDER_API}/updateStatusByAdmin/${id}`, {
+      status: status,
+      id_admin: id_Admin
+    }
+      , // ✅ sửa lại thành object JSON đúng
+       
       {
         headers: {
           'ngrok-skip-browser-warning': 'true',
@@ -55,7 +49,7 @@ export const updateOrderStatusApi = async (id, status) => {
 export const getOrderById = async (id) => {
   try {
      console.log("đã nhảy vào getOrderById");
-    const response = await axios.get(`${ORDER_API}/getById/${id}`, {
+    const response = await axios.get(`${ORDER_API}/getOrderByIdForAddmin/${id}`, {
       headers: {
         'ngrok-skip-browser-warning': 'true',
       },
@@ -89,3 +83,21 @@ console.log("responseOrderByUserId", response.data);
     throw error;
   }
 };
+
+export const filterOrdersByCity = async (province) => {
+  try {
+    const response = await axios.get(`${ORDER_API}/filterOrderAddressByCityAndWard?province=${encodeURIComponent(province)}`, {
+      headers: { 'ngrok-skip-browser-warning': 'true' }
+    });
+    
+    const orders = response.data;
+    if (!Array.isArray(orders)) {
+      throw new Error("API không trả về một mảng đơn hàng.");
+    }
+    return orders;
+  } catch (error) {
+    console.error("Lỗi khi lọc đơn hàng theo thành phố:", error);
+    throw error;
+  }
+};
+

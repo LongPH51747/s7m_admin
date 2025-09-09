@@ -3,7 +3,7 @@
 // - https://cors-anywhere.herokuapp.com/
 // - https://api.allorigins.win/raw?url=
 // - https://corsproxy.io/?
-const CORS_PROXY = 'https://corsproxy.io/?';
+// const CORS_PROXY = 'https://corsproxy.io/?';
 
 // URL cơ sở API - sử dụng đường dẫn tương đối khi proxy được cấu hình
 const API_BASE = 'https://4292a232446b.ngrok-free.app';
@@ -31,6 +31,13 @@ const ENDPOINTS = {
 
   //User
   GET_ALL_USERS: `${API_BASE}/api/users/get-all-users`, // Lấy tất cả user
+
+  GET_ALL_VOUCHERS: `${API_BASE}/api/voucher/getAllVoucherByAdmin`,  // lấy tât cả voucher
+  CREATE_VOUCHER: `${API_BASE}/api/voucher/createVoucher`, // Tạo voucher
+  UPDATE_VOUCHER: (id) => `${API_BASE}/api/voucher/updateVoucher/${id}`, // Cập nhật voucher theo ID
+  
+  // Orders
+  FILTER_ORDERS_BY_CITY: `${API_BASE}/api/order/filterOrderAddressByCityAndWard`, // Lọc đơn hàng theo thành phố
 };
 
 // Hàm trợ giúp để lấy URL đầy đủ - trực tiếp sử dụng ngrok URL

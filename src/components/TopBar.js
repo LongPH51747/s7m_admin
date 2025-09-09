@@ -19,17 +19,6 @@ const TopBar = () => {
         <Link to="/signup">Sign Up</Link>
       </div>
 
-      {/* Search + Icons */}
-      <div className="right-section">
-        <div className="search-container">
-          <input
-            type="text"
-            placeholder="What are you looking for?"
-            className="search-input"
-          />
-          <FiSearch className="search-icon" />
-        </div>       
-      </div>
     </div>
     
   );
