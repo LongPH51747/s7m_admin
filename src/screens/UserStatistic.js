@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { Radio, DatePicker, Input, Button, Table, Typography, Spin, Alert, Tag, Select, Space, Modal } from 'antd';
+import { Radio, DatePicker, Button, Table, Typography, Spin, Alert, Tag, Select, Space, Modal } from 'antd';
 import moment from 'moment';
 import CreateVoucherModal from '../components/VoucherModal'; // Import the new modal component
 
@@ -26,8 +26,7 @@ const UserStatistics = () => {
 
   const [metric, setMetric] = useState("totalSpent");
   const [period, setPeriod] = useState("month");
-  const [limit, setLimit] = useState(10);
-  const [limitInput, setLimitInput] = useState("10");
+  const [limit] = useState(10);
 
   const [dateRange, setDateRange] = useState([null, null]);
   const [selectedMonth, setSelectedMonth] = useState(moment());
