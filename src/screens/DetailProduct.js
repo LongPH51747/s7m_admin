@@ -597,23 +597,50 @@ const ProductInfo = () => (
       >
         {/* Header với tên và actions */}
         <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-            <Typography
-              variant="h3"
-              className="product-name"
-              sx={{
-                fontWeight: 800,
-                color: '#1f2937',
-                lineHeight: 1.2,
-                fontSize: { xs: 24, sm: 28, md: 32 },
-                mb: 2,
-                maxWidth: { xs: '100%', md: '70%' },
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: 'space-between', 
+            alignItems: { xs: 'flex-start', sm: 'flex-start' }, 
+            mb: 2, 
+            gap: 2 
+          }}>
+            <Box sx={{ flex: 1, minWidth: 0, order: { xs: 1, sm: 1 } }}>
+              <Typography
+                variant="h3"
+                className="product-name"
+                sx={{
+                  fontWeight: 800,
+                  color: '#1f2937',
+                  lineHeight: 1.3,
+                  fontSize: { xs: 24, sm: 28, md: 32 },
+                  mb: 2,
+                  width: '100%',
+                  wordWrap: 'break-word',
+                  overflowWrap: 'break-word',
+                  hyphens: 'auto',
+                  breakWord: 'break-word',
+                  whiteSpace: 'normal',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                }}
+              >
+                {product?.product_name}
+              </Typography>
+            </Box>
+            
+            <Stack 
+              direction="row" 
+              spacing={1} 
+              sx={{ 
+                flexShrink: 0, 
+                order: { xs: 2, sm: 2 },
+                alignSelf: { xs: 'flex-end', sm: 'flex-start' }
               }}
             >
-              {product?.product_name}
-            </Typography>
-            
-            <Stack direction="row" spacing={1}>
               <IconButton
                 onClick={() => setIsLiked(!isLiked)}
                 sx={{
