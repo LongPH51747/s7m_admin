@@ -53,7 +53,7 @@ const ShipperDetailPage = () => {
             render: (date) => moment(date).format('DD/MM/YYYY')
         },
         {
-            title: 'Tổng Tiền',
+            title: 'Tiền thu hộ',
             dataIndex: 'total_amount',
             key: 'total_amount',
             // LOGIC MỚI: Chỉ hiển thị tiền nếu phương thức thanh toán là COD
