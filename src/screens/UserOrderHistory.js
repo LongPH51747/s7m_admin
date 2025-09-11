@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { getOrdersByUserId } from '../services/orderService';
 import { API_BASE } from '../services/LinkApi';

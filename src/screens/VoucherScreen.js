@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import TopBar from '../components/TopBar';
 import Sidebar from '../components/Sidebar';
@@ -9,7 +9,7 @@ const VoucherDisplayScreen = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    // const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
 
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState(null);

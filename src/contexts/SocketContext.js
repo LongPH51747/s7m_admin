@@ -1,4 +1,4 @@
-import React, {
+import {
   createContext,
   useContext,
   useEffect,
@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import { io } from "socket.io-client";
 import { useAuth } from "./AuthContext"; // Import useAuth để lấy thông tin xác thực
-import { API_BASE, API_BASE2 } from "../services/LinkApi"; // API_BASE cho Socket.IO, API_BASE2 cho upload
+import { API_BASE } from "../services/LinkApi"; // API_BASE cho Socket.IO, API_BASE2 cho upload
 
 // Tạo context
 const SocketContext = createContext(null);

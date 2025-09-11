@@ -1,9 +1,23 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { Radio, DatePicker, Button, Table, Typography, Spin, Alert, Tag, Select, Space, Modal } from 'antd';
-import moment from 'moment';
-import CreateVoucherModal from '../components/VoucherModal'; // Import the new modal component
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  Radio,
+  DatePicker,
+  Button,
+  Table,
+  Typography,
+  Spin,
+  Alert,
+  Tag,
+  Select,
+  Space,
+  Modal,
+} from "antd";
+import { Lock, Unlock } from "lucide-react";
+import { updateUserPermission } from "../services/userServices";
+import moment from "moment";
+import CreateVoucherModal from "../components/VoucherModal"; // Import the new modal component
 
 // Import các hàm API
 import {
@@ -16,6 +30,8 @@ import {
   getTopBuyersByItemQuantityQuarterly,
   getTopBuyersByItemQuantityDateRange,
 } from "../services/statisticUserService";
+import "../css/UserStatistic.css";
+import { render } from "@testing-library/react";
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -23,11 +39,23 @@ const { Option } = Select;
 
 const UserStatistics = () => {
   const navigate = useNavigate();
-
+  const queryClient = useQueryClient();
+  const updateUserMutation = useMutation({
+    mutationFn: (variables) =>
+      updateUserPermission(variables.id, { is_allowed: variables.is_allowed }),
+    onSuccess: () => {
+      // KHI THÀNH CÔNG, RA LỆNH CHO REACT QUERY FETCH LẠI DỮ LIỆU
+      console.log("Cập nhật thành công! Đang tải lại dữ liệu bảng...");
+      queryClient.invalidateQueries({ queryKey: ["userStatistics"] });
+    },
+    onError: (err) => {
+      console.error("Lỗi khi cập nhật trạng thái chặn:", err);
+      alert("Không thể cập nhật trạng thái chặn. Vui lòng thử lại.");
+    },
+  });
   const [metric, setMetric] = useState("totalSpent");
   const [period, setPeriod] = useState("month");
   const [limit] = useState(10);
-
   const [dateRange, setDateRange] = useState([null, null]);
   const [selectedMonth, setSelectedMonth] = useState(moment());
   const [selectedYear, setSelectedYear] = useState(moment());
@@ -42,7 +70,17 @@ const UserStatistics = () => {
     setSelectedUser(user);
     setIsModalVisible(true);
   };
+  const handleBlockToggle = (id, currentStatus) => {
+    const shouldBlock = currentStatus; // Nếu đang true (unlock) thì sẽ block
+    const confirmMessage = shouldBlock
+      ? "Bạn có chắc chắn muốn chặn người này không?"
+      : "Bạn có chắc chắn muốn bỏ chặn người này không?";
 
+    if (window.confirm(confirmMessage)) {
+      // Gọi mutation để thực hiện hành động
+      updateUserMutation.mutate({ id, is_allowed: !shouldBlock });
+    }
+  };
   // Hàm đóng modal
   const handleCloseModal = () => {
     setIsModalVisible(false);
@@ -56,58 +94,95 @@ const UserStatistics = () => {
     console.log("Voucher đã được tạo thành công!");
   };
 
-
   // `useQuery` sẽ tự động chạy lại khi các state trong `queryKey` thay đổi
-  const { data: stats = [], isLoading, isError, error } = useQuery({
-    queryKey: ['userStatistics', { metric, period, limit, dateRange, selectedMonth, selectedYear, selectedQuarter }],
-    
+  const {
+    data: stats = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: [
+      "userStatistics",
+      {
+        metric,
+        period,
+        limit,
+        dateRange,
+        selectedMonth,
+        selectedYear,
+        selectedQuarter,
+      },
+    ],
+
     queryFn: async () => {
       // Chỉ truyền `limit` vào các API có hỗ trợ
       const numericLimit = limit > 0 ? limit : undefined;
 
       switch (period) {
-        case 'month': {
+        case "month": {
           if (!selectedMonth) return [];
           const year = selectedMonth.year();
           const month = selectedMonth.month() + 1;
-          if (metric === 'totalSpent') return getTopSpendersByMonth(year, month, numericLimit);
-          if (metric === 'totalQuantity') return getTopBuyersByItemQuantityMonthly(year, month, numericLimit);
+          if (metric === "totalSpent")
+            return getTopSpendersByMonth(year, month, numericLimit);
+          if (metric === "totalQuantity")
+            return getTopBuyersByItemQuantityMonthly(year, month, numericLimit);
           break;
         }
-        case 'quarter': {
+        case "quarter": {
           if (!selectedYear) return [];
           const year = selectedYear.year();
-          if (metric === 'totalSpent') return getTopSpendersQuarterly(year, selectedQuarter, numericLimit);
-          if (metric === 'totalQuantity') return getTopBuyersByItemQuantityQuarterly(year, selectedQuarter, numericLimit);
+          if (metric === "totalSpent")
+            return getTopSpendersQuarterly(year, selectedQuarter, numericLimit);
+          if (metric === "totalQuantity")
+            return getTopBuyersByItemQuantityQuarterly(
+              year,
+              selectedQuarter,
+              numericLimit
+            );
           break;
         }
-        case 'year': {
+        case "year": {
           if (!selectedYear) return [];
           const year = selectedYear.year();
           // API theo năm không có tham số limit
-          if (metric === 'totalSpent') return getTopSpendersYearly(year);
-          if (metric === 'totalQuantity') return getTopBuyersByItemQuantityYearly(year);
+          if (metric === "totalSpent") return getTopSpendersYearly(year);
+          if (metric === "totalQuantity")
+            return getTopBuyersByItemQuantityYearly(year);
           break;
         }
-        case 'custom': {
+        case "custom": {
           const [startDate, endDate] = dateRange;
           if (!startDate || !endDate) return [];
-          const formattedStartDate = startDate.format('YYYY-MM-DD');
-          const formattedEndDate = endDate.format('YYYY-MM-DD');
-          if (metric === 'totalSpent') return getTopSpendersByCustomRange(formattedStartDate, formattedEndDate, numericLimit);
-          if (metric === 'totalQuantity') return getTopBuyersByItemQuantityDateRange(formattedStartDate, formattedEndDate, numericLimit);
+          const formattedStartDate = startDate.format("YYYY-MM-DD");
+          const formattedEndDate = endDate.format("YYYY-MM-DD");
+          if (metric === "totalSpent")
+            return getTopSpendersByCustomRange(
+              formattedStartDate,
+              formattedEndDate,
+              numericLimit
+            );
+          if (metric === "totalQuantity")
+            return getTopBuyersByItemQuantityDateRange(
+              formattedStartDate,
+              formattedEndDate,
+              numericLimit
+            );
           break;
         }
         default:
           return [];
       }
     },
-    enabled: !(period === 'custom' && (!dateRange || !dateRange[0] || !dateRange[1])),
+    enabled: !(
+      period === "custom" &&
+      (!dateRange || !dateRange[0] || !dateRange[1])
+    ),
   });
-  
+
   // Xử lý dữ liệu sau khi fetch về, áp dụng limit cho các API không hỗ trợ
   const processedStats = React.useMemo(() => {
-    if (period === 'year' && limit > 0) {
+    if (period === "year" && limit > 0) {
       return stats.slice(0, limit);
     }
     return stats;
@@ -115,39 +190,76 @@ const UserStatistics = () => {
 
   const columns = [
     {
-      title: 'Tên người dùng',
-      dataIndex: 'fullname',
-      key: 'fullname',
+      title: "Tên người dùng",
+      dataIndex: "fullname",
+      key: "fullname",
       render: (text, record) => (
-        <Button type="link" onClick={() => navigate(`/users/${record.userId}/orders`)}>
+        <Button
+          type="link"
+          onClick={() => navigate(`/users/${record.userId}/orders`)}
+        >
           {text}
         </Button>
       ),
     },
     {
-      title: 'Tổng đơn hàng',
-      dataIndex: 'orderCount',
-      key: 'orderCount',
-      align: 'center',
+      title: "Tổng đơn hàng",
+      dataIndex: "orderCount",
+      key: "orderCount",
+      align: "center",
     },
     {
-      title: metric === 'totalSpent' ? 'Tổng tiền mua hàng (VND)' : 'Tổng sản phẩm đã mua',
-      dataIndex: metric === 'totalSpent' ? 'totalSpent' : 'totalQuantityPurchased',
-      key: 'metric',
-      align: 'center',
-      sorter: (a, b) => (a[metric === 'totalSpent' ? 'totalSpent' : 'totalQuantityPurchased'] || 0) - (b[metric === 'totalSpent' ? 'totalSpent' : 'totalQuantityPurchased'] || 0),
+      title:
+        metric === "totalSpent"
+          ? "Tổng tiền mua hàng (VND)"
+          : "Tổng sản phẩm đã mua",
+      dataIndex:
+        metric === "totalSpent" ? "totalSpent" : "totalQuantityPurchased",
+      key: "metric",
+      align: "center",
+      sorter: (a, b) =>
+        (a[metric === "totalSpent" ? "totalSpent" : "totalQuantityPurchased"] ||
+          0) -
+        (b[metric === "totalSpent" ? "totalSpent" : "totalQuantityPurchased"] ||
+          0),
       render: (value) => (
-        <Tag color="blue" style={{ fontSize: '14px', padding: '5px 10px' }}>
-          {metric === 'totalSpent' ? (value || 0).toLocaleString('vi-VN') : (value || 0)}
+        <Tag color="blue" style={{ fontSize: "14px", padding: "5px 10px" }}>
+          {metric === "totalSpent"
+            ? (value || 0).toLocaleString("vi-VN")
+            : value || 0}
         </Tag>
       ),
     },
     {
-      title: 'Hành động',
-      key: 'action',
+      title: "Trạng thái",
+      // dataIndex: "is_allowed",
+      key: "is_allowed",
+      align: "center",
+      render: (record) =>
+        record.is_allowed ? (
+          <button className="opacity-100">
+            <Unlock
+              className="text-green-500"
+              onClick={() => handleBlockToggle(record.userId, true)}
+              strokeWidth={2.5}
+            />
+          </button>
+        ) : (
+          <button
+            className="opacity-100"
+            onClick={() => handleBlockToggle(record.userId, false)}
+          >
+            <Lock className="text-red-500" strokeWidth={2.5} />
+          </button>
+        ),
+    },
+    {
+      title: "Hành động",
+      key: "action",
       render: (text, record) => (
-        <Button 
-          type="primary" 
+        <Button
+          type="primary"
+          disabled={!record.is_allowed}
           onClick={() => handleOpenModal(record)}
         >
           Tặng Voucher
@@ -160,7 +272,7 @@ const UserStatistics = () => {
   const renderTimePickers = () => {
     return (
       <Space>
-        {period === 'month' && (
+        {period === "month" && (
           <DatePicker
             picker="month"
             value={selectedMonth}
@@ -168,7 +280,7 @@ const UserStatistics = () => {
             placeholder="Chọn tháng"
           />
         )}
-        {period === 'quarter' && (
+        {period === "quarter" && (
           <>
             <DatePicker
               picker="year"
@@ -176,7 +288,11 @@ const UserStatistics = () => {
               onChange={setSelectedYear}
               placeholder="Chọn năm"
             />
-            <Select value={selectedQuarter} onChange={setSelectedQuarter} style={{ width: 120 }}>
+            <Select
+              value={selectedQuarter}
+              onChange={setSelectedQuarter}
+              style={{ width: 120 }}
+            >
               <Option value={1}>Quý 1</Option>
               <Option value={2}>Quý 2</Option>
               <Option value={3}>Quý 3</Option>
@@ -184,7 +300,7 @@ const UserStatistics = () => {
             </Select>
           </>
         )}
-        {period === 'year' && (
+        {period === "year" && (
           <DatePicker
             picker="year"
             value={selectedYear}
@@ -192,7 +308,7 @@ const UserStatistics = () => {
             placeholder="Chọn năm"
           />
         )}
-        {period === 'custom' && (
+        {period === "custom" && (
           <RangePicker value={dateRange} onChange={setDateRange} />
         )}
       </Space>
@@ -200,21 +316,52 @@ const UserStatistics = () => {
   };
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div style={{ padding: "24px" }}>
       <Title level={2}>📊 Thống kê người dùng</Title>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px', padding: '16px', background: '#f0f2f5', borderRadius: '8px' }}>
-        <div style={{ display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px",
+          marginBottom: "24px",
+          padding: "16px",
+          background: "#f0f2f5",
+          borderRadius: "8px",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            gap: "24px",
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
           <div>
-            <label style={{ marginRight: 8, fontWeight: 500 }}>Thống kê theo:</label>
-            <Radio.Group value={metric} onChange={(e) => setMetric(e.target.value)}>
-              <Radio.Button value="totalSpent">💰 Tổng tiền mua hàng</Radio.Button>
-              <Radio.Button value="totalQuantity">📦 Tổng sản phẩm</Radio.Button>
+            <label style={{ marginRight: 8, fontWeight: 500 }}>
+              Thống kê theo:
+            </label>
+            <Radio.Group
+              value={metric}
+              onChange={(e) => setMetric(e.target.value)}
+            >
+              <Radio.Button value="totalSpent">
+                💰 Tổng tiền mua hàng
+              </Radio.Button>
+              <Radio.Button value="totalQuantity">
+                📦 Tổng sản phẩm
+              </Radio.Button>
             </Radio.Group>
           </div>
           <div>
-            <label style={{ marginRight: 8, fontWeight: 500 }}>Giai đoạn:</label>
-            <Radio.Group value={period} onChange={(e) => setPeriod(e.target.value)}>
+            <label style={{ marginRight: 8, fontWeight: 500 }}>
+              Giai đoạn:
+            </label>
+            <Radio.Group
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+            >
               <Radio.Button value="month">Theo tháng</Radio.Button>
               <Radio.Button value="quarter">Theo quý</Radio.Button>
               <Radio.Button value="year">Theo năm</Radio.Button>
@@ -223,23 +370,37 @@ const UserStatistics = () => {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '24px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div
+          style={{
+            display: "flex",
+            gap: "24px",
+            alignItems: "center",
+            flexWrap: "wrap",
+          }}
+        >
           {renderTimePickers()}
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-          </div>
+          <div style={{ display: "flex", alignItems: "center" }}></div>
         </div>
       </div>
-      
-      {isLoading ? <Spin /> : isError ? <Alert message="Lỗi" description={error.message} type="error" /> : (
+
+      {isLoading ? (
+        <Spin />
+      ) : isError ? (
+        <Alert message="Lỗi" description={error.message} type="error" />
+      ) : (
         <Table
           columns={columns}
           dataSource={processedStats}
           rowKey="userId"
           bordered
-          locale={{ emptyText: 'Không có dữ liệu' }}
+          locale={{ emptyText: "Không có dữ liệu" }}
+          rowClassName={(record) => {
+            // Nếu is_allowed là false (trạng thái Lock), áp dụng class 'disabled-row'
+            return record.is_allowed === false ? "disabled-row" : "";
+          }}
         />
       )}
-      
+
       {/* Modal để tạo voucher */}
       {selectedUser && (
         <Modal

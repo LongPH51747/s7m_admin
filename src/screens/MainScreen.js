@@ -1,9 +1,9 @@
-import HeaderCompo from "../components/HeaderCompo";
-import TabBarLef from "../components/TabBarLeft";
+// import HeaderCompo from "../components/HeaderCompo";
+// import TabBarLef from "../components/TabBarLeft";
 import ThongKeDoanhThu from "./ThongKeDoanhThu";
 // import "../StyleTabBar.csc";
 import Sidebar from "../components/Sidebar";
-import HeaderTwo from "../components/HeaderTwo";
+// import HeaderTwo from "../components/HeaderTwo";
 import TopBar from "../components/TopBar";
 const MainScreen = () => {
   return (

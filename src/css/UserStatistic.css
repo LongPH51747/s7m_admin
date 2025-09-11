@@ -1,0 +1,14 @@
+.disabled-row {
+  opacity: 0.5; /* Làm cho dòng mờ đi 50% */
+  /* Tùy chọn: Thay đổi con trỏ chuột để cho biết dòng này không tương tác được nhiều */
+  /* cursor: not-allowed;  */
+}
+/* .disabled-row button,
+.disabled-row a {
+  cursor: not-allowed;
+  
+} */
+/* Tùy chọn: Ngăn hiệu ứng hover mặc định của Antd làm dòng sáng trở lại */
+.disabled-row:hover > td {
+    background: inherit !important;
+}
