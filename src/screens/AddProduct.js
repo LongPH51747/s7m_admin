@@ -44,6 +44,9 @@ const AddProduct = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [variantImageFiles, setVariantImageFiles] = useState([]);
   const [sizesInput, setSizesInput] = useState('');
+  // One image applied to all sizes added in the next batch
+  const [batchVariantImageFile, setBatchVariantImageFile] = useState(null);
+  const [batchVariantImagePreview, setBatchVariantImagePreview] = useState('');
 
   // Fetch categories when component mounts
   useEffect(() => {
@@ -177,8 +180,12 @@ const AddProduct = () => {
           variant_size: original,
           variant_price: '',
           variant_stock: 0,
-          variant_image_preview: ''
+          variant_image_preview: batchVariantImagePreview || ''
         });
+        // Align file list
+        const newFiles = [...variantImageFiles];
+        newFiles.push(batchVariantImageFile || null);
+        setVariantImageFiles(newFiles);
         addedCount += 1;
       }
     });
@@ -192,6 +199,9 @@ const AddProduct = () => {
     setSizesInput('');
     setColor('');
     setSize('');
+    // Keep the batch image for convenience or clear it? Clear to avoid accidental reuse
+    setBatchVariantImageFile(null);
+    setBatchVariantImagePreview('');
   };
 
   // Delete variant
@@ -251,6 +261,20 @@ const AddProduct = () => {
     setVariantImageFiles(newFiles);
   };
 
+  // Select a single image for current batch (applies to all sizes added next)
+  const handleSelectBatchVariantImage = (e) => {
+    const file = (e.target.files && e.target.files[0]) || null;
+    if (!file) return;
+    setBatchVariantImageFile(file);
+    const reader = new FileReader();
+    reader.onload = (ev) => setBatchVariantImagePreview(ev.target.result);
+    reader.readAsDataURL(file);
+  };
+  const handleClearBatchVariantImage = () => {
+    setBatchVariantImageFile(null);
+    setBatchVariantImagePreview('');
+  };
+
   // Submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -281,28 +305,54 @@ const AddProduct = () => {
       // Prepare product data
       const productData = {
         product_name: productName.trim(),
-        product_price: parseFloat(variants[0].variant_price) || 0,
+        // Multiply by 1000 on submit (append 000 semantics)
+        product_price: (parseFloat(variants[0].variant_price) || 0) * 1000,
         product_description: description.trim(),
         product_status: true,
         product_variant: variants.map((variant) => ({
           variant_color: variant.variant_color.trim(),
           variant_size: variant.variant_size.trim(),
-          variant_price: parseFloat(variant.variant_price) || 0,
+          variant_price: (parseFloat(variant.variant_price) || 0) * 1000,
           variant_stock: parseInt(variant.variant_stock) || 0,
         })),
         product_category: [category],
       };
+
+      // Helper: convert dataURL to File (fallback when only preview is available)
+      const dataURLToFile = (dataUrl, filename) => {
+        try {
+          const arr = dataUrl.split(',');
+          const mime = arr[0].match(/:(.*?);/)[1];
+          const bstr = atob(arr[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while (n--) u8arr[n] = bstr.charCodeAt(n);
+          return new File([u8arr], filename, { type: mime });
+        } catch (_) { return null; }
+      };
+
+      // Ensure each variant has an image: prefer per-variant file, then fallback to current batch image, then preview->Blob
+      const filesAligned = variants.map((v, idx) => {
+        const file = variantImageFiles[idx] || batchVariantImageFile || null;
+        if (file) return file;
+        if (v.variant_image_preview && typeof v.variant_image_preview === 'string' && v.variant_image_preview.startsWith('data:')) {
+          return dataURLToFile(v.variant_image_preview, `variant_${idx + 1}.png`);
+        }
+        return null;
+      });
+      const missingIndex = filesAligned.findIndex((f) => !f);
+      if (missingIndex !== -1) {
+        throw new Error(`Ảnh biến thể là bắt buộc cho tất cả size. Thiếu ở dòng #${missingIndex + 1}.`);
+      }
 
       // Create FormData
       const formData = new FormData();
       formData.append('data', JSON.stringify(productData));
       formData.append('product_image', imageFile);
       
-      // Append variant images
-      variantImageFiles.forEach((file, idx) => {
-        if (file) {
-          formData.append('product_variant', file);
-        }
+      // Append exactly one image per variant to match backend validation
+      filesAligned.forEach((file) => {
+        formData.append('product_variant', file);
       });
 
       // Send request
@@ -437,6 +487,7 @@ const AddProduct = () => {
 
       <form onSubmit={handleSubmit}>
         {/* Product Name */}
+        {/* Product Name */}
         <Box sx={{ marginBottom: 2 }}>
           <TextField
             fullWidth
@@ -546,13 +597,40 @@ const AddProduct = () => {
               Thêm biến thể
             </Button> */}
           </Box>
-          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'flex-end', flexWrap: 'wrap' }}>
             <TextField
               fullWidth
               label="Nhiều size (cách nhau bằng dấu phẩy hoặc khoảng trắng)"
               value={sizesInput}
               onChange={(e) => setSizesInput(e.target.value)}
             />
+            {/* Batch variant image (applies to sizes added below) */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <input
+                accept="image/*"
+                type="file"
+                onChange={handleSelectBatchVariantImage}
+                style={{ display: 'none' }}
+                id="batch-variant-image-upload"
+              />
+              <label htmlFor="batch-variant-image-upload">
+                <Button variant="outlined" component="span">
+                  Chọn ảnh cho các size
+                </Button>
+              </label>
+              {batchVariantImagePreview && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <img
+                    src={batchVariantImagePreview}
+                    alt="batch-preview"
+                    style={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 6, border: '1px solid #eee' }}
+                  />
+                  <IconButton size="small" color="error" onClick={handleClearBatchVariantImage}>
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              )}
+            </Box>
             <Button variant="outlined" onClick={handleAddMultipleVariants}>
               Thêm nhiều size
             </Button>

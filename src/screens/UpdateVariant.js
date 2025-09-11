@@ -6,16 +6,22 @@ import {
   Typography,
   TextField,
   Button,
-  Grid,
   CircularProgress,
   Alert,
   Paper,
-  Card,
-  CardContent,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
+  IconButton,
 } from "@mui/material";
 import axios from 'axios';
 import { ENDPOINTS, API_BASE } from '../config/api';
 import TopBar from "../components/TopBar";
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const UpdateVariant = () => {
   const { id } = useParams();
@@ -190,6 +196,35 @@ const UpdateVariant = () => {
     }
   };
 
+  // Delete a single variant by id with confirm
+  const handleDeleteVariant = async (variantId, index) => {
+    const confirmed = window.confirm('Bạn có chắc chắn muốn xóa biến thể này không?');
+    if (!confirmed) return;
+
+    try {
+      setLoading(true);
+      setError("");
+      setSuccess("");
+
+      await axios.delete(ENDPOINTS.DELETE_VARIANT_BY_ID(id, variantId), {
+        headers: { 'ngrok-skip-browser-warning': 'true' }
+      });
+
+      console.log('🗑️ Đã xóa variant với ID:', variantId);
+      setSuccess(`Đã xóa biến thể thành công (ID: ${variantId})`);
+
+      // Remove from local state
+      setVariants((prev) => prev.filter((v, i) => (v._id ? v._id !== variantId : i !== index)));
+      setVariantImageFiles((prev) => prev.filter((_, i) => i !== index));
+      setVariantImagePreviews((prev) => prev.filter((_, i) => i !== index));
+    } catch (err) {
+      console.error('❌ Lỗi xóa variant:', err.response?.data || err.message);
+      setError(err.response?.data?.message || 'Không thể xóa biến thể. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Loading state
   if (loading) {
     return (
@@ -247,83 +282,73 @@ const UpdateVariant = () => {
             Danh sách Variants ({variants.length} variants)
           </Typography>
 
-          {/* Variants List */}
+          {/* Variants List - Compact editable table */}
           {variants.length === 0 ? (
             <Alert severity="info" sx={{ mb: 3 }}>
               Không có variants nào được tìm thấy cho sản phẩm này.
             </Alert>
           ) : (
-            variants.map((variant, index) => (
-              <Card key={variant._id || index} sx={{ mb: 3 }} variant="outlined">
-                <CardContent>
-                  <Grid container spacing={3}>
-                    <Grid item xs={12}>
-                      <Typography variant="h6" color="primary">
-                        Variant #{index + 1} - {variant.variant_color} ({variant.variant_size})
-                      </Typography>
-                      <Typography variant="caption" color="textSecondary">
-                        ID: {variant._id}
-                      </Typography>
-                    </Grid>
-
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="SKU"
-                        value={variant.variant_sku || ""}
-                        onChange={(e) => handleVariantChange(index, "variant_sku", e.target.value)}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Màu sắc *"
-                        value={variant.variant_color || ""}
-                        onChange={(e) => handleVariantChange(index, "variant_color", e.target.value)}
-                        required
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Kích thước *"
-                        value={variant.variant_size || ""}
-                        onChange={(e) => handleVariantChange(index, "variant_size", e.target.value)}
-                        required
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Giá (VND) *"
-                        type="number"
-                        value={variant.variant_price || ""}
-                        onChange={(e) => handleVariantChange(index, "variant_price", e.target.value)}
-                        required
-                        inputProps={{ min: 0 }}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Số lượng *"
-                        type="number"
-                        value={variant.variant_stock || ""}
-                        onChange={(e) => handleVariantChange(index, "variant_stock", e.target.value)}
-                        required
-                        inputProps={{ min: 0 }}
-                      />
-                    </Grid>
-
-                    <Grid item xs={12} sm={6}>
-                      <Box>
-                        <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                          Ảnh variant
-                        </Typography>
+            <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>#</TableCell>
+                    <TableCell>Màu sắc</TableCell>
+                    <TableCell>Kích thước</TableCell>
+                    <TableCell>SKU</TableCell>
+                    <TableCell align="right">Giá (VND)</TableCell>
+                    <TableCell align="right">Tồn kho</TableCell>
+                    <TableCell>Ảnh</TableCell>
+                    <TableCell align="center">Xóa</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {variants.map((variant, index) => (
+                    <TableRow key={variant._id || index} hover>
+                      <TableCell>{index + 1}</TableCell>
+                      <TableCell sx={{ minWidth: 140 }}>
+                        <TextField
+                          size="small"
+                          value={variant.variant_color || ""}
+                          onChange={(e) => handleVariantChange(index, "variant_color", e.target.value)}
+                          placeholder="Màu"
+                        />
+                      </TableCell>
+                      <TableCell sx={{ minWidth: 140 }}>
+                        <TextField
+                          size="small"
+                          value={variant.variant_size || ""}
+                          onChange={(e) => handleVariantChange(index, "variant_size", e.target.value)}
+                          placeholder="Size"
+                        />
+                      </TableCell>
+                      <TableCell sx={{ minWidth: 140 }}>
+                        <TextField
+                          size="small"
+                          value={variant.variant_sku || ""}
+                          onChange={(e) => handleVariantChange(index, "variant_sku", e.target.value)}
+                          placeholder="SKU"
+                        />
+                      </TableCell>
+                      <TableCell align="right" sx={{ minWidth: 140 }}>
+                        <TextField
+                          size="small"
+                          type="number"
+                          value={variant.variant_price || ""}
+                          onChange={(e) => handleVariantChange(index, "variant_price", e.target.value)}
+                          inputProps={{ min: 0 }}
+                        />
+                      </TableCell>
+                      <TableCell align="right" sx={{ minWidth: 120 }}>
+                        <TextField
+                          size="small"
+                          type="number"
+                          value={variant.variant_stock || 0}
+                          onChange={(e) => handleVariantChange(index, "variant_stock", e.target.value)}
+                          inputProps={{ min: 0 }}
+                        />
+                      </TableCell>
+                      <TableCell sx={{ minWidth: 160 }}>
                         <input
                           accept="image/*"
                           type="file"
@@ -332,51 +357,33 @@ const UpdateVariant = () => {
                           onChange={(e) => handleVariantImageChange(index, e)}
                         />
                         <label htmlFor={`variant-image-${index}`}>
-                          <Button variant="contained" component="span" sx={{ mb: 1 }}>
-                            Chọn ảnh từ máy
+                          <Button variant="outlined" component="span" size="small">
+                            Chọn ảnh
                           </Button>
                         </label>
-                        
                         {variantImagePreviews[index] && (
                           <img
                             src={variantImagePreviews[index]}
-                            alt={`Preview ${index + 1}`}
-                            style={{
-                              maxWidth: 120,
-                              maxHeight: 120,
-                              borderRadius: 8,
-                              border: "1px solid #eee",
-                              display: 'block',
-                              marginTop: 8
-                            }}
-                            onError={(e) => {
-                              e.target.style.display = 'none';
-                            }}
+                            alt={`v-${index}`}
+                            style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 6, border: '1px solid #eee', marginLeft: 8, verticalAlign: 'middle' }}
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
                           />
                         )}
-                        
-                        <Typography variant="caption" color="textSecondary" sx={{ display: 'block', mt: 1 }}>
-                          {variantImageFiles[index] ? `Đã chọn: ${variantImageFiles[index].name}` : 'Chưa chọn file mới'}
-                        </Typography>
-                        {variant.variant_image_url && (
-                          <Typography variant="caption" color="textSecondary" sx={{ display: 'block' }}>
-                            Ảnh hiện tại: {variant.variant_image_url.split('/').pop()}
-                          </Typography>
-                        )}
-                      </Box>
-                    </Grid>
-
-                    <Grid item xs={12}>
-                      <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end", alignItems: "center" }}>
-                        <Typography variant="body2" color="textSecondary">
-                          Stock: {variant.variant_stock} | Price: {Number(variant.variant_price)?.toLocaleString("vi-VN")} VND
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </Card>
-            ))
+                      </TableCell>
+                      <TableCell align="center">
+                        <Tooltip title="Xóa biến thể">
+                          <span>
+                            <IconButton color="error" size="small" onClick={() => handleDeleteVariant(variant._id, index)} disabled={loading || !variant._id}>
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
           )}
 
           {/* Action Buttons */}
