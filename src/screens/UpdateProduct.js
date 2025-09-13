@@ -16,7 +16,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  CardMedia,
   Divider,
   Chip,
   Table,
@@ -161,10 +160,28 @@ const UpdateProduct = () => {
     }));
   };
 
-  // Handle variant changes
-  // Kept for future inline edits (currently unused after switching to table)
-  // eslint-disable-next-line no-unused-vars
-  const handleVariantChange = (..._args) => {};
+  // Handle variant changes inline
+  const handleVariantChange = (index, field, value) => {
+    setProductData((prev) => {
+      const updatedVariants = [...(prev.product_variant || [])];
+
+      if (field === 'variant_price' || field === 'variant_stock') {
+        const digitsOnly = (value || '').toString().replace(/[^0-9]/g, '');
+        const normalized = digitsOnly.replace(/^0+(?=\d)/, '');
+        value = normalized;
+      }
+
+      updatedVariants[index] = {
+        ...updatedVariants[index],
+        [field]: value,
+      };
+
+      return {
+        ...prev,
+        product_variant: updatedVariants,
+      };
+    });
+  };
 
   // Add new variant
   const addVariant = () => {
@@ -208,9 +225,89 @@ const UpdateProduct = () => {
     }
   };
 
-  // Handle variant image change
-  // eslint-disable-next-line no-unused-vars
-  const handleVariantImageChange = (..._args) => {};
+  // Handle variant image change per row
+  const handleVariantImageChange = (index, e) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+
+    setVariantImageFiles((prev) => {
+      const newFiles = [...prev];
+      newFiles[index] = file;
+      return newFiles;
+    });
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setVariantImagePreviews((prev) => {
+        const newPreviews = [...prev];
+        newPreviews[index] = ev.target.result;
+        return newPreviews;
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Submit only variants update
+  const handleUpdateAllVariants = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      setSuccess("");
+
+      const variants = productData.product_variant || [];
+      if (variants.length === 0) {
+        throw new Error('Không có variants nào để cập nhật!');
+      }
+
+      // Validate
+      for (const variant of variants) {
+        if (!variant.variant_color || !variant.variant_size) {
+          throw new Error('Vui lòng nhập đầy đủ màu sắc và size cho tất cả variants!');
+        }
+        if (!variant.variant_price || Number(variant.variant_price) <= 0) {
+          throw new Error('Vui lòng nhập giá hợp lệ cho tất cả variants!');
+        }
+      }
+
+      const variantData = variants.map((variant) => ({
+        variant_sku: variant.variant_sku || "",
+        variant_image_url: variant.variant_image_url || "",
+        variant_color: variant.variant_color || "",
+        variant_size: variant.variant_size || "",
+        variant_price: Number(variant.variant_price) || 0,
+        variant_stock: Number(variant.variant_stock || variant.variant_quantity) || 0,
+        _id: variant._id,
+      }));
+
+      const formData = new FormData();
+      formData.append('variant_data', JSON.stringify(variantData));
+
+      (variantImageFiles || []).forEach((file) => {
+        if (file) {
+          formData.append('files', file);
+        }
+      });
+
+      await axiosInstance.put(ENDPOINTS.UPDATE_VARIANT_BY_PRODUCT_ID(id), formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      setSuccess('✅ Cập nhật tất cả variants thành công!');
+    } catch (err) {
+      console.error("❌ Update variants error:", err.response?.data || err.message);
+      let errorMessage = "Có lỗi xảy ra khi cập nhật variants.";
+      if (err.response?.status === 400) {
+        errorMessage = "Dữ liệu không hợp lệ: " + (err.response.data?.message || "Vui lòng kiểm tra thông tin nhập vào");
+      } else if (err.response?.status === 500) {
+        errorMessage = "Lỗi server: " + (err.response.data?.message || "Vui lòng thử lại sau");
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Submit form
   const handleSubmit = async (e) => {
@@ -368,201 +465,121 @@ const UpdateProduct = () => {
         {/* Main Form Card */}
         <Paper elevation={3} sx={{ borderRadius: 3, overflow: 'hidden' }}>
           <form onSubmit={handleSubmit}>
-            <Box sx={{ p: 4 }}>
-              <Grid container spacing={4}>
+            <Box sx={{ p: 3 }}>
+              <Grid container spacing={3}>
                 {/* Product Information Section */}
                 <Grid item xs={12}>
-                  <Typography variant="h5" sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
+                  <Typography variant="h5" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
                     <EditIcon sx={{ mr: 1, color: 'primary.main' }} />
                     Thông tin sản phẩm
                   </Typography>
-                  <Divider sx={{ mb: 3 }} />
+                  <Divider sx={{ mb: 2 }} />
                 </Grid>
 
-                {/* Product Name */}
+                {/* Compact product info table */}
                 <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Tên sản phẩm *"
-                    name="product_name"
-                    value={productData.product_name}
-                    onChange={handleInputChange}
-                    required
-                    variant="outlined"
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                  />
-                </Grid>
-
-                {/* Description */}
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Mô tả *"
-                    name="product_description"
-                    value={productData.product_description}
-                    onChange={handleInputChange}
-                    multiline
-                    rows={4}
-                    required
-                    variant="outlined"
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                  />
-                </Grid>
-
-                {/* Price */}
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Giá (VND) *"
-                    name="product_price"
-                    type="number"
-                    value={productData.product_price}
-                    onChange={handleInputChange}
-                    required
-                    inputProps={{ min: 0 }}
-                    variant="outlined"
-                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
-                  />
-                </Grid>
-
-                {/* Category - Full width for better display */}
-                <Grid item xs={12} md={8}>
-                  <FormControl fullWidth required>
-                    <InputLabel>Danh mục sản phẩm *</InputLabel>
-                    <Select
-                      value={productData.product_category?.[0] || ''}
-                      onChange={handleCategoryChange}
-                      label="Danh mục sản phẩm *"
-                      sx={{ 
-                        '& .MuiOutlinedInput-root': { 
-                          borderRadius: 2,
-                          minHeight: 56
-                        },
-                        '& .MuiSelect-select': {
-                          display: 'flex',
-                          alignItems: 'center',
-                          minHeight: '24px',
-                          paddingTop: '16px',
-                          paddingBottom: '16px',
-                          paddingRight: '32px !important',
-                          minWidth: '80px'
-                        }
-                      }}
-                      MenuProps={{
-                        PaperProps: {
-                          sx: {
-                            maxHeight: 450,
-                            minWidth: 350,
-                            maxWidth: 600,
-                            '& .MuiMenuItem-root': {
-                              whiteSpace: 'normal',
-                              wordWrap: 'break-word',
-                              minHeight: 64,
-                              padding: '16px 20px',
-                              lineHeight: 1.5,
-                              alignItems: 'flex-start'
-                            }
-                          }
-                        }
-                      }}
-                    >
-                      {categories.map((cat) => (
-                        <MenuItem key={cat._id} value={cat._id}>
-                          <Box sx={{ 
-                            display: 'flex', 
-                            alignItems: 'flex-start', 
-                            width: '100%',
-                            minHeight: 48,
-                            py: 1
-                          }}>
-                            <Typography 
-                              variant="body1" 
-                              sx={{ 
-                                wordBreak: 'break-word',
-                                lineHeight: 1.6,
-                                whiteSpace: 'normal',
-                                maxWidth: '100%',
-                                fontSize: '0.95rem',
-                                fontWeight: 500
-                              }}
-                            >
-                              {cat.category_name || cat.name}
+                  <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
+                    <Table size="small" sx={{ '& .MuiTableCell-root': { py: 0.75, px: 1.5 } }}>
+                      <TableBody>
+                        <TableRow>
+                          <TableCell sx={{ width: 220 }}>Tên sản phẩm *</TableCell>
+                          <TableCell>
+                            <TextField
+                              fullWidth
+                              name="product_name"
+                              value={productData.product_name}
+                              onChange={handleInputChange}
+                              required
+                              variant="outlined"
+                              size="small"
+                            />
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Mô tả *</TableCell>
+                          <TableCell>
+                            <TextField
+                              fullWidth
+                              name="product_description"
+                              value={productData.product_description}
+                              onChange={handleInputChange}
+                              multiline
+                              rows={3}
+                              required
+                              variant="outlined"
+                              size="small"
+                            />
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Giá (VND) *</TableCell>
+                          <TableCell>
+                            <TextField
+                              fullWidth
+                              name="product_price"
+                              type="number"
+                              value={productData.product_price}
+                              onChange={handleInputChange}
+                              inputProps={{ min: 0 }}
+                              required
+                              variant="outlined"
+                              size="small"
+                              sx={{ maxWidth: 280 }}
+                            />
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Danh mục sản phẩm *</TableCell>
+                          <TableCell>
+                            <FormControl fullWidth required size="small">
+                              <InputLabel size="small">Danh mục sản phẩm *</InputLabel>
+                              <Select
+                                value={productData.product_category?.[0] || ''}
+                                onChange={handleCategoryChange}
+                                label="Danh mục sản phẩm *"
+                              >
+                                {categories.map((cat) => (
+                                  <MenuItem key={cat._id} value={cat._id}>
+                                    {cat.category_name || cat.name}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Ảnh sản phẩm chính</TableCell>
+                          <TableCell>
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <input
+                                accept="image/*"
+                                type="file"
+                                style={{ display: "none" }}
+                                id="main-image-upload"
+                                onChange={handleMainImageChange}
+                              />
+                              <label htmlFor="main-image-upload">
+                                <Button variant="outlined" component="span" startIcon={<PhotoCameraIcon />} size="small">
+                                  Chọn ảnh
+                                </Button>
+                              </label>
+                              {mainImagePreview && (
+                                <img
+                                  src={mainImagePreview}
+                                  alt="main"
+                                  style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 8, border: '1px solid #eee', marginLeft: 8 }}
+                                  onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
+                              )}
+                            </Box>
+                            <Typography variant="caption" color="success.main" sx={{ display: 'block', mt: 0.5 }}>
+                              {mainImageFile ? `✅ File mới đã chọn: ${mainImageFile.name}` : ''}
                             </Typography>
-                          </Box>
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-
-                {/* Product Image Section */}
-                <Grid item xs={12}>
-                  <Typography variant="h6" sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
-                    <PhotoCameraIcon sx={{ mr: 1, color: 'primary.main' }} />
-                    Ảnh sản phẩm chính
-                  </Typography>
-                  
-                  {/* Current Main Image Display */}
-                  {mainImagePreview && (
-                    <Box sx={{ mb: 3 }}>
-                      <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 2 }}>
-                        📷 Ảnh hiện tại:
-                      </Typography>
-                      <CardMedia
-                        component="img"
-                        image={mainImagePreview}
-                        alt="Current Product"
-                        sx={{
-                          width: 250,
-                          height: 250,
-                          borderRadius: 3,
-                          border: '3px solid #e0e0e0',
-                          objectFit: 'cover',
-                          boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                          transition: 'transform 0.2s ease',
-                          '&:hover': {
-                            transform: 'scale(1.05)'
-                          }
-                        }}
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
-                      />
-                    </Box>
-                  )}
-                  
-                  {/* File Input */}
-                  <Box sx={{ mt: 2 }}>
-                    <input
-                      accept="image/*"
-                      type="file"
-                      style={{ display: "none" }}
-                      id="main-image-upload"
-                      onChange={handleMainImageChange}
-                    />
-                    <label htmlFor="main-image-upload">
-                      <Button 
-                        variant="outlined" 
-                        component="span" 
-                        startIcon={<PhotoCameraIcon />}
-                        sx={{ 
-                          borderRadius: 2,
-                          mb: 1
-                        }}
-                      >
-                        Chọn ảnh mới
-                      </Button>
-                    </label>
-                    
-                    <Box sx={{ mt: 1 }}>
-                      <Typography variant="caption" color="success.main" sx={{ display: 'block' }}>
-                        {mainImageFile ? `✅ File mới đã chọn: ${mainImageFile.name}` : ''}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {!mainImageFile ? 'Chọn file mới để thay đổi ảnh hiện tại' : ''}
-                      </Typography>
-                    </Box>
-                  </Box>
+                          </TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
                 </Grid>
 
                 {/* Product Variants Section */}
@@ -594,7 +611,7 @@ const UpdateProduct = () => {
                       </Button>
                     </Box>
                     <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
-                      <Table size="small">
+                      <Table size="small" sx={{ '& .MuiTableCell-root': { py: 0.75, px: 1 } }}>
                         <TableHead>
                           <TableRow>
                             <TableCell>#</TableCell>
@@ -612,22 +629,69 @@ const UpdateProduct = () => {
                             <TableRow key={variant._id || index} hover>
                               <TableCell>{index + 1}</TableCell>
                               <TableCell>
-                                {variantImagePreviews[index] ? (
+                                <input
+                                  accept="image/*"
+                                  type="file"
+                                  style={{ display: "none" }}
+                                  id={`variant-image-${index}`}
+                                  onChange={(e) => handleVariantImageChange(index, e)}
+                                />
+                                <label htmlFor={`variant-image-${index}`}>
+                                  <Button variant="outlined" component="span" size="small">
+                                    Chọn ảnh
+                                  </Button>
+                                </label>
+                                {variantImagePreviews[index] && (
                                   <img
                                     src={variantImagePreviews[index]}
                                     alt={`v-${index}`}
-                                    style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 8, border: '1px solid #eee' }}
+                                    style={{ width: 36, height: 36, objectFit: 'cover', borderRadius: 6, border: '1px solid #eee', marginLeft: 8, verticalAlign: 'middle' }}
                                     onError={(e) => { e.currentTarget.style.display = 'none'; }}
                                   />
-                                ) : (
-                                  <Typography variant="caption" color="text.secondary">Không có</Typography>
                                 )}
                               </TableCell>
-                              <TableCell>{variant.variant_color || '-'}</TableCell>
-                              <TableCell>{variant.variant_size || '-'}</TableCell>
-                              <TableCell align="right">{Number(variant.variant_price || 0).toLocaleString('vi-VN')}</TableCell>
-                              <TableCell align="right">{variant.variant_stock || variant.variant_quantity || 0}</TableCell>
-                              <TableCell>{variant.variant_sku || '-'}</TableCell>
+                              <TableCell>
+                                <TextField
+                                  size="small"
+                                  value={variant.variant_color || ""}
+                                  onChange={(e) => handleVariantChange(index, "variant_color", e.target.value)}
+                                  placeholder="Màu"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <TextField
+                                  size="small"
+                                  value={variant.variant_size || ""}
+                                  onChange={(e) => handleVariantChange(index, "variant_size", e.target.value)}
+                                  placeholder="Size"
+                                />
+                              </TableCell>
+                              <TableCell align="right">
+                                <TextField
+                                  size="small"
+                                  type="number"
+                                  value={variant.variant_price || ""}
+                                  onChange={(e) => handleVariantChange(index, "variant_price", e.target.value)}
+                                  inputProps={{ min: 0 }}
+                                />
+                              </TableCell>
+                              <TableCell align="right">
+                                <TextField
+                                  size="small"
+                                  type="number"
+                                  value={variant.variant_stock || variant.variant_quantity || 0}
+                                  onChange={(e) => handleVariantChange(index, "variant_stock", e.target.value)}
+                                  inputProps={{ min: 0 }}
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <TextField
+                                  size="small"
+                                  value={variant.variant_sku || ""}
+                                  onChange={(e) => handleVariantChange(index, "variant_sku", e.target.value)}
+                                  placeholder="SKU"
+                                />
+                              </TableCell>
                               <TableCell align="center">
                                 <Tooltip title="Xóa biến thể">
                                   <span>
@@ -648,46 +712,49 @@ const UpdateProduct = () => {
             </Box>
 
             {/* Action Buttons */}
-            <Paper elevation={1} sx={{ p: 4, backgroundColor: '#fafafa', borderRadius: 0 }}>
-              <Box sx={{ display: "flex", gap: 3, justifyContent: "center", flexWrap: 'wrap' }}>
+            <Paper elevation={1} sx={{ p: 3, backgroundColor: '#fafafa', borderRadius: 0, position: 'sticky', bottom: 0, zIndex: 100, borderTop: '1px solid #eee' }}>
+              <Box sx={{ display: "flex", gap: 2, justifyContent: "center", flexWrap: 'wrap' }}>
                 <Button
                   variant="outlined"
-                  size="large"
+                  size="medium"
                   onClick={() => navigate("/home")}
                   sx={{ 
                     borderRadius: 3,
-                    px: 4,
-                    py: 1.5,
+                    px: 3,
+                    py: 1,
                     fontWeight: 'bold'
                   }}
                 >
                   ❌ Hủy
                 </Button>
+                {/* Removed separate variant editor navigation */}
                 <Button
-                  variant="outlined"
-                  color="secondary"
-                  size="large"
-                  onClick={() => navigate(`/update-variant/${id}`)}
+                  variant="contained"
+                  color="success"
+                  size="medium"
+                  onClick={handleUpdateAllVariants}
+                  disabled={loading}
                   sx={{ 
+                    minWidth: 200,
                     borderRadius: 3,
-                    px: 4,
-                    py: 1.5,
+                    px: 3,
+                    py: 1,
                     fontWeight: 'bold'
                   }}
                 >
-                  🔧 Sửa Variants riêng
+                  {loading ? <CircularProgress size={24} color="inherit" /> : '✅ Cập nhật Variants'}
                 </Button>
                 <Button
                   type="submit"
                   variant="contained"
                   color="primary"
-                  size="large"
+                  size="medium"
                   disabled={loading}
                   sx={{ 
                     minWidth: 200,
                     borderRadius: 3,
-                    px: 4,
-                    py: 1.5,
+                    px: 3,
+                    py: 1,
                     fontWeight: 'bold',
                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                     boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)',

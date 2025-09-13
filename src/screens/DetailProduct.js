@@ -696,7 +696,7 @@ const ProductInfo = () => (
             >
               Chỉnh sửa sản phẩm
             </Button>
-            <Button
+            {/* <Button
               variant="outlined"
               startIcon={<Settings />}
               onClick={() => navigate(`/update-variant/${id}`)}
@@ -716,7 +716,7 @@ const ProductInfo = () => (
               }}
             >
               Quản lý variants
-            </Button>
+            </Button> */}
           </Stack>
 
           {/* Rating & Category */}
