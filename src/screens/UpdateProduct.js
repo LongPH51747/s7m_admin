@@ -444,7 +444,8 @@ const UpdateProduct = () => {
                           minHeight: '24px',
                           paddingTop: '16px',
                           paddingBottom: '16px',
-                          paddingRight: '32px !important'
+                          paddingRight: '32px !important',
+                          minWidth: '80px'
                         }
                       }}
                       MenuProps={{
@@ -602,7 +603,7 @@ const UpdateProduct = () => {
                             <TableCell>Kích thước</TableCell>
                             <TableCell align="right">Giá (VND)</TableCell>
                             <TableCell align="right">Tồn kho</TableCell>
-                            <TableCell>SKU</TableCell>
+                            <TableCell>Mã biến thể</TableCell>
                             <TableCell align="center">Thao tác</TableCell>
                           </TableRow>
                         </TableHead>
