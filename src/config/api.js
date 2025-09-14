@@ -16,6 +16,7 @@ const ENDPOINTS = {
   GET_PRODUCT_BY_ID: (id) => `${API_BASE}/api/products/get-products-by-id/id/${id}`, // Lấy sản phẩm theo ID
   UPDATE_PRODUCT_BY_ID: (id) => `${API_BASE}/api/products/update-product-by-id/id/${id}`, // Cập nhật sản phẩm theo ID
   UPDATE_VARIANT_BY_PRODUCT_ID: (id) => `${API_BASE}/api/products/updata-variant-by-id-product/id_product/${id}`, // Cập nhật variant theo product ID
+  ADD_PRODUCT_VARIANT: (id) => `${API_BASE}/api/products/addProductVariant/${id}`, // Thêm variant vào sản phẩm
   DELETE_VARIANT_BY_ID: (productId, variantId) => `${API_BASE}/api/products/delete-variant-by-id/id_product/${productId}/id_variant/${variantId}`, // Xóa variant theo ID
   DELETE_PRODUCT_BY_ID: (id) => `${API_BASE}/api/products/delete-product-by-id/id/${id}`, // Xóa sản phẩm theo ID
   
