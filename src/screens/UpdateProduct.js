@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axiosInstance from '../config/axios';
 import {
@@ -42,6 +42,7 @@ const UpdateProduct = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [categories, setCategories] = useState([]);
   const [productData, setProductData] = useState({
     product_name: "",
@@ -109,7 +110,7 @@ const UpdateProduct = () => {
     };
 
     fetchData();
-  }, [id]);
+  }, [id, refreshTrigger]);
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -183,8 +184,8 @@ const UpdateProduct = () => {
     });
   };
 
-  // Add new variant
-  const addVariant = () => {
+  // Add new variant to local state
+  const addVariant = useCallback(() => {
     setProductData((prev) => ({
       ...prev,
       product_variant: [
@@ -204,7 +205,113 @@ const UpdateProduct = () => {
     // Add empty slots for new variant
     setVariantImageFiles(prev => [...prev, null]);
     setVariantImagePreviews(prev => [...prev, null]);
-  };
+  }, []);
+
+  // Force update UI after variant operations
+  const forceUpdateUI = useCallback(() => {
+    setRefreshTrigger(prev => prev + 1);
+  }, []);
+
+  // Add variant to server using new API
+  const handleAddVariantToServer = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError("");
+      setSuccess("");
+
+      // Get the last added variant (newest one)
+      const variants = productData.product_variant || [];
+      if (variants.length === 0) {
+        throw new Error('Không có variants nào để thêm!');
+      }
+
+      const newVariant = variants[variants.length - 1];
+      
+      // Validate new variant
+      if (!newVariant.variant_color || !newVariant.variant_size) {
+        throw new Error('Vui lòng nhập đầy đủ màu sắc và size cho variant mới!');
+      }
+      if (!newVariant.variant_price || Number(newVariant.variant_price) <= 0) {
+        throw new Error('Vui lòng nhập giá hợp lệ cho variant mới!');
+      }
+
+      // Prepare variant data according to API structure
+      const variantData = {
+        product_variant: [{
+          variant_sku: newVariant.variant_sku || "",
+          variant_image_url: newVariant.variant_image_url || "",
+          variant_color: newVariant.variant_color || "",
+          variant_size: newVariant.variant_size || "",
+          variant_price: Number(newVariant.variant_price) || 0,
+          variant_stock: Number(newVariant.variant_stock || newVariant.variant_quantity) || 0,
+        }]
+      };
+
+      // Create FormData for multipart/form-data
+      const formData = new FormData();
+      formData.append('data', JSON.stringify(variantData));
+
+      // Add variant image if selected
+      const lastImageFile = variantImageFiles[variantImageFiles.length - 1];
+      if (lastImageFile) {
+        formData.append('product_variant_image', lastImageFile);
+      }
+
+      // Debug: Log the data being sent
+      console.log('📤 Sending variant data:', variantData);
+      console.log('📤 FormData contents:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}:`, value);
+      }
+
+      // Call the new API endpoint
+      const response = await axiosInstance.post(ENDPOINTS.ADD_PRODUCT_VARIANT(id), formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+
+      console.log('✅ Variant added successfully:', response.data);
+      console.log('📊 Current productData before update:', productData);
+      console.log('📊 Server response data:', response.data);
+      
+      // Simply mark the last variant as saved without complex merging
+      setProductData(prev => {
+        const updatedVariants = [...prev.product_variant];
+        const lastIndex = updatedVariants.length - 1;
+        if (lastIndex >= 0) {
+          updatedVariants[lastIndex] = {
+            ...updatedVariants[lastIndex],
+            _id: response.data._id || `temp_${Date.now()}`,
+          };
+        }
+        return {
+          ...prev,
+          product_variant: updatedVariants
+        };
+      });
+
+      setSuccess('✅ Thêm variant thành công!');
+      
+      // Don't fetch updated data immediately to avoid losing the new variant
+      // The variant is already updated in the local state above
+      // Just trigger a UI refresh to ensure everything is displayed correctly
+      setTimeout(() => {
+        forceUpdateUI();
+      }, 1000); // Wait 1 second before refreshing to ensure server has processed the data
+    } catch (err) {
+      console.error("❌ Add variant error:", err.response?.data || err.message);
+      let errorMessage = "Có lỗi xảy ra khi thêm variant.";
+      if (err.response?.status === 400) {
+        errorMessage = "Dữ liệu không hợp lệ: " + (err.response.data?.message || "Vui lòng kiểm tra thông tin nhập vào");
+      } else if (err.response?.status === 500) {
+        errorMessage = "Lỗi server: " + (err.response.data?.message || "Vui lòng thử lại sau");
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  }, [id, productData, variantImageFiles, forceUpdateUI]);
 
   // Remove variant
   // eslint-disable-next-line no-unused-vars
@@ -259,8 +366,14 @@ const UpdateProduct = () => {
         throw new Error('Không có variants nào để cập nhật!');
       }
 
-      // Validate
-      for (const variant of variants) {
+      // Filter only variants that have _id (already saved to server)
+      const savedVariants = variants.filter(variant => variant._id);
+      if (savedVariants.length === 0) {
+        throw new Error('Không có variants nào đã được lưu để cập nhật! Vui lòng lưu variants mới trước.');
+      }
+
+      // Validate saved variants
+      for (const variant of savedVariants) {
         if (!variant.variant_color || !variant.variant_size) {
           throw new Error('Vui lòng nhập đầy đủ màu sắc và size cho tất cả variants!');
         }
@@ -269,7 +382,7 @@ const UpdateProduct = () => {
         }
       }
 
-      const variantData = variants.map((variant) => ({
+      const variantData = savedVariants.map((variant) => ({
         variant_sku: variant.variant_sku || "",
         variant_image_url: variant.variant_image_url || "",
         variant_color: variant.variant_color || "",
@@ -292,7 +405,7 @@ const UpdateProduct = () => {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      setSuccess('✅ Cập nhật tất cả variants thành công!');
+      setSuccess(`✅ Cập nhật ${savedVariants.length} variants thành công!`);
     } catch (err) {
       console.error("❌ Update variants error:", err.response?.data || err.message);
       let errorMessage = "Có lỗi xảy ra khi cập nhật variants.";
@@ -597,24 +710,40 @@ const UpdateProduct = () => {
                         <ImageIcon sx={{ mr: 1, color: 'primary.main' }} />
                         Biến thể sản phẩm
                       </Typography>
-                      <Button
-                        startIcon={<AddIcon />}
-                        onClick={addVariant}
-                        variant="contained"
-                        color="primary"
-                        sx={{ 
-                          borderRadius: 2,
-                          px: 3
-                        }}
-                      >
-                        Thêm biến thể
-                      </Button>
+                      <Box sx={{ display: 'flex', gap: 2 }}>
+                        <Button
+                          startIcon={<AddIcon />}
+                          onClick={addVariant}
+                          variant="outlined"
+                          color="primary"
+                          sx={{ 
+                            borderRadius: 2,
+                            px: 3
+                          }}
+                        >
+                          Thêm biến thể (Local)
+                        </Button>
+                        <Button
+                          startIcon={<AddIcon />}
+                          onClick={handleAddVariantToServer}
+                          variant="contained"
+                          color="success"
+                          disabled={loading || !(productData.product_variant?.some(variant => !variant._id) || false)}
+                          sx={{ 
+                            borderRadius: 2,
+                            px: 3
+                          }}
+                        >
+                          {loading ? 'Đang xử lý...' : 'Lưu variant mới'}
+                        </Button>
+                      </Box>
                     </Box>
                     <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
                       <Table size="small" sx={{ '& .MuiTableCell-root': { py: 0.75, px: 1 } }}>
                         <TableHead>
                           <TableRow>
                             <TableCell>#</TableCell>
+                            <TableCell>Trạng thái</TableCell>
                             <TableCell>Ảnh</TableCell>
                             <TableCell>Màu sắc</TableCell>
                             <TableCell>Kích thước</TableCell>
@@ -628,6 +757,14 @@ const UpdateProduct = () => {
                     {productData.product_variant.map((variant, index) => (
                             <TableRow key={variant._id || index} hover>
                               <TableCell>{index + 1}</TableCell>
+                              <TableCell>
+                                <Chip 
+                                  label={variant._id ? "Đã lưu" : "Chưa lưu"} 
+                                  color={variant._id ? "success" : "warning"}
+                                  size="small"
+                                  variant="outlined"
+                                />
+                              </TableCell>
                               <TableCell>
                                 <input
                                   accept="image/*"
