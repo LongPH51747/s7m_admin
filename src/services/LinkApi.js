@@ -1,3 +1,3 @@
 
-export const API_BASE2 = 'https://4292a232446b.ngrok-free.app';
-export const API_BASE = 'https://4292a232446b.ngrok-free.app';
+export const API_BASE2 = 'http://192.168.1.10:3000';
+export const API_BASE = 'http://192.168.1.10:3000';

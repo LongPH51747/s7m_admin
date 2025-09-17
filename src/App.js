@@ -13,6 +13,7 @@ import DetailProduct from "./screens/DetailProduct.js";
 import ProductScreen from "./screens/ProductScreen.js";
 import AddProduct from './screens/AddProduct.js';
 import UpdateProduct from './screens/UpdateProduct.js';
+import UpdateProductNew from './screens/UpdateProductNew.js';
 import UpdateVariant from './screens/UpdateVariant.js';
 // import CategoryDetailProduct from './components/CategoryDetailProduct';
 // import LoginPage from './screens/LoginPage';
@@ -95,7 +96,7 @@ function App() {
             <Route path="/product/:id" element={<ProtectedRoute allowedRoles={['admin']}><DetailProduct /></ProtectedRoute>} />
             <Route path="/products" element={<ProtectedRoute allowedRoles={['admin']}><ProductScreen /></ProtectedRoute>} />
             <Route path="/add-product" element={<ProtectedRoute allowedRoles={['admin']}><AddProduct /></ProtectedRoute>} />
-            <Route path="/products/edit/:id" element={<ProtectedRoute allowedRoles={['admin']}><UpdateProduct /></ProtectedRoute>} />
+            <Route path="/products/edit/:id" element={<ProtectedRoute allowedRoles={['admin']}><UpdateProductNew /></ProtectedRoute>} />
             <Route path="/users" element={<ProtectedRoute allowedRoles={['admin']}><Users /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute allowedRoles={['admin']}><Orders /></ProtectedRoute>} />
             <Route path="/orders/:orderCode" element={<ProtectedRoute allowedRoles={['admin']}><OrderDetail /></ProtectedRoute>} />
@@ -113,7 +114,7 @@ function App() {
             <Route path="/voucher" element={<ProtectedRoute allowedRoles={['admin']}><VoucherDisplayScreen/></ProtectedRoute>} />
             {/* Fallback route - Chuyển hướng đến /login nếu không khớp route nào */}
             <Route path="*" element={<Navigate to="/login" replace />} />
-            <Route path="/update-product/:id" element={<UpdateProduct />} />
+            <Route path="/update-product/:id" element={<UpdateProductNew />} />
             <Route path="/update-variant/:id" element={<UpdateVariant />} />
             <Route path="/users/:id/orders" element={<UserOrderHistory />} />
         </Routes>
