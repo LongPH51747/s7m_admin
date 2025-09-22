@@ -3,6 +3,30 @@ import { useParams } from 'react-router-dom';
 import { getOrdersByUserId } from '../services/orderService';
 import { API_BASE } from '../services/LinkApi';
 
+// Ánh xạ số trạng thái -> tên trạng thái
+const statusMap = {
+  1: 'Chờ xác nhận',
+  2: 'Đã xác nhận',
+  3: 'Rời kho',
+  4: 'Tới bưu cục',
+  5: 'Shipper nhận hàng',
+  6: 'Đang giao',
+  7: 'Giao thành công',
+  8: 'Đã nhận',
+  9: 'Giao thất bại',
+  10: 'Bưu cục nhận hàng bom',
+  11: 'Đơn bom rời bưu cục về kho',
+  12: 'Đơn bom tới kho',
+  13: 'Chờ xác nhận hoàn hàng',
+  14: 'Đã xác nhận hoàn',
+  15: 'Shipper đã nhận hàng hoàn',
+  16: 'Bưu cục nhận hàng hoàn',
+  17: 'Hàng hoàn rời bưu cục',
+  18: 'Hàng hoàn tới kho',
+  19: 'Đã hủy',
+  24: 'Không xác nhận đơn hoàn'
+};
+
 const UserOrderHistory = () => {
   const { id } = useParams();
   const [orders, setOrders] = useState([]);
@@ -14,7 +38,10 @@ const UserOrderHistory = () => {
       try {
         setLoading(true);
         const data = await getOrdersByUserId(id);
-        setOrders(Array.isArray(data) ? data : [data]);
+        const sortedData = Array.isArray(data) 
+          ? data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) 
+          : [data];
+        setOrders(sortedData);
       } catch (error) {
         console.error("❌ Lỗi khi load lịch sử mua hàng:", error);
       } finally {
@@ -29,9 +56,10 @@ const UserOrderHistory = () => {
   const formatCurrency = (num) =>
     new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num);
 
-  const filteredOrders = orders.filter(order =>
-    filterStatus === "Tất cả" ? true : order.status === filterStatus
-  );
+  const filteredOrders = orders.filter(order => {
+    const statusText = statusMap[order.status] || 'Không rõ';
+    return filterStatus === "Tất cả" ? true : statusText === filterStatus;
+  });
 
   return (
     <div className="p-6">
@@ -49,7 +77,7 @@ const UserOrderHistory = () => {
           <option value="Đã xác nhận">Đã xác nhận</option>
           <option value="Đang giao">Đang giao</option>
           <option value="Giao thành công">Giao thành công</option>
-          <option value="Đã nhận hàng">Đã nhận hàng</option>
+          <option value="Đã nhận">Đã nhận</option>
           <option value="Hoàn hàng">Hoàn hàng</option>
           <option value="Đã hủy">Đã hủy</option>
         </select>
@@ -64,8 +92,8 @@ const UserOrderHistory = () => {
           <div key={order._id} className="border rounded-md p-4 mt-6 shadow">
             <div className="mb-2 font-medium text-lg">🛒 Đơn hàng #{order._id}</div>
             <div className="text-sm text-gray-600">
-              Ngày đặt: {formatDate(order.createdAt)} | 
-              Trạng thái: <span className="font-semibold">{order.status}</span> | 
+              Ngày đặt: {formatDate(order.createdAt)} |
+              Trạng thái: <span className="font-semibold">{statusMap[order.status] || 'Không rõ'}</span> |
               Phương thức: <span className="font-semibold">{order.payment_method}</span>
             </div>
             <div className="mt-2 text-right font-semibold">
