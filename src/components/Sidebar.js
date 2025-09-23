@@ -10,9 +10,10 @@ import {
   Tickets,
   TruckIcon
 } from 'lucide-react';
+import '../css/SideBar.css'
 
 const Sidebar = () => (
-  <div className="w-1/5 h-screen border-r p-6">
+  <div className="w-1/5 h-screen border-r p-6" id='menu'>
     <nav className="flex flex-col gap-6 text-[17px]">
       <Link to="/users" className="flex items-center gap-3 hover:text-blue-600">
         <User size={20} />

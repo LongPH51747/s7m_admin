@@ -4,7 +4,7 @@
   "private": true,
   "main": "index.js",
   "description": "Admin dashboard for S7M Store",
-  "proxy": "https://059f-2405-4802-4b2-2810-c455-f308-457-aa78.ngrok-free.app/",
+  "proxy": "https://94101e77d75d.ngrok-free.app/",
   "dependencies": {
     "@babel/runtime": "^7.27.1",
     "@emotion/react": "^11.14.0",

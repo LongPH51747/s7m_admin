@@ -10,8 +10,10 @@ import { io } from "socket.io-client";
 import { useAuth } from "./AuthContext"; // Import useAuth để lấy thông tin xác thực
 import { API_BASE } from "../services/LinkApi"; // API_BASE cho Socket.IO, API_BASE2 cho upload
 
+
 // Tạo context
 const SocketContext = createContext(null);
+
 
 // Hook tùy chỉnh để sử dụng context
 export const useSocket = () => {
@@ -22,12 +24,15 @@ export const useSocket = () => {
   return context;
 };
 
+
 export const SocketProvider = ({ children }) => {
-  const { isAuthenticated, accessToken, logout, user } = useAuth();
+  const { isAuthenticated, accessToken, logout, user, refreshToken } = useAuth();
+
 
   const socketRef = useRef(null);
   const [isSocketReady, setIsSocketReady] = useState(false);
   const isConnecting = useRef(false);
+
 
   // States để quản lý dữ liệu chat của Admin
   const [chatRooms, setChatRooms] = useState([]);
@@ -39,27 +44,65 @@ export const SocketProvider = ({ children }) => {
   const [messagesError, setMessagesError] = useState(null);
   const [onlineUsers, setOnlineUsers] = useState([]); // Danh sách người dùng online
 
+
   // Lấy userId của Admin từ AuthContext
   const currentUserId = user ? user._id : null;
+
 
   // Ref để lưu trữ giá trị hiện tại của selectedRoomId và currentUserId
   const latestSelectedRoomId = useRef(selectedRoomId);
   const latestCurrentUserId = useRef(currentUserId);
+
 
   // Cập nhật ref mỗi khi state tương ứng thay đổi
   useEffect(() => {
     latestSelectedRoomId.current = selectedRoomId;
   }, [selectedRoomId]);
 
+
   useEffect(() => {
     latestCurrentUserId.current = currentUserId;
   }, [currentUserId]);
+
+  // Hàm tự động làm mới token và re-authenticate socket
+  const reauthenticateSocket = useCallback(async (socketInstance) => {
+    try {
+      console.log("Socket: Đang tự động làm mới token...");
+      const refreshSuccess = await refreshToken();
+      
+      if (!refreshSuccess) {
+        throw new Error('Refresh token thất bại');
+      }
+      
+      const newAccess = localStorage.getItem('accessToken');
+      if (!newAccess) {
+        throw new Error('Không thể lấy token mới từ localStorage');
+      }
+      
+      console.log("Socket: Token đã được làm mới, re-authenticate socket...");
+      socketInstance.auth = { token: newAccess };
+      
+      if (socketInstance.connected) {
+        socketInstance.emit('authenticate', newAccess);
+        console.log("Socket: Đã emit authenticate với token mới");
+      } else if (!socketInstance.connecting) {
+        console.log("Socket: Socket chưa kết nối, đang reconnect...");
+        socketInstance.connect();
+      }
+      
+      console.log("Socket: Re-authenticate thành công!");
+    } catch (err) {
+      console.error("Socket: Không thể làm mới token, logout:", err);
+      logout();
+    }
+  }, [logout, refreshToken]);
+
 
   // Hàm tạo nội dung xem trước tin nhắn một cách nhất quán
   // roomUser bây giờ có thể là một object { _id, username, fullname, avatar }
   const getMessagePreview = (
     message,
-    roomUser, 
+    roomUser,
     currentUserId,
     fallbackContent
   ) => {
@@ -81,9 +124,11 @@ export const SocketProvider = ({ children }) => {
       return message.content || "...";
     }
 
+
     // Phương án dự phòng cuối cùng nếu không có object 'message'
     return fallbackContent || "No messages yet.";
   };
+
 
   // Hàm sắp xếp danh sách chat theo thời gian tin nhắn mới nhất (sử dụng useCallback để ổn định)
   const sortChatsByLatestMessage = useCallback((chats) => {
@@ -93,6 +138,7 @@ export const SocketProvider = ({ children }) => {
       return new Date(dateB) - new Date(dateA);
     });
   }, []);
+
 
   // --- useEffect 1: Quản lý vòng đời kết nối Socket.IO ---
   useEffect(() => {
@@ -110,6 +156,7 @@ export const SocketProvider = ({ children }) => {
     console.log(">>> Full accessToken value:", accessToken);
     console.log("====================================================");
 
+
     if (
       isAuthenticated &&
       accessToken &&
@@ -122,6 +169,7 @@ export const SocketProvider = ({ children }) => {
       console.log(
         "Socket: Attempting to initialize and connect new Socket.IO instance..."
       );
+
 
       const newSocket = io(API_BASE, {
         auth: {
@@ -136,6 +184,7 @@ export const SocketProvider = ({ children }) => {
         autoConnect: false,
       });
 
+
       socketRef.current = newSocket;
       console.log(
         "Socket: SET socketRef.current = newSocket (ID:",
@@ -143,10 +192,12 @@ export const SocketProvider = ({ children }) => {
         ")"
       );
 
+
       newSocket.on("connect", () => {
         console.log("Socket: Connected with ID:", newSocket.id);
         newSocket.emit("authenticate", accessToken);
       });
+
 
       newSocket.on("authenticated", () => {
         console.log("Socket: Authenticated successfully!");
@@ -156,18 +207,23 @@ export const SocketProvider = ({ children }) => {
         console.log("Socket: Emitting 'addNewUser' for user:", user._id);
       });
 
-      newSocket.on("unauthorized", (reason) => {
-        console.error("Socket: Authentication failed:", reason.message);
-        // Thay thế alert bằng một thông báo trên UI nếu có thể
-        console.warn(
-          "Phiên đăng nhập hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại."
-        );
-        logout();
-        newSocket.disconnect();
-        socketRef.current = null;
-        setIsSocketReady(false);
-        isConnecting.current = false;
+
+      newSocket.on("unauthorized", async (reason) => {
+        console.warn("Socket: Token hết hạn, đang tự động làm mới...", reason?.message || reason);
+        try {
+          await reauthenticateSocket(newSocket);
+        } catch (err) {
+          console.error("Socket: Re-authenticate thất bại, đang reconnect...", err);
+          // Nếu re-authenticate thất bại, thử reconnect hoàn toàn
+          if (socketRef.current === newSocket) {
+            newSocket.disconnect();
+            socketRef.current = null;
+            setIsSocketReady(false);
+            isConnecting.current = false;
+          }
+        }
       });
+
 
       newSocket.on("disconnect", (reason) => {
         console.warn("Socket: Disconnected:", reason);
@@ -177,17 +233,30 @@ export const SocketProvider = ({ children }) => {
         }
       });
 
-      newSocket.on("connect_error", (error) => {
-        console.error("Socket: Full Connection error object:", error);
-        setIsSocketReady(false);
-        isConnecting.current = false;
+
+      newSocket.on("connect_error", async (error) => {
+        console.error("Socket: Connection error:", error);
+        const messageText = String(error?.message || '');
+        const statusCode = error?.status || error?.statusCode || error?.data?.status;
+        
+        // Nếu là lỗi 401, thử làm mới token
+        if (messageText.includes('401') || statusCode === 401) {
+          console.warn("Socket: Lỗi 401, đang tự động làm mới token...");
+          await reauthenticateSocket(newSocket);
+        } else {
+          setIsSocketReady(false);
+          isConnecting.current = false;
+        }
       });
+
 
       newSocket.on("error", (error) => {
         console.error("Socket: General error event:", error);
       });
 
+
       newSocket.connect();
+
 
       return () => {
         console.log("Socket: Cleanup function of useEffect 1 running...");
@@ -230,6 +299,7 @@ export const SocketProvider = ({ children }) => {
     }
   }, [isAuthenticated, accessToken, user?._id, logout]);
 
+
   // --- useEffect 2: Yêu cầu Danh sách Phòng Chat & Đăng ký Listeners chung ---
   // Bao gồm cả chat_history listener ở đây để nó ổn định.
   useEffect(() => {
@@ -244,7 +314,9 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
+
     const socket = socketRef.current;
+
 
     console.log(
       "SocketContext (Chat Logic): Socket is ready! Requesting chat rooms..."
@@ -252,6 +324,7 @@ export const SocketProvider = ({ children }) => {
     setIsLoadingChatRooms(true);
     setChatRoomsError(null);
     socket.emit("request_chat_rooms");
+
 
     const handleChatRoomList = (rooms) => {
       console.log(
@@ -276,6 +349,7 @@ export const SocketProvider = ({ children }) => {
       }
     };
 
+
     const handleReceiveMessage = (message) => {
       console.log("FE ADMIN: Đã nhận được receive_message:", message);
       if (message.chatRoomId === latestSelectedRoomId.current) {
@@ -288,6 +362,7 @@ export const SocketProvider = ({ children }) => {
           return [...prevMessages, message];
         });
       }
+
 
       setChatRooms((prevRooms) => {
         const updatedRooms = prevRooms.map((room) => {
@@ -317,6 +392,7 @@ export const SocketProvider = ({ children }) => {
       });
     };
 
+
     const handleChatRoomUpdate = (roomOverview) => {
       console.log(
         "SocketContext (Chat Logic): Received chatRoomUpdatedByClient:",
@@ -345,6 +421,7 @@ export const SocketProvider = ({ children }) => {
       });
     };
 
+
     const handleMessageError = (errorMsg) => {
       console.error(
         "SocketContext (Chat Logic): Socket Message Error:",
@@ -358,6 +435,7 @@ export const SocketProvider = ({ children }) => {
       if (isLoadingMessages) setIsLoadingMessages(false);
     };
 
+
     // Hàm xử lý sự kiện online_users_update
     const handleGetOnlineUsers = (onlineUsersList) => {
       setOnlineUsers(onlineUsersList);
@@ -368,12 +446,14 @@ export const SocketProvider = ({ children }) => {
       );
     };
 
+
     const handleChatHistory = (data) => {
       // Đổi tên biến 'history' thành 'data' cho rõ ràng
       console.log(
         "SocketContext (Chat History): >>> handleChatHistory triggered. Received data:",
         data
       );
+
 
       // KIỂM TRA và LẤY ĐÚNG MẢNG `messages` từ trong object data
       if (data && Array.isArray(data.messages)) {
@@ -387,9 +467,11 @@ export const SocketProvider = ({ children }) => {
         setMessages([]);
       }
 
+
       setIsLoadingMessages(false);
       setMessagesError(null);
     };
+
 
     console.log("Socket: Registering chat_room_list listener...");
     socket.on("chat_room_list", handleChatRoomList);
@@ -403,6 +485,7 @@ export const SocketProvider = ({ children }) => {
     socket.on("online_users_update", handleGetOnlineUsers);
     console.log("Socket: Registering chat_history listener...");
     socket.on("chat_history", handleChatHistory);
+
 
     return () => {
       console.log(
@@ -423,6 +506,7 @@ export const SocketProvider = ({ children }) => {
     };
   }, [isSocketReady, currentUserId, sortChatsByLatestMessage]);
 
+
   // --- useEffect 3: Chỉ yêu cầu Lịch sử Tin nhắn & Đánh dấu đã đọc khi selectedRoomId thay đổi ---
   useEffect(() => {
     if (
@@ -440,7 +524,9 @@ export const SocketProvider = ({ children }) => {
       return;
     }
 
+
     const socket = socketRef.current;
+
 
     console.log(
       `SocketContext (Chat History): Selected room changed to ${selectedRoomId}. Requesting chat history...`
@@ -448,6 +534,7 @@ export const SocketProvider = ({ children }) => {
     setIsLoadingMessages(true);
     setMessagesError(null);
     socket.emit("request_chat_history", selectedRoomId);
+
 
     // SỬA ĐỔI Ở ĐÂY: Đảm bảo format của emit "mark_as_read" khớp với backend
     socket.emit("mark_as_read", {
@@ -458,6 +545,7 @@ export const SocketProvider = ({ children }) => {
       `SocketContext (Chat History): Emitting 'mark_as_read' for room ${selectedRoomId} by ${currentUserId}`
     );
 
+
     return () => {
       console.log(
         "SocketContext (Chat History): Cleanup of useEffect 3 (only mark_as_read event emitted)"
@@ -465,12 +553,14 @@ export const SocketProvider = ({ children }) => {
     };
   }, [selectedRoomId, isSocketReady, currentUserId]);
 
+
   const selectAdminChatRoom = useCallback((roomId) => {
     setSelectedRoomId(roomId);
     setMessages([]);
     setIsLoadingMessages(true);
     setMessagesError(null);
   }, []);
+
 
   const sendAdminMessage = useCallback(
     (messageObject) => {
@@ -486,6 +576,7 @@ export const SocketProvider = ({ children }) => {
         return;
       }
 
+
       const socket = socketRef.current;
       if (!socket.connected) {
         console.warn(
@@ -498,6 +589,7 @@ export const SocketProvider = ({ children }) => {
         return;
       }
 
+
       if (
         messageObject.messageType === "text" &&
         (!messageObject.content || !messageObject.content.trim())
@@ -506,6 +598,7 @@ export const SocketProvider = ({ children }) => {
         return;
       }
 
+
       if (messageObject.messageType === "image" && !messageObject.mediaUrl) {
         console.warn("Không thể gửi tin nhắn ảnh: mediaUrl bị thiếu.");
         // Thay thế alert bằng một thông báo trên UI nếu có thể
@@ -513,12 +606,14 @@ export const SocketProvider = ({ children }) => {
         return;
       }
 
+
       if (!messageObject.content && !messageObject.mediaUrl) {
         console.warn(
           "Không thể gửi tin nhắn: Không có nội dung (văn bản hoặc media) được cung cấp."
         );
         return;
       }
+
 
       const currentChatRoom = chatRooms.find(
         (room) => room._id === selectedRoomId
@@ -533,7 +628,9 @@ export const SocketProvider = ({ children }) => {
         return;
       }
 
+
       const targetUserId = currentChatRoom.userId; // id của người dùng mà admin đang chat cùng
+
 
       const messageData = {
         chatRoomId: selectedRoomId,
@@ -543,6 +640,7 @@ export const SocketProvider = ({ children }) => {
         mediaUrl: messageObject.mediaUrl,
       };
 
+
       console.log(
         'SocketContext (Logic Chat): Đang gửi sự kiện "send_message":',
         messageData
@@ -551,6 +649,19 @@ export const SocketProvider = ({ children }) => {
     },
     [selectedRoomId, isSocketReady, chatRooms, currentUserId] // Thêm currentUserId vào dependencies
   );
+
+  // Tự động re-authenticate khi accessToken thay đổi (khi refresh token thành công)
+  useEffect(() => {
+    const socket = socketRef.current;
+    if (!socket || !accessToken || !isSocketReady) return;
+    
+    console.log("Socket: AccessToken đã thay đổi, re-authenticate...");
+    socket.auth = { token: accessToken };
+    if (socket.connected) {
+      socket.emit('authenticate', accessToken);
+    }
+  }, [accessToken, isSocketReady]);
+
 
   const contextValue = {
     socket: socketRef.current,
@@ -568,9 +679,13 @@ export const SocketProvider = ({ children }) => {
     currentUserId,
   };
 
+
   return (
     <SocketContext.Provider value={contextValue}>
       {children}
     </SocketContext.Provider>
   );
 };
+
+
+

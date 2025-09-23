@@ -40,7 +40,7 @@ const LoginForm = () => {
             const accessToken = data.user.access_token;
             const refreshToken = data.user.refresh_token; // Lấy refresh_token nếu có
 
-            localStorage.setItem('token', accessToken);
+            localStorage.setItem('accessToken', accessToken);
             localStorage.setItem('adminId', data.user.user._id)
 
             console.log("Id admin khi đăng nhập: ", data.user.user._id)

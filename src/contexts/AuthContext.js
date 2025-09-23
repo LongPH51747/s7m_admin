@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { API_BASE } from "../config/api";
 
 export const AuthContext = createContext(null);
 
@@ -12,8 +13,55 @@ export const AuthProvider = ({children}) => {
     const [accessToken, setAccessToken] = useState(null);
     const navigate = useNavigate();
 
+    // Sử dụng useCallback để bọc các hàm có thể được gọi nhiều lần, tránh re-render không cần thiết
+    const logout = useCallback(() => {
+        localStorage.clear();
+        setUser(null);
+        setIsAuthenticated(false);
+        setAccessToken(null);
+        navigate('/login');
+    }, [navigate]);
+
+    const refreshToken = useCallback(async () => {
+        const storedRefreshToken = localStorage.getItem('refreshToken');
+        if (!storedRefreshToken) {
+            console.log('AuthContext: Không có refreshToken, logout');
+            logout();
+            return false;
+        }
+
+        try {
+            console.log('AuthContext: Đang gọi API refresh token...');
+            const response = await fetch(`${API_BASE}/api/auth/refresh-token`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ refreshToken: storedRefreshToken }),
+            });
+
+            if (response.status === 200) {
+                const data = await response.json();
+                console.log('AuthContext: Nhận được token mới từ server:', data);
+                localStorage.setItem('accessToken', data.access_token);
+                setAccessToken(data.access_token);
+                console.log('AuthContext: Token đã được làm mới thành công.');
+                return true;
+            } else {
+                console.error('AuthContext: Refresh token thất bại, status:', response.status);
+                logout(); // Refresh token không hợp lệ
+                return false;
+            }
+        } catch (error) {
+            console.error("AuthContext: Lỗi khi làm mới token:", error);
+            logout(); // Lỗi mạng hoặc lỗi khác
+            return false;
+        }
+    }, [logout]);
+
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
+        const storedRefreshToken = localStorage.getItem('refreshToken');
         const storedUser = localStorage.getItem('username');
         const storedRole = localStorage.getItem('userRole');
         const storedUserId = localStorage.getItem('userId');
@@ -21,53 +69,53 @@ export const AuthProvider = ({children}) => {
 
         if(token && storedUser && storedRole && storedUserId && storedFullName){
             setAccessToken(token);
-            setUser ({
+            setUser({
                 _id: storedUserId,
                 username: storedUser,
                 fullName: storedFullName,
                 role: storedRole,
-               
             });
             setIsAuthenticated(true);
-        }else{
+        } else {
             localStorage.clear();
             setUser(null);
             setIsAuthenticated(false);
             setAccessToken(null);
         }
         setLoadingAuth(false);
-    }, []);
+        
+        let refreshInterval;
+        if (storedRefreshToken) {
+            // Thiết lập làm mới token định kỳ
+            refreshInterval = setInterval(() => {
+                refreshToken();
+            }, 1000 * 60 * 15); // Mỗi 4 phút
+        }
 
-    // Bọc hàm login trong useCallback, không cần navigate trong dependency vì nó stable
-    const login = useCallback((userData, receivedAccessToken, refreshToken) => {
-        console.log("AuthContext: Login function called. Token received:", receivedAccessToken ? "Exists" : "Missing");
+        return () => {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        };
+
+    }, [refreshToken]); // Thêm refreshToken vào dependency array
+
+    const login = useCallback((userData, receivedAccessToken, receivedRefreshToken) => {
         localStorage.setItem('accessToken', receivedAccessToken);
-        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('refreshToken', receivedRefreshToken);
         localStorage.setItem('userId', userData._id);
         localStorage.setItem('username', userData.username);
         localStorage.setItem('userRole', userData.role);
         localStorage.setItem('fullName', userData.fullName);
-        console.log('data cua b may', userData);
-        
 
         setAccessToken(receivedAccessToken);
-        console.log("AuthContext: accessToken state updated.");
         setUser(userData);
         setIsAuthenticated(true);
 
         if(userData.role === 'admin'){
             navigate('/home');
         }
-    }, []); // navigate là stable, có thể bỏ qua
-
-    // Bọc hàm logout trong useCallback, không cần navigate trong dependency vì nó stable
-    const logout = useCallback(() => {
-        localStorage.clear();
-        setUser(null);
-        setIsAuthenticated(false);
-        setAccessToken(null);
-        navigate('/login');
-    }, []); // navigate là stable, có thể bỏ qua
+    }, [navigate]);
 
     const value = {
         user,
@@ -76,7 +124,9 @@ export const AuthProvider = ({children}) => {
         login,
         logout,
         accessToken,
+        refreshToken,
     };
+
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 

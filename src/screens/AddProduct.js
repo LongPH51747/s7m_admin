@@ -306,13 +306,13 @@ const AddProduct = () => {
       const productData = {
         product_name: productName.trim(),
         // Multiply by 1000 on submit (append 000 semantics)
-        product_price: (parseFloat(variants[0].variant_price) || 0) * 1000,
+        product_price: (parseFloat(variants[0].variant_price) || 0),
         product_description: description.trim(),
         product_status: true,
         product_variant: variants.map((variant) => ({
           variant_color: variant.variant_color.trim(),
           variant_size: variant.variant_size.trim(),
-          variant_price: (parseFloat(variant.variant_price) || 0) * 1000,
+          variant_price: (parseFloat(variant.variant_price) || 0),
           variant_stock: parseInt(variant.variant_stock) || 0,
         })),
         product_category: [category],
